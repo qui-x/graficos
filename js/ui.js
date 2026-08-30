@@ -53,16 +53,33 @@
     moveTab(delta){const i=this.$.tabs.findIndex(t=>t.dataset.tab===this.activeTab);const next=(i+delta+this.$.tabs.length)%this.$.tabs.length;this.$.tabs[next].focus();this.setTab(this.$.tabs[next].dataset.tab);},
     addActiveTab(){if(this.activeTab==='function')this.addFunction();else if(this.activeTab==='parametric')this.addParametric();else if(this.activeTab==='vector')this.addVector();else this.addGeometry();},
     isMathField(el){return !!el&&el.tagName==='MATH-FIELD';},
-    getFieldValue(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el)){try{return el.getValue('ascii-math');}catch{return el.value||'';}}return el.value||'';},
+    getFieldValue(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el)){try{return el.getValue('ascii-math')||'';}catch{return el.value||'';}}return el.value||'';} ,
     getFieldLatex(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el))return el.value||'';return this.toLatex(el.value||'');},
-    setFieldValue(id,value){const el=document.getElementById(id);if(!el)return;if(this.isMathField(el)){el.value=this.toLatex(this.display(String(value||'')));}else{el.value=this.display(String(value||''));}},
+    setFieldValue(id,value){const el=document.getElementById(id);if(!el)return;if(this.isMathField(el)){const latex=this.toLatex(String(value||''));try{el.setValue(latex);}catch{el.value=latex;}}else{el.value=this.display(String(value||''));}},
     normalizeInput(id){return this.getFieldValue(id);},
     toMathEngine(expr){return MathEngine.normalize(expr);},
     toLatex(expr){let s=String(expr??'').trim().replace(/−/g,'-').replace(/π/g,'\\pi').replace(/τ/g,'\\tau').replace(/φ/g,'\\phi').replace(/²/g,'^{2}').replace(/³/g,'^{3}').replace(/⁴/g,'^{4}').replace(/⁵/g,'^{5}').replace(/×/g,'\\cdot ').replace(/÷/g,'/').replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|log|log2|ln|sqrt|abs|exp|sign)\b/g,'\\$1');s=s.replace(/sqrt\(([^()]+)\)/g,'\\sqrt{$1}');s=this.convertFractionsToLatex(s);s=s.replace(/\bpi\b/g,'\\pi').replace(/\btau\b/g,'\\tau').replace(/\bphi\b/g,'\\phi');return s||'\\;';},
     convertFractionsToLatex(s){return s.replace(/\(([^()]+)\)\s*\/\s*\(([^()]+)\)/g,'\\frac{$1}{$2}').replace(/\b(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\b/g,'\\frac{$1}{$2}');},
     renderKatex(target,expr){const el=document.getElementById(target);if(!el)return;if(el.tagName==='MATH-SPAN'){el.textContent=this.toLatex(expr);if(typeof el.render==='function')el.render();return;}if(global.katex)global.katex.render(this.toLatex(expr),el,{throwOnError:false,displayMode:false});else el.textContent=expr;},
     updatePreviews(){this.renderKatex('functionPreview',this.getFieldValue('functionExpr'));this.renderKatex('paramPreview',`x(t) = ${this.getFieldValue('paramX')}, y(t) = ${this.getFieldValue('paramY')}`);this.updateGeometryPreview();},
-    insertText(token,target){const input=document.getElementById(target);if(!input)return;if(this.isMathField(input)){const latexMap={'pi':'\\pi','tau':'\\tau','phi':'\\phi','sqrt(':'\\sqrt{#?}','^2':'^2','^3':'^3','*':'\\cdot ','/':'/','-':'-','sin(':'\\sin(','cos(':'\\cos(','tan(':'\\tan(','asin(':'\\arcsin(','acos(':'\\arccos(','sqrt(':'\\sqrt{#?}'};input.focus();input.insert(latexMap[token]??token);this.lastMathInputId=target;}else{const start=input.selectionStart??input.value.length,end=input.selectionEnd??input.value.length;const pretty=token==='pi'?'π':token==='tau'?'τ':token==='phi'?'φ':token==='sqrt('?'√(':token==='*'?'×':token==='/'?'÷':token==='-'?'−':token;input.value=input.value.slice(0,start)+pretty+input.value.slice(end);const pos=start+pretty.length;input.focus();input.setSelectionRange(pos,pos);}this.updatePreviews();this.validateExpressionField(input);this.engine.requestRender();},
+    insertText(token,target){
+      const input=document.getElementById(target);
+      if(!input)return;
+      if(this.isMathField(input)){
+        const latexMap={'pi':'\\pi','tau':'\\tau','phi':'\\phi','sqrt(':'\\sqrt{#0}','^2':'^{2}','^3':'^{3}','*':'\\cdot ','/':'/','-':'-','sin(':'\\sin(#0)','cos(':'\\cos(#0)','tan(':'\\tan(#0)','asin(':'\\arcsin(#0)','acos(':'\\arccos(#0)','sqrt(':'\\sqrt{#0}'};
+        const latex=latexMap[token]??token;
+        input.focus();
+        try{ input.executeCommand(['insert',latex]); }
+        catch{ input.insert(latex,{selectionMode:'placeholder'}); }
+        this.lastMathInputId=target;
+      }else{
+        const startPos=input.selectionStart??input.value.length,endPos=input.selectionEnd??input.value.length;
+        const pretty=token==='pi'?'π':token==='tau'?'τ':token==='phi'?'φ':token==='sqrt('?'√(':token==='*'?'×':token==='/'?'÷':token==='-'?'−':token;
+        input.value=input.value.slice(0,startPos)+pretty+input.value.slice(endPos);
+        const pos=startPos+pretty.length;input.focus();input.setSelectionRange(pos,pos);
+      }
+      this.updatePreviews();this.validateExpressionField(input);this.engine.requestRender();
+    },
     insertAtActive(token){const target=(document.activeElement?.id&&['functionExpr','paramX','paramY'].includes(document.activeElement.id))?document.activeElement.id:this.lastMathInputId;this.insertText(token,target||'functionExpr');},
     clearField(id){const input=document.getElementById(id);if(!input)return;this.setFieldValue(id,'');this.lastMathInputId=id;input.focus();this.updatePreviews();this.validateExpressionField(input);this.showToast('Campo limpo.');},
     validateExpressionField(input){if(!input)return;const value=this.getFieldValue(input.id);const errorId=input.id==='functionExpr'?'functionError':'paramError';const errEl=document.getElementById(errorId);if(!value.trim()){input.classList.remove('valid','invalid');if(errEl)errEl.textContent='';return;}try{const vars=input.id==='functionExpr'?{x:0}:{x:0,t:0};MathEngine.compile(this.toMathEngine(value),vars);input.classList.add('valid');input.classList.remove('invalid');if(errEl)errEl.textContent='Expressão válida.';}catch(e){input.classList.add('invalid');input.classList.remove('valid');if(errEl)errEl.textContent=this.userFriendlyError(e);}},

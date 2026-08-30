@@ -175,6 +175,7 @@
       if (!this.showGrid) return;
       const { w, h } = this.size;
       const c = this.ctx;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
       const ox = w / 2 + this.offsetX;
       const oy = h / 2 + this.offsetY;
 
