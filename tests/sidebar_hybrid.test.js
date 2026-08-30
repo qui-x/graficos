@@ -1,0 +1,11 @@
+const fs=require('fs');
+const html=fs.readFileSync('index.html','utf8');
+const ui=fs.readFileSync('js/ui.js','utf8');
+const css=fs.readFileSync('css/style.css','utf8');
+for (const id of ['sidebarToggle','backdrop','mobileMenuBtn','closeControlsBtn','saveSessionBtn']) if(!html.includes(`id="${id}"`)) throw new Error(`${id} missing`);
+if(!html.includes('class="menu-icon"')||!html.includes('class="close-menu-icon hidden"')) throw new Error('menu icons missing');
+if(!css.includes('.workspace.sidebar-collapsed{grid-template-columns:56px')) throw new Error('desktop icon rail missing');
+if(!css.includes('.controls-panel.open{transform:translateY(0)}')) throw new Error('mobile sheet missing');
+if(!ui.includes('focusFirstSidebarControl')) throw new Error('focus management missing');
+if(!ui.includes("event.key!=='Escape'")) throw new Error('escape close missing');
+console.log('sidebar hybrid OK');

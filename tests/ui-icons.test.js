@@ -7,24 +7,14 @@ const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
 
 const mustHave = [
-  'id="showControlsBtn"',
-  'class="show-controls-btn hidden"',
-  'id="collapseControlsBtn"',
-  '<svg',
-  'class="collapse-icon-left"',
-  'class="collapse-icon-right hidden"',
-  'id="undoBtn"',
-  'id="redoBtn"',
-  'id="fullscreenBtn"',
-  'id="exportBtn"',
-  'id="exportSvgBtn"'
+  'id="showControlsBtn"', 'class="show-controls-btn hidden"', 'id="sidebarToggle"',
+  'id="backdrop"', 'id="mobileMenuBtn"', 'id="closeControlsBtn"',
+  'class="collapse-icon-left"', 'class="collapse-icon-right hidden"',
+  'id="undoBtn"', 'id="redoBtn"', 'id="fullscreenBtn"', 'id="exportBtn"', 'id="exportSvgBtn"'
 ];
 for (const token of mustHave) if (!html.includes(token)) throw new Error(`HTML token missing: ${token}`);
-if (!ui.includes('this.$.showControls?.classList.toggle(\'hidden\',!collapsed)')) throw new Error('showControls toggle missing');
-if (!ui.includes('leftIcon?.classList.toggle(\'hidden\',collapsed)')) throw new Error('collapse left icon toggle missing');
-if (!ui.includes('rightIcon?.classList.toggle(\'hidden\',!collapsed)')) throw new Error('collapse right icon toggle missing');
-if (!ui.includes('this.$.showControls?.addEventListener(\'click\',()=>toggleControls(false))')) throw new Error('show controls click missing');
-if (!css.includes('.show-controls-btn{position:absolute')) throw new Error('show controls CSS missing');
-if (!css.includes('.hidden{display:none!important}')) throw new Error('generic hidden CSS missing');
-if (!html.includes('>↶<') && !html.includes('>↷<') && !html.includes('>□<')) console.log('OK: no legacy header Unicode icons');
+for (const token of ['openSidebar(','closeSidebar(','toggleSidebar(']) if (!ui.includes(token)) throw new Error(`Sidebar method missing: ${token}`);
+for (const token of ["this.$.sidebarToggle?.addEventListener('click',()=>this.toggleSidebar())", "this.$.closeControls?.addEventListener('click',()=>this.closeSidebar())", "this.$.mobileMenuBtn?.addEventListener('click',()=>this.openSidebar())"]) if (!ui.includes(token)) throw new Error(`Sidebar event missing: ${token}`);
+for (const token of ['.workspace.sidebar-collapsed', '.controls-panel.open', '.backdrop.show', '.fab']) if (!css.includes(token)) throw new Error(`CSS token missing: ${token}`);
+if (!html.includes('>↶<') && !html.includes('>↷<') && !html.includes('>□<') && !html.includes('>‹<') && !html.includes('>›<')) console.log('OK: no legacy header Unicode icons');
 console.log('ui-icons OK');

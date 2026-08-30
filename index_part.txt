@@ -25,10 +25,6 @@
         <p>Funções, curvas paramétricas, vetores e geometria analítica 2D/3D em um único espaço.</p>
       </div>
       <div class="top-actions">
-        <button class="menu-toggle" id="sidebarToggle" type="button" title="Abrir controles" aria-label="Abrir controles" aria-expanded="true">
-          <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-          <svg class="close-menu-icon hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
         <button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"/></svg>
         </button>
@@ -59,23 +55,16 @@
       </div>
     </header>
 
-    <div id="backdrop" class="backdrop hidden" aria-hidden="true"></div>
     <section class="workspace">
       <aside class="panel controls-panel" aria-label="Controles de entrada">
-        <div class="controls-header">
-          <span>Configurações</span>
-          <button class="icon-btn close-controls-btn" id="closeControlsBtn" type="button" title="Fechar controles" aria-label="Fechar controles">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-          </button>
-        </div>
         <div class="tabs" role="tablist" aria-label="Tipo de objeto gráfico">
-          <button class="tab active" role="tab" aria-selected="true" aria-controls="panel-function" data-tab="function" title="Função"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Função</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-parametric" data-tab="parametric" title="Curva paramétrica"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Paramétrica</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-vector" data-tab="vector" title="Vetor"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Vetor</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-geometry" data-tab="geometry" title="Geometria"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Geometria</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-surface" data-tab="surface" title="Superfície 3D"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Superfície</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-curve3d" data-tab="curve3d" title="Curva 3D"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Curva 3D</span></button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-line3d" data-tab="line3d" title="Reta 3D"><span class="tab-icon" aria-hidden="true"></span><span class="tab-label">Reta 3D</span></button>
+          <button class="tab active" role="tab" aria-selected="true" aria-controls="panel-function" data-tab="function">Função</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-parametric" data-tab="parametric">Paramétrica</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-vector" data-tab="vector">Vetor</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-geometry" data-tab="geometry">Geometria</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-surface" data-tab="surface">Superfície</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-curve3d" data-tab="curve3d">Curva 3D</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-line3d" data-tab="line3d">Reta 3D</button>
         </div>
 
         <div class="global-math-tools" aria-label="Ferramentas matemáticas">
@@ -254,13 +243,6 @@
         <div class="section-divider"></div>
         <div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div>
         <div id="historyList" class="history-list"></div>
-
-        <div class="sidebar-actions" aria-label="Ações do painel">
-          <button class="secondary-btn" id="saveSessionBtn" type="button" title="Salvar sessão agora">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h13l3 3v13H4z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>
-            <span>Salvar sessão</span>
-          </button>
-        </div>
       </aside>
 
       <section class="panel graph-panel">
@@ -273,9 +255,6 @@
           </div>
           <div class="coordinate-readout" id="coordinateReadout" aria-live="polite" aria-atomic="true">x: 0 · y: 0</div>
         </div>
-        <button class="fab hidden" id="mobileMenuBtn" type="button" aria-label="Abrir controles" title="Abrir controles">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-        </button>
         <button class="show-controls-btn hidden" id="showControlsBtn" type="button" aria-label="Mostrar controles" title="Mostrar controles"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg><span>Mostrar controles</span></button>
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="graphCanvas" tabindex="0" role="img" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." aria-describedby="graphHelp"></canvas>

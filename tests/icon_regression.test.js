@@ -19,7 +19,7 @@ for (const legacy of ['>↶<','>↷<','>□<']) if (html.includes(legacy)) throw
 if (!ui.includes("leftIcon?.classList.toggle('hidden',collapsed)")) throw new Error('toggle do ícone esquerdo ausente');
 if (!ui.includes("rightIcon?.classList.toggle('hidden',!collapsed)")) throw new Error('toggle do ícone direito ausente');
 if (!ui.includes("this.$.showControls?.classList.toggle('hidden',!collapsed)")) throw new Error('toggle do botão flutuante ausente');
-if (!ui.includes("this.$.showControls?.addEventListener('click',()=>toggleControls(false))")) throw new Error('listener do botão flutuante ausente');
+if (!ui.includes("this.$.showControls?.addEventListener('click',()=>this.openSidebar())")) throw new Error('listener do botão flutuante ausente');
 if (!css.includes('.show-controls-btn{position:absolute')) throw new Error('CSS do botão flutuante ausente');
 if (!css.includes('.icon-btn,.action-btn{display:inline-flex')) throw new Error('alinhamento de ícones ausente');
 console.log('icon regression OK');

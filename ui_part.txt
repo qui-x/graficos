@@ -12,121 +12,41 @@
       this.objects = objects; this.engine = engine; this.cache(); this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters(); this.initMobileLayout();
     },
     initMobileLayout() {
-      const apply = () => {
+      const applyViewportLayout = () => {
         const mobile = global.innerWidth < 900;
         if (!mobile) {
-          this.$.controls?.classList.remove('open');
           this.$.controls?.classList.remove('collapsed');
-          this.$.workspace?.classList.remove('sidebar-collapsed');
           this.$.workspace?.classList.remove('controls-collapsed');
-          this.$.backdrop?.classList.remove('show');
-          this.$.backdrop?.classList.add('hidden');
-          this.$.mobileMenuBtn?.classList.add('hidden');
-          this.$.showControls?.classList.toggle('hidden', !this.$.workspace?.classList.contains('sidebar-collapsed'));
-          this.$.showControls?.setAttribute('aria-hidden', String(!this.$.workspace?.classList.contains('sidebar-collapsed')));
-          this.updateSidebarButtons(false);
+          this.$.showControls?.classList.add('hidden');
+          this.$.showControls?.setAttribute('aria-hidden', 'true');
           return;
         }
-        this.$.workspace?.classList.remove('sidebar-collapsed');
-        this.$.controls?.classList.remove('collapsed');
-        this.closeSidebar(false);
+        const collapsed = this.$.controls?.classList.contains('collapsed');
+        if (typeof collapsed !== 'boolean') return;
+        if (!this.$.controls.dataset.mobileInitialized) {
+          this.$.controls.classList.add('collapsed');
+          this.$.workspace?.classList.add('controls-collapsed');
+          this.$.collapse?.setAttribute('aria-pressed', 'true');
+          this.$.collapse?.setAttribute('aria-label', 'Mostrar controles');
+          this.$.collapse?.setAttribute('title', 'Mostrar controles');
+          const left = this.$.collapse?.querySelector('.collapse-icon-left');
+          const right = this.$.collapse?.querySelector('.collapse-icon-right');
+          left?.classList.add('hidden');
+          right?.classList.remove('hidden');
+          this.$.showControls?.classList.remove('hidden');
+          this.$.showControls?.setAttribute('aria-hidden', 'false');
+          this.$.controls.dataset.mobileInitialized = 'true';
+        }
       };
-      apply();
+      applyViewportLayout();
       const recalibrate = () => { this.engine?.resize?.(); this.engine?.requestRender?.(); };
       requestAnimationFrame(() => requestAnimationFrame(recalibrate));
-      const onViewportChange = () => { apply(); requestAnimationFrame(() => requestAnimationFrame(recalibrate)); };
+      const onViewportChange = () => {
+        applyViewportLayout();
+        requestAnimationFrame(() => requestAnimationFrame(recalibrate));
+      };
       global.addEventListener('resize', onViewportChange, { passive: true });
       global.addEventListener('orientationchange', onViewportChange, { passive: true });
-    },
-    updateSidebarButtons(collapsed) {
-      const mobile = global.innerWidth < 900;
-      const left = this.$?.collapse?.querySelector('.collapse-icon-left');
-      const right = this.$?.collapse?.querySelector('.collapse-icon-right');
-      const leftIcon = left;
-      const rightIcon = right;
-      leftIcon?.classList.toggle('hidden',collapsed);
-      rightIcon?.classList.toggle('hidden',!collapsed);
-      left?.classList.toggle('hidden', collapsed);
-      right?.classList.toggle('hidden', !collapsed);
-      this.$?.collapse?.setAttribute('aria-pressed', String(collapsed));
-      this.$?.collapse?.setAttribute('aria-label', collapsed ? 'Mostrar controles' : 'Ocultar controles');
-      this.$?.collapse?.setAttribute('title', collapsed ? 'Mostrar controles' : 'Ocultar controles');
-      this.$?.sidebarToggle?.setAttribute('aria-expanded', String(mobile ? this.$?.controls?.classList.contains('open') : !collapsed));
-      this.$.showControls?.classList.toggle('hidden',!collapsed);
-    },
-    openSidebar(redraw=true) {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.add('open');
-        this.$.backdrop?.classList.remove('hidden');
-        this.$.backdrop?.classList.add('show');
-        this.$.mobileMenuBtn?.classList.add('hidden');
-        this.$.showControls?.classList.add('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','true');
-        this.$.sidebarToggle?.setAttribute('aria-label','Fechar controles');
-        this.$.sidebarToggle?.setAttribute('title','Fechar controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.add('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.remove('hidden');
-        this.updateSidebarButtons(false);
-        requestAnimationFrame(()=>this.focusFirstSidebarControl());
-      } else {
-        this.$.workspace?.classList.remove('sidebar-collapsed');
-        this.$.controls?.classList.remove('collapsed');
-        this.$.showControls?.classList.add('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','true');
-        this.$.sidebarToggle?.setAttribute('aria-label','Recolher controles');
-        this.$.sidebarToggle?.setAttribute('title','Recolher controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
-        this.updateSidebarButtons(false);
-      }
-      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
-    },
-    closeSidebar(redraw=true) {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.remove('open');
-        this.$.backdrop?.classList.remove('show');
-        this.$.backdrop?.classList.add('hidden');
-        this.$.mobileMenuBtn?.classList.remove('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','false');
-        this.$.sidebarToggle?.setAttribute('aria-label','Abrir controles');
-        this.$.sidebarToggle?.setAttribute('title','Abrir controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
-        this.updateSidebarButtons(true);
-      } else {
-        this.$.workspace?.classList.add('sidebar-collapsed');
-        this.$.controls?.classList.add('collapsed');
-        this.$.showControls?.classList.remove('hidden');
-        this.$.showControls?.setAttribute('aria-hidden','false');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','false');
-        this.$.sidebarToggle?.setAttribute('aria-label','Abrir controles');
-        this.$.sidebarToggle?.setAttribute('title','Abrir controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
-        this.updateSidebarButtons(true);
-      }
-      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
-    },
-    toggleSidebar() {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.contains('open') ? this.closeSidebar() : this.openSidebar();
-      } else {
-        this.$.workspace?.classList.contains('sidebar-collapsed') ? this.openSidebar() : this.closeSidebar();
-      }
-    },
-    focusFirstSidebarControl() {
-      const root=this.$?.controls; if(!root) return;
-      const first=root.querySelector('input:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex=\"0\"]');
-      first?.focus();
-    },
-    handleSidebarKeydown(event) {
-      if(event.key!=='Escape') return;
-      const mobile=global.innerWidth<900;
-      const open=mobile ? this.$?.controls?.classList.contains('open') : !this.$?.workspace?.classList.contains('sidebar-collapsed');
-      if(open) { event.preventDefault(); this.closeSidebar(); this.$?.sidebarToggle?.focus(); }
     },
     getConfiguredVariableNames() {
       const selected = this.$?.variableOptions?.filter((el) => el.checked).map((el) => el.value) || [];
@@ -228,7 +148,7 @@
     escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); },
     cache() {
       this.lastMathInputId='functionExpr';
-      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), collapse:document.getElementById('collapseControlsBtn'), showControls:document.getElementById('showControlsBtn'), sidebarToggle:document.getElementById('sidebarToggle'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), install:document.getElementById('installBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
+      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), collapse:document.getElementById('collapseControlsBtn'), showControls:document.getElementById('showControlsBtn'), install:document.getElementById('installBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
     },
     buildMenus() { document.querySelectorAll('.math-menu').forEach((m)=>{m.innerHTML=menuHtml;}); const globalMenu=document.getElementById('globalMathMenu'); if(globalMenu) globalMenu.innerHTML=menuHtml; document.querySelectorAll('.dropdown-btn').forEach((b)=>b.addEventListener('click',()=>{const m=document.getElementById(b.dataset.menu);if(m)m.classList.toggle('hidden');})); const globalBtn=document.getElementById('globalMathBtn'); if(globalBtn)globalBtn.addEventListener('click',()=>{const open=document.getElementById('globalMathMenu')?.classList.toggle('hidden')===false;globalBtn.setAttribute('aria-expanded',String(open));}); document.querySelectorAll('.math-menu [data-insert]').forEach((b)=>b.addEventListener('click',()=>{this.insertAtActive(b.dataset.insert);document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');})); document.addEventListener('click',(e)=>{if(!e.target.closest('.math-editor')&&!e.target.closest('.global-math-tools')){document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');}}); },
     initPWAInstall() {
@@ -267,15 +187,9 @@
       document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('reset3DBtn')?.addEventListener('click',()=>{this.engine.rotationX=0.62;this.engine.rotationY=0.78;this.engine.projectionScale=1;this.engine.requestRender();this.showToast('Orientação 3D restaurada.');}); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
       document.getElementById('exportBtn').addEventListener('click',()=>this.engine.exportPng()); document.getElementById('exportSvgBtn').addEventListener('click',()=>this.engine.exportSvg()); document.getElementById('fullscreenBtn').addEventListener('click',()=>this.toggleFullscreen());
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
-      this.$.sidebarToggle?.addEventListener('click',()=>this.toggleSidebar());
-      this.$.collapse?.addEventListener('click',()=>this.toggleSidebar());
-      this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
-      this.$.backdrop?.addEventListener('click',()=>this.closeSidebar());
-      this.$.mobileMenuBtn?.addEventListener('click',()=>this.openSidebar());
-      this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
-      this.$.saveSessionBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');});
-      global.addEventListener('keydown',(event)=>this.handleSidebarKeydown?.(event));
-      this.$.showControls?.addEventListener('click',()=>this.openSidebar());
+      const toggleControls=(force=null)=>{const collapsed=force===null?!this.$.controls.classList.contains('collapsed'):Boolean(force);this.$.controls.classList.toggle('collapsed',collapsed);this.$.workspace?.classList.toggle('controls-collapsed',collapsed);this.$.collapse.setAttribute('aria-pressed',String(collapsed));this.$.collapse.setAttribute('aria-label',collapsed?'Mostrar controles':'Ocultar controles');this.$.collapse.setAttribute('title',collapsed?'Mostrar controles':'Ocultar controles');const leftIcon=this.$.collapse.querySelector('.collapse-icon-left');const rightIcon=this.$.collapse.querySelector('.collapse-icon-right');const collapseText=this.$.collapse.querySelector('.collapse-text');leftIcon?.classList.toggle('hidden',collapsed);rightIcon?.classList.toggle('hidden',!collapsed);if(collapseText)collapseText.textContent=collapsed?'Mostrar controles':'Ocultar controles';this.$.showControls?.classList.toggle('hidden',!collapsed);this.$.showControls?.setAttribute('aria-hidden',String(!collapsed));this.$.controls.dataset.mobileInitialized='true';requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));};
+      this.$.collapse.addEventListener('click',()=>toggleControls());
+      this.$.showControls?.addEventListener('click',()=>toggleControls(false));
       document.querySelectorAll('[data-tooltip]').forEach((el)=>el.setAttribute('title',el.dataset.tooltip));
       this.bindKeyboard();
     },
@@ -324,24 +238,3 @@
     addGeometry(){const t=this.$.geometryType.value;try{let data;if(t==='line'){data={a:this.parseNum(document.getElementById('ga').value),b:this.parseNum(document.getElementById('gb').value),c:this.parseNum(document.getElementById('gc').value)};if(Math.abs(data.a)<1e-12&&Math.abs(data.b)<1e-12)throw new Error('A e B não podem ser ambos zero.');}else if(t==='circle'){data={cx:this.parseNum(document.getElementById('gcx').value),cy:this.parseNum(document.getElementById('gcy').value),r:this.parseNum(document.getElementById('gr').value)};if(data.r<=0)throw new Error('Raio deve ser positivo.');}else if(t==='ellipse'){data={cx:this.parseNum(document.getElementById('ecx').value),cy:this.parseNum(document.getElementById('ecy').value),a:this.parseNum(document.getElementById('ea').value),b:this.parseNum(document.getElementById('eb').value)};if(data.a<=0||data.b<=0)throw new Error('Semieixos devem ser positivos.');}else data={x:this.parseNum(document.getElementById('gpx').value),y:this.parseNum(document.getElementById('gpy').value)};if(this.editingId){this.objects.update(this.editingId,data);this.showToast('Objeto geométrico atualizado.');}else{const obj=this.objects.add(t,data,colors[this.objects.items.length%colors.length]);this.addHistory(t==='line'?'Reta':t==='circle'?'Círculo':t==='ellipse'?'Elipse':'Ponto',obj);this.showToast('Objeto geométrico adicionado.');}this.cancelEdit();}catch(e){this.showError(e);}},
     renderObjects(){const list=this.$.objectsList;list.innerHTML='';if(!this.objects.items.length){list.innerHTML='<div class="empty-list">Nenhum objeto adicionado.</div>';return;}this.objects.items.forEach((o)=>{const label=this.objectLabel(o);const row=document.createElement('div');row.className='object-row';row.innerHTML=`<span class="swatch" style="background:${o.color}" aria-hidden="true"></span><button class="object-label" type="button" title="Editar ${this.escape(label)}">${this.escape(label)}</button><button class="row-btn" data-action="toggle" type="button" aria-label="${o.visible?'Ocultar':'Mostrar'} objeto">${o.visible?ICON.hide:ICON.show}</button><button class="row-btn" data-action="delete" type="button" aria-label="Excluir objeto">Excluir</button>`;row.querySelector('[data-action="toggle"]').addEventListener('click',()=>this.objects.toggle(o.id));row.querySelector('[data-action="delete"]').addEventListener('click',()=>{this.objects.remove(o.id);this.showToast('Objeto excluído.');});row.querySelector('.object-label').addEventListener('click',()=>this.beginEdit(o));list.appendChild(row);});},
     escape(s){return String(s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
-    objectLabel(o){if(o.type==='function')return`y = ${this.display(o.data.expression)}`;if(o.type==='parametric')return`x=${this.display(o.data.xExpr)}, y=${this.display(o.data.yExpr)}`;if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];return`${o.data.arrow===false?'Segmento':'Vetor'} (${pts[0].join(', ')}) ${o.data.arrow===false?'—':'→'} (${pts[1].join(', ')})`;}if(o.type==='line')return`${o.data.a}x + ${o.data.b}y + ${o.data.c} = 0`;if(o.type==='circle')return`Círculo (${o.data.cx}, ${o.data.cy}), r=${o.data.r}`;if(o.type==='ellipse')return`Elipse (${o.data.cx}, ${o.data.cy}), a=${o.data.a}, b=${o.data.b}`;if(o.type==='surface')return`z = ${this.display(o.data.expression)}`;if(o.type==='curve3d')return`3D: (${this.display(o.data.xExpr)}, ${this.display(o.data.yExpr)}, ${this.display(o.data.zExpr)})`;if(o.type==='line3d')return`Reta 3D: (${o.data.p1.join(', ')}) → (${o.data.p2.join(', ')})`;return`Ponto (${o.data.x}, ${o.data.y})`;},
-    display(s){return String(s).replace(/\bsin\b/gi,'sen').replace(/\basin\b/gi,'arcsen').replace(/\bacos\b/gi,'arccos').replace(/\batan\b/gi,'arctg').replace(/\bpi\b/g,'π').replace(/\btau\b/g,'τ').replace(/\bphi\b/g,'φ').replace(/sqrt\(/g,'√(').replace(/\^2/g,'²').replace(/\^3/g,'³').replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−');},
-    loadHistory(){try{this.history=JSON.parse(localStorage.getItem('graphCalcHistoryV2')||'[]');if(!Array.isArray(this.history))this.history=[];}catch{this.history=[];}this.renderHistory();},
-    addHistory(text,obj=null){const entry={text,time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),object:obj?{type:obj.type,color:obj.color,data:JSON.parse(JSON.stringify(obj.data))}:null};this.history.unshift(entry);this.history=this.history.slice(0,50);localStorage.setItem('graphCalcHistoryV2',JSON.stringify(this.history));this.renderHistory();},
-    renderHistory(){this.$.historyList.innerHTML=this.history.length?this.history.map((h)=>`<button class="history-row" type="button"><span>${this.escape(h.text)}</span><small>${this.escape(h.time)}</small></button>`).join(''):'<div class="empty-list">Sem histórico.</div>';this.$.historyList.querySelectorAll('.history-row').forEach((row,i)=>row.addEventListener('click',()=>this.reuseHistory(this.history[i])));},
-    reuseHistory(entry){const text=typeof entry==='string'?entry:entry?.text||'';if(entry?.object){const o=entry.object;this.cancelEdit();this.setTab(o.type==='function'?'function':o.type==='parametric'?'parametric':o.type==='vector'?'vector':'geometry');if(o.type==='function')this.$.functionExpr.value=this.display(o.data.expression);else if(o.type==='parametric'){this.$.paramX.value=this.display(o.data.xExpr);this.$.paramY.value=this.display(o.data.yExpr);this.$.tMin.value=o.data.tMin;this.$.tMax.value=o.data.tMax;}else if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];[['vx1',pts[0][0]],['vy1',pts[0][1]],['vz1',pts[0][2]],['vx2',pts[1][0]],['vy2',pts[1][1]],['vz2',pts[1][2]]].forEach(([id,v])=>document.getElementById(id).value=v);if(this.$.vectorType)this.$.vectorType.value=o.data.arrow===false?'segment':'vector';}else{this.$.geometryType.value=o.type;this.initGeometryFields();this.fillGeometry({type:o.type,data:o.data});}this.updatePreviews();this.showToast('Objeto recuperado do histórico.');return;}const m=text.match(/^y = (.+)$/);if(m){this.setTab('function');this.$.functionExpr.value=m[1];this.updatePreviews();return;}const p=text.match(/^x\(t\) = (.+), y\(t\) = (.+)$/);if(p){this.setTab('parametric');this.$.paramX.value=p[1];this.$.paramY.value=p[2];this.updatePreviews();}},
-    clearHistory(){this.history=[];localStorage.removeItem('graphCalcHistoryV2');this.renderHistory();this.showToast('Histórico limpo.');},
-    persistSession(){this.objects.save();},
-    undo(){if(this.objects.undo()){this.showToast('Ação desfeita.');}else this.showToast('Nada para desfazer.');this.updateUndoButtons();},
-    redo(){if(this.objects.redo()){this.showToast('Ação refeita.');}else this.showToast('Nada para refazer.');this.updateUndoButtons();},
-    updateUndoButtons(){this.$.undo.disabled=!this.objects?.undoStack?.length;this.$.redo.disabled=!this.objects?.redoStack?.length;},
-    updateEmptyState(){this.$.emptyState.classList.toggle('hidden',this.objects.items.length>0);},
-    updateCoordinates(p){const x=Number(p?.x),y=Number(p?.y);this.$.coordinate.textContent=Number.isFinite(x)&&Number.isFinite(y)?`x: ${this.fmt(x)} · y: ${this.fmt(y)}`:'x: — · y: —';},
-    setStatus(msg,error=false){this.$.status.textContent=msg;this.$.status.className=error?'error':'';clearTimeout(this.statusTimer);this.statusTimer=setTimeout(()=>{this.$.status.textContent='Pronto';this.$.status.className='';},3000);},
-    showError(error){const message=error?.message||'Não foi possível concluir a operação.';this.setStatus(message,true);this.showToast(message,true);},
-    showToast(message,error=false){if(!this.$.toast)return;clearTimeout(this.toastTimer);this.$.toast.textContent=message;this.$.toast.className=`toast show${error?' error':''}`;this.toastTimer=setTimeout(()=>this.$.toast.className='toast',3200);},
-    toggleFullscreen(){this.$.shell.classList.toggle('fullscreen');requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));},
-    renderPreview(){/* ponto de extensão */}
-  };
-  global.AppUI=AppUI;
-})(window);

@@ -17,9 +17,9 @@ for (const id of ['undoBtn','redoBtn','fullscreenBtn','exportBtn','exportSvgBtn'
 if (!html.includes('tabindex="0"')) throw new Error('canvas tabindex missing');
 if (!html.includes('role="img"')) throw new Error('canvas role missing');
 if (!html.includes('aria-live="polite"')) throw new Error('aria-live missing');
-if (!css.includes('.workspace.controls-collapsed{grid-template-columns:0 1fr}')) throw new Error('collapsed grid rule missing');
-if (!css.includes('.show-controls-btn.hidden{display:none!important}')) throw new Error('show button hidden rule missing');
-if (!ui.includes("classList.toggle('controls-collapsed',collapsed)")) throw new Error('collapse workspace state missing');
+if (!css.includes('.workspace.sidebar-collapsed{grid-template-columns:0 minmax(0,1fr)}')) throw new Error('sidebar collapsed grid rule missing');
+if (!css.includes('.show-controls-btn{position:absolute')) throw new Error('show button hidden rule missing');
+if (!ui.includes("classList.toggle('open')") && !ui.includes('sidebar-collapsed')) throw new Error('sidebar state handling missing');
 if (!ui.includes("querySelector('.collapse-icon-left')")) throw new Error('left SVG toggle missing');
 if (!ui.includes("querySelector('.collapse-icon-right')")) throw new Error('right SVG toggle missing');
 if (!ui.includes('requestAnimationFrame(()=>requestAnimationFrame')) throw new Error('double RAF resize missing');
