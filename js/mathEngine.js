@@ -14,6 +14,9 @@
   });
 
   const CONSTANTS = Object.freeze({ pi: Math.PI, e: Math.E, tau: Math.PI * 2, phi: (1 + Math.sqrt(5)) / 2 });
+  // Variáveis reconhecidas por padrão em todos os contextos do aplicativo.
+  // Cada chamada de compile/evalExpr continua livre para fornecer um subconjunto maior/menor.
+  const DEFAULT_VARIABLES = Object.freeze(['x', 'y', 'z', 't']);
   const MAX_EXPRESSION_LENGTH = 400;
 
   const ERROR_MESSAGES = Object.freeze({
@@ -33,6 +36,10 @@
 
   function normalize(expression) {
     return String(expression ?? '')
+      .replace(/\barcsen\b/gi, 'asin')
+      .replace(/\barccos\b/gi, 'acos')
+      .replace(/\barctg\b/gi, 'atan')
+      .replace(/\bsen\b/gi, 'sin')
       .replace(/[−–—]/g, '-')
       .replace(/[×·]/g, '*').replace(/÷/g, '/')
       .replace(/π/g, 'pi').replace(/τ/g, 'tau').replace(/φ/g, 'phi')
@@ -195,10 +202,13 @@
   }
 
   function compile(expression, variables) {
-    const parser = new Parser(expression, variables);
+    const defaultScope = Object.fromEntries(DEFAULT_VARIABLES.map((name) => [name, 0]));
+    const baseVariables = Object.assign(defaultScope, variables || {});
+    const parser = new Parser(expression, baseVariables);
     const ast = parser.parse();
     return (runtimeVariables) => {
-      const result = evaluate(ast, runtimeVariables || variables || {});
+      const scope = Object.assign({}, baseVariables, runtimeVariables || {});
+      const result = evaluate(ast, scope);
       return Number.isFinite(result) ? result : NaN;
     };
   }
@@ -213,6 +223,7 @@
     evalExpr,
     functions: Object.freeze(Object.keys(FUNCTIONS)),
     constants: Object.freeze(Object.keys(CONSTANTS)),
-    errors: ERROR_MESSAGES
+    errors: ERROR_MESSAGES,
+    defaultVariables: DEFAULT_VARIABLES
   });
 })(window);

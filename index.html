@@ -76,14 +76,14 @@
           <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
             <label class="field-label" for="functionExpr">y = f(x)</label>
             <div class="math-editor">
-              <input id="functionExpr" class="math-input" type="text" aria-describedby="functionPreview" value="sin(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false">
+              <input id="functionExpr" class="math-input" type="text" aria-describedby="functionPreview" value="sen(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false">
               <button class="clear-field-btn" type="button" data-clear="functionExpr" aria-label="Limpar expressão da função" title="Limpar">C</button>
               <button class="dropdown-btn" type="button" data-menu="math-menu-function" aria-label="Abrir símbolos matemáticos">▼</button>
               <div class="math-menu hidden" id="math-menu-function"></div>
             </div>
             <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div>
             <div class="quick-grid math-keypad" data-target="functionExpr" aria-label="Teclado matemático rápido">
-              <button type="button" data-token="sin(" aria-label="Seno">sin</button><button type="button" data-token="cos(" aria-label="Cosseno">cos</button><button type="button" data-token="tan(" aria-label="Tangente">tan</button>
+              <button type="button" data-token="sen(" aria-label="Seno">sen</button><button type="button" data-token="cos(" aria-label="Cosseno">cos</button><button type="button" data-token="tan(" aria-label="Tangente">tan</button>
               <button type="button" data-token="sqrt(" aria-label="Raiz quadrada">√</button><button type="button" data-token="^2" aria-label="Quadrado"><span class="math-power">x<sup>2</sup></span></button><button type="button" data-token="^3" aria-label="Cubo"><span class="math-power">x<sup>3</sup></span></button>
               <button type="button" data-token="pi" aria-label="Pi">π</button><button type="button" data-token="e" aria-label="Constante de Euler"><i>e</i></button><button type="button" data-token="/" aria-label="Divisão">÷</button>
             </div>
@@ -93,7 +93,7 @@
           <section class="tab-panel" id="panel-parametric" data-panel="parametric" role="tabpanel" hidden>
             <div class="two-col">
               <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><input id="paramX" class="math-input" type="text" aria-describedby="paramPreview" value="cos(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
-              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" aria-describedby="paramPreview" value="sin(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
+              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" aria-describedby="paramPreview" value="sen(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
             </div>
             <div class="two-col">
               <div><label class="field-label" for="tMin">t mín.</label><input id="tMin" class="numeric-input" type="text" value="0"></div>
@@ -152,7 +152,7 @@
           <section class="tab-panel" id="panel-curve3d" data-panel="curve3d" role="tabpanel" hidden>
             <div class="two-col">
               <div><label class="field-label" for="curve3dX">x(t)</label><input id="curve3dX" class="math-input" type="text" value="cos(t)" placeholder="cos(t)"></div>
-              <div><label class="field-label" for="curve3dY">y(t)</label><input id="curve3dY" class="math-input" type="text" value="sin(t)" placeholder="sin(t)"></div>
+              <div><label class="field-label" for="curve3dY">y(t)</label><input id="curve3dY" class="math-input" type="text" value="sen(t)" placeholder="sen(t)"></div>
               <div><label class="field-label" for="curve3dZ">z(t)</label><input id="curve3dZ" class="math-input" type="text" value="t" placeholder="t"></div>
             </div>
             <div class="two-col">

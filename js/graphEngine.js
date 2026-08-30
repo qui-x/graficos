@@ -10,7 +10,7 @@
       this.offsetX = 0;
       this.offsetY = 0;
       this.dragging = false;
-      this.last = { x: 0, y: 0 };
+      this.last = this.getDefaultVariables();
       this.pointer = null;
       this.showGrid = true;
       this.showAxes = true;
@@ -257,7 +257,7 @@
     }
 
     drawSurface(obj) {
-      let solver; try { solver=this.getCompiled(obj.id,obj.data.expression,{x:0,y:0}); } catch { return; }
+      let solver; try { solver=this.getCompiled(obj.id,obj.data.expression,this.getDefaultVariables()); } catch { return; }
       const steps=20, range=Math.max(1, Number(obj.data.range)||5), points=[];
       for(let i=0;i<=steps;i++){
         const row=[]; const x=-range+(2*range)*i/steps;
@@ -272,7 +272,7 @@
     }
 
     drawCurve3D(obj) {
-      let sx,sy,sz; try { sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}); sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0}); sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,{t:0}); } catch { return; }
+      let sx,sy,sz; try { sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,this.getDefaultVariables()); sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,this.getDefaultVariables()); sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,this.getDefaultVariables()); } catch { return; }
       const c=this.ctx; c.save(); c.strokeStyle=obj.color; c.lineWidth=2.4; c.lineCap='round'; c.beginPath(); let started=false;
       for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700; const x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)||Math.max(Math.abs(x),Math.abs(y),Math.abs(z))>1e5){started=false;continue;} const p=this.project3D(x,y,z); if(!started){c.moveTo(p.x,p.y);started=true;} else c.lineTo(p.x,p.y); } c.stroke(); c.restore();
     }
@@ -281,6 +281,13 @@
       const p1=this.project3D(...obj.data.p1), p2=this.project3D(...obj.data.p2);
       const c=this.ctx; c.save(); c.strokeStyle=obj.color; c.fillStyle=obj.color; c.lineWidth=2.5; c.beginPath(); c.moveTo(p1.x,p1.y); c.lineTo(p2.x,p2.y); c.stroke();
       const ang=Math.atan2(p2.y-p1.y,p2.x-p1.x), len=12; c.beginPath(); c.moveTo(p2.x,p2.y); c.lineTo(p2.x-len*Math.cos(ang-Math.PI/6),p2.y-len*Math.sin(ang-Math.PI/6)); c.lineTo(p2.x-len*Math.cos(ang+Math.PI/6),p2.y-len*Math.sin(ang+Math.PI/6)); c.closePath(); c.fill(); c.restore();
+    }
+
+    getDefaultVariables() {
+      const vars = {};
+      const names = MathEngine.defaultVariables || ['x','y','z','t'];
+      for (const name of names) vars[name] = 0;
+      return vars;
     }
 
     getCompiled(id, expression, variables) {
@@ -294,7 +301,7 @@
 
     drawFunction(obj) {
       let solver;
-      try { solver = this.getCompiled(obj.id, obj.data.expression, { x: 0 }); } catch { return; }
+      try { solver = this.getCompiled(obj.id, obj.data.expression, this.getDefaultVariables()); } catch { return; }
       const { w, h } = this.size;
       this.lineStyle(obj.color, 2.2); this.ctx.beginPath();
       let started = false; let prev = null;
@@ -313,7 +320,7 @@
 
     drawParametric(obj) {
       let sx, sy;
-      try { sx = this.getCompiled(`${obj.id}:x`, obj.data.xExpr, { t: 0 }); sy = this.getCompiled(`${obj.id}:y`, obj.data.yExpr, { t: 0 }); } catch { return; }
+      try { sx = this.getCompiled(`${obj.id}:x`, obj.data.xExpr, this.getDefaultVariables()); sy = this.getCompiled(`${obj.id}:y`, obj.data.yExpr, this.getDefaultVariables()); } catch { return; }
       const steps = 900;
       this.lineStyle(obj.color, 2.2); this.ctx.beginPath(); let started = false;
       for (let i = 0; i <= steps; i++) {
@@ -428,10 +435,10 @@
           const segments = []; let segment = [];
           const pushSegment = () => { if (segment.length > 1) segments.push(segment); segment = []; };
           if (obj.type === 'function') {
-            const solver = this.getCompiled(obj.id,obj.data.expression,{x:0});
+            const solver = this.getCompiled(obj.id,obj.data.expression,this.getDefaultVariables());
             for(let i=0;i<=900;i++){const x=this.screenToWorld((i/900)*w,0).x,y=solver({x});if(Number.isFinite(y)&&Math.abs(y)<1e7){const q=p(x,y);if(!segment.length || Math.abs(q.y-segment[segment.length-1].y)<h*1.25) segment.push(q);else {pushSegment();segment.push(q);}} else pushSegment();}
           } else {
-            const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});
+            const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,this.getDefaultVariables()), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,this.getDefaultVariables());
             for(let i=0;i<=900;i++){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/900,x=sx({t}),y=sy({t});if(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<1e7&&Math.abs(y)<1e7){const q=p(x,y);if(!segment.length || Math.hypot(q.x-segment[segment.length-1].x,q.y-segment[segment.length-1].y)<Math.max(w,h)){segment.push(q);}else {pushSegment();segment.push(q);}} else pushSegment();}
           }
           pushSegment();
@@ -439,8 +446,8 @@
         } catch (error) { console.warn('[GraphEngine] Falha ao exportar objeto:', obj, error); return ''; }
       }
       if (obj.type === 'line3d') { const a=this.project3D(...obj.data.p1), b=this.project3D(...obj.data.p2); return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5" marker-end="url(#vectorArrow)"/>`; }
-      if (obj.type === 'curve3d') { try { const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0}), sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,{t:0}); let d='',started=false; for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700,x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)){started=false;continue;} const q=this.project3D(x,y,z); d+=`${started?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `; started=true;} return `<path d="${d.trim()}" fill="none" stroke="${color}" stroke-width="2.2"/>`; } catch(e){console.warn('[GraphEngine] Falha ao exportar curva 3D:',e);return '';}}
-      if (obj.type === 'surface') { try { const solver=this.getCompiled(obj.id,obj.data.expression,{x:0,y:0}), steps=20, range=Math.max(1,Number(obj.data.range)||5); let out='<g fill="none" stroke="'+color+'" stroke-opacity=".45" stroke-width="1">'; for(let i=0;i<=steps;i++){let d='';for(let j=0;j<=steps;j++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}for(let j=0;j<=steps;j++){let d='';for(let i=0;i<=steps;i++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}return out+'</g>'; } catch(e){console.warn('[GraphEngine] Falha ao exportar superfície 3D:',e);return '';}}
+      if (obj.type === 'curve3d') { try { const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,this.getDefaultVariables()), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,this.getDefaultVariables()), sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,this.getDefaultVariables()); let d='',started=false; for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700,x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)){started=false;continue;} const q=this.project3D(x,y,z); d+=`${started?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `; started=true;} return `<path d="${d.trim()}" fill="none" stroke="${color}" stroke-width="2.2"/>`; } catch(e){console.warn('[GraphEngine] Falha ao exportar curva 3D:',e);return '';}}
+      if (obj.type === 'surface') { try { const solver=this.getCompiled(obj.id,obj.data.expression,this.getDefaultVariables()), steps=20, range=Math.max(1,Number(obj.data.range)||5); let out='<g fill="none" stroke="'+color+'" stroke-opacity=".45" stroke-width="1">'; for(let i=0;i<=steps;i++){let d='';for(let j=0;j<=steps;j++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}for(let j=0;j<=steps;j++){let d='';for(let i=0;i<=steps;i++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}return out+'</g>'; } catch(e){console.warn('[GraphEngine] Falha ao exportar superfície 3D:',e);return '';}}
       console.warn('[GraphEngine] Tipo de objeto não reconhecido para SVG:', obj.type, obj);
       return '';
     }
