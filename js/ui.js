@@ -9,7 +9,12 @@
   const AppUI = {
     objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, parameterValues: {}, parameterStorageKey: 'graphCalculator.parameters.v1',
     init(objects, engine) {
-      this.objects = objects; this.engine = engine; this.cache(); this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters(); this.initMobileLayout();
+      this.objects = objects; this.engine = engine; this.cache();
+      // Configurações extras é um modal global e não depende da barra de controles.
+      if (this.$?.extrasModal && this.$.extrasModal.parentElement !== document.body) {
+        document.body.appendChild(this.$.extrasModal);
+      }
+      this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters(); this.initMobileLayout();
     },
     initMobileLayout() {
       const apply = () => {
@@ -21,13 +26,24 @@
           this.$.backdrop?.classList.remove('show');
           this.$.backdrop?.classList.add('hidden');
           this.$.mobileMenuBtn?.classList.add('hidden');
+          this.$.mobileModesBtn?.classList.add('hidden');
+          this.$.mobileControlsBtn?.classList.add('hidden');
           this.$.showControls?.classList.toggle('hidden', true);
           this.$.showControls?.setAttribute('aria-hidden', String(!this.$.workspace?.classList.contains('sidebar-collapsed')));
           this.updateSidebarButtons(false);
+          const modesCollapsed = this.$.workspace?.classList.contains('sidebar-modes-collapsed');
+          this.$.sidebarToggle?.setAttribute('aria-expanded', String(!modesCollapsed));
+          this.$.sidebarToggle?.setAttribute('aria-label', modesCollapsed ? 'Expandir modos' : 'Recolher modos');
+          this.$.sidebarToggle?.setAttribute('title', modesCollapsed ? 'Expandir modos' : 'Recolher modos');
           return;
         }
         this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
+        this.$.modeSidebar?.classList.remove('mobile-open');
+        this.$.mobileModesBtn?.classList.remove('hidden');
+        this.$.mobileControlsBtn?.classList.remove('hidden');
+        this.updateModeMobileButton(false);
+        this.updateMobileControlsButton(false);
         this.closeSidebar(false);
       };
       apply();
@@ -46,33 +62,66 @@
       this.$?.controlsCollapse?.setAttribute('aria-pressed', String(collapsed));
       this.$?.controlsCollapse?.setAttribute('aria-label', collapsed ? 'Mostrar controles' : 'Recolher controles');
       this.$?.controlsCollapse?.setAttribute('title', collapsed ? 'Mostrar controles' : 'Recolher controles');
-      this.$?.sidebarToggle?.setAttribute('aria-expanded', String(mobile ? this.$?.controls?.classList.contains('open') : !collapsed));
-      this.$.showControls?.classList.toggle('hidden',!collapsed);
+      if (mobile) {
+        this.updateMobileControlsButton(this.$?.controls?.classList.contains('open'));
+      } else {
+        this.$?.showControls?.classList.toggle('hidden', !collapsed);
+        this.$?.showControls?.setAttribute('aria-hidden', String(!collapsed));
+      }
+    },
+    openModesMobile(redraw=true) {
+      const mobile = global.innerWidth < 900;
+      if (mobile) {
+        this.$.controls?.classList.remove('open');
+        this.updateMobileControlsButton(false);
+        this.$.modeSidebar?.classList.add('mobile-open');
+        this.$.backdrop?.classList.remove('hidden');
+        this.$.backdrop?.classList.add('show');
+        this.updateModeMobileButton(true);
+      } else {
+        const collapsed = this.$.workspace?.classList.toggle('sidebar-modes-collapsed');
+        this.$.sidebarToggle?.setAttribute('aria-expanded', String(!collapsed));
+        this.$.sidebarToggle?.setAttribute('aria-label', collapsed ? 'Expandir modos' : 'Recolher modos');
+        this.$.sidebarToggle?.setAttribute('title', collapsed ? 'Expandir modos' : 'Recolher modos');
+      }
+      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
+    },
+    closeModesMobile(redraw=true) {
+      if (global.innerWidth >= 900) { this.$.sidebarToggle?.setAttribute('aria-expanded', String(!this.$.workspace?.classList.contains('sidebar-modes-collapsed'))); return; }
+      this.$.modeSidebar?.classList.remove('mobile-open');
+      if (!this.$.controls?.classList.contains('open')) { this.$.backdrop?.classList.remove('show'); this.$.backdrop?.classList.add('hidden'); }
+      this.updateModeMobileButton(false);
+      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
+    },
+    updateModeMobileButton(open) {
+      this.$.mobileModesBtn?.setAttribute('aria-expanded', String(open));
+      this.$.mobileModesBtn?.setAttribute('aria-label', open ? 'Fechar modos' : 'Abrir modos');
+      this.$.mobileModesBtn?.setAttribute('title', open ? 'Fechar modos' : 'Modos');
+      this.$.mobileModesBtn?.querySelector('.panel-menu-icon')?.classList.toggle('hidden', open);
+      this.$.mobileModesBtn?.querySelector('.panel-close-icon')?.classList.toggle('hidden', !open);
+    },
+    updateMobileControlsButton(open) {
+      this.$.mobileControlsBtn?.setAttribute('aria-expanded', String(open));
+      this.$.mobileControlsBtn?.setAttribute('aria-label', open ? 'Fechar controles' : 'Abrir controles');
+      this.$.mobileControlsBtn?.setAttribute('title', open ? 'Fechar controles' : 'Controles');
     },
     openSidebar(redraw=true) {
       const mobile = global.innerWidth < 900;
       if (mobile) {
+        this.$.modeSidebar?.classList.remove('mobile-open');
+        this.updateModeMobileButton(false);
         this.$.controls?.classList.add('open');
         this.$.backdrop?.classList.remove('hidden');
         this.$.backdrop?.classList.add('show');
         this.$.mobileMenuBtn?.classList.add('hidden');
         this.$.showControls?.classList.add('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','true');
-        this.$.sidebarToggle?.setAttribute('aria-label','Fechar controles');
-        this.$.sidebarToggle?.setAttribute('title','Fechar controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.add('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.remove('hidden');
+        this.updateMobileControlsButton(true);
         this.updateSidebarButtons(false);
         requestAnimationFrame(()=>this.focusFirstSidebarControl());
       } else {
         this.$.workspace?.classList.remove('controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
         this.$.showControls?.classList.add('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','true');
-        this.$.sidebarToggle?.setAttribute('aria-label','Recolher controles');
-        this.$.sidebarToggle?.setAttribute('title','Recolher controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
         this.updateSidebarButtons(false);
       }
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
@@ -84,28 +133,28 @@
         this.$.backdrop?.classList.remove('show');
         this.$.backdrop?.classList.add('hidden');
         this.$.mobileMenuBtn?.classList.remove('hidden');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','false');
-        this.$.sidebarToggle?.setAttribute('aria-label','Abrir controles');
-        this.$.sidebarToggle?.setAttribute('title','Abrir controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
+        this.updateMobileControlsButton(false);
         this.updateSidebarButtons(true);
       } else {
         this.$.workspace?.classList.add('controls-collapsed');
         this.$.controls?.classList.add('collapsed');
         this.$.showControls?.classList.remove('hidden');
         this.$.showControls?.setAttribute('aria-hidden','false');
-        this.$.sidebarToggle?.setAttribute('aria-expanded','false');
-        this.$.sidebarToggle?.setAttribute('aria-label','Abrir controles');
-        this.$.sidebarToggle?.setAttribute('title','Abrir controles');
-        this.$.sidebarToggle?.querySelector('.menu-icon')?.classList.remove('hidden');
-        this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
         this.updateSidebarButtons(true);
       }
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
 
     toggleSidebar() {
+      const mobile = global.innerWidth < 900;
+      if (mobile) {
+        this.$.controls?.classList.contains('open') ? this.closeSidebar() : this.openSidebar();
+      } else {
+        const collapsed = this.$.workspace?.classList.contains('sidebar-modes-collapsed');
+        collapsed ? this.openModesMobile() : this.closeModesMobile();
+      }
+    },
+    toggleControlsSidebar() {
       const mobile = global.innerWidth < 900;
       if (mobile) {
         this.$.controls?.classList.contains('open') ? this.closeSidebar() : this.openSidebar();
@@ -137,8 +186,20 @@
       first?.focus();
     },
     handleSidebarKeydown(event) {
+      const modal=this.$?.extrasModal;
+      if(modal && !modal.classList.contains('hidden')) {
+        if(event.key==='Escape') { event.preventDefault(); this.closeExtrasModal(); return; }
+        if(event.key==='Tab') {
+          const items=[...modal.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex=\"0\"]')];
+          if(items.length) {
+            const first=items[0], last=items[items.length-1];
+            if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+            else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+          }
+          return;
+        }
+      }
       if(event.key!=='Escape') return;
-      if(this.$?.extrasModal && !this.$.extrasModal.classList.contains('hidden')) { event.preventDefault(); this.closeExtrasModal(); return; }
       const mobile=global.innerWidth<900;
       const open=mobile ? this.$?.controls?.classList.contains('open') : !this.$?.workspace?.classList.contains('controls-collapsed');
       if(open) { event.preventDefault(); this.closeSidebar(); this.$?.sidebarToggle?.focus(); }
@@ -243,31 +304,99 @@
     escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); },
     cache() {
       this.lastMathInputId='functionExpr';
-      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), showControls:document.getElementById('showControlsBtn'), sidebarToggle:document.getElementById('sidebarToggle'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasModal:document.getElementById('extrasModal'), closeExtrasModalBtn:document.getElementById('closeExtrasModalBtn'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'), mobileMore:document.getElementById('mobileMoreBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
+      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), showControls:document.getElementById('showControlsBtn'), sidebarToggle:document.getElementById('sidebarToggle'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasModal:document.getElementById('extrasModal'), closeExtrasModalBtn:document.getElementById('closeExtrasModalBtn'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'), mobileMore:document.getElementById('mobileMoreBtn'), mobileModesBtn:document.getElementById('mobileModesBtn'), mobileControlsBtn:document.getElementById('mobileControlsBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
     },
-    buildMenus() { document.querySelectorAll('.math-menu').forEach((m)=>{m.innerHTML=menuHtml;}); const globalMenu=document.getElementById('globalMathMenu'); if(globalMenu) globalMenu.innerHTML=menuHtml; document.querySelectorAll('.dropdown-btn').forEach((b)=>b.addEventListener('click',()=>{const m=document.getElementById(b.dataset.menu);if(m)m.classList.toggle('hidden');})); const globalBtn=document.getElementById('globalMathBtn'); if(globalBtn)globalBtn.addEventListener('click',()=>{const open=document.getElementById('globalMathMenu')?.classList.toggle('hidden')===false;globalBtn.setAttribute('aria-expanded',String(open));}); document.querySelectorAll('.math-menu [data-insert]').forEach((b)=>b.addEventListener('click',()=>{this.insertAtActive(b.dataset.insert);document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');})); document.addEventListener('click',(e)=>{if(!e.target.closest('.math-editor')&&!e.target.closest('.global-math-tools')){document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');}}); },
-    initPWAInstall() {
-      if (!this.$.install) return;
-      window.addEventListener('beforeinstallprompt', (event) => {
-        event.preventDefault();
-        this.deferredInstallPrompt = event;
-        this.$.install.classList.remove('hidden');
+    buildMenus() {
+      const menus = [...document.querySelectorAll('.math-menu')];
+      const globalMenu = document.getElementById('globalMathMenu');
+      menus.forEach((m) => {
+        if (m === globalMenu) return;
+        m.innerHTML = '';
+        m.classList.add('hidden');
       });
-      window.addEventListener('appinstalled', () => {
-        this.deferredInstallPrompt = null;
-        this.$.install.classList.add('hidden');
-        this.showToast('Aplicativo instalado.');
+      if (!globalMenu) return;
+      globalMenu.innerHTML = menuHtml;
+      globalMenu.classList.add('hidden');
+
+      const closeMenus = () => {
+        menus.forEach((m) => m.classList.add('hidden'));
+        const gb = document.getElementById('globalMathBtn');
+        if (gb) gb.setAttribute('aria-expanded', 'false');
+      };
+      const positionMenu = (anchor) => {
+        const r = anchor.getBoundingClientRect();
+        const width = Math.min(320, Math.max(220, window.innerWidth - 24));
+        let left = Math.min(r.right - width, window.innerWidth - width - 12);
+        left = Math.max(12, left);
+        const maxHeight = Math.min(420, window.innerHeight - 24);
+        let top = r.bottom + 6;
+        if (top + maxHeight > window.innerHeight - 12) top = Math.max(12, r.top - maxHeight - 6);
+        globalMenu.classList.add('floating-math-menu');
+        globalMenu.style.position = 'fixed';
+        globalMenu.style.width = `${width}px`;
+        globalMenu.style.left = `${left}px`;
+        globalMenu.style.right = 'auto';
+        globalMenu.style.top = `${top}px`;
+        globalMenu.style.maxHeight = `${maxHeight}px`;
+      };
+
+      document.querySelectorAll('.dropdown-btn').forEach((btn) => btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const isSame = this.lastMathMenuAnchor === btn && !globalMenu.classList.contains('hidden');
+        closeMenus();
+        if (isSame) { this.lastMathMenuAnchor = null; return; }
+        this.lastMathInputId = btn.closest('.math-editor')?.querySelector('.math-input')?.id || this.lastMathInputId;
+        this.lastMathMenuAnchor = btn;
+        globalMenu.classList.remove('hidden');
+        positionMenu(btn);
+      }));
+
+      const globalBtn = document.getElementById('globalMathBtn');
+      if (globalBtn) globalBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const isOpen = !globalMenu.classList.contains('hidden');
+        closeMenus();
+        if (!isOpen) {
+          this.lastMathMenuAnchor = globalBtn;
+          globalMenu.classList.remove('hidden');
+          positionMenu(globalBtn);
+          globalBtn.setAttribute('aria-expanded', 'true');
+        } else this.lastMathMenuAnchor = null;
       });
-      this.$.install.addEventListener('click', async () => {
-        if (!this.deferredInstallPrompt) return;
-        this.deferredInstallPrompt.prompt();
-        try { await this.deferredInstallPrompt.userChoice; } catch (_) {}
-        this.deferredInstallPrompt = null;
-        this.$.install.classList.add('hidden');
+
+      globalMenu.querySelectorAll('[data-insert]').forEach((button) => button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.insertAtActive(button.dataset.insert);
+        closeMenus();
+        this.lastMathMenuAnchor = null;
+      }));
+
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('.math-editor') && !event.target.closest('.global-math-tools') && !event.target.closest('#globalMathMenu')) {
+          closeMenus();
+          this.lastMathMenuAnchor = null;
+        }
       });
+      window.addEventListener('resize', closeMenus, { passive: true });
+      window.addEventListener('scroll', closeMenus, { passive: true });
     },
-    bindTabs() { this.$.tabs.forEach((tab)=>tab.addEventListener('click',()=>this.setTab(tab.dataset.tab))); this.$.modeButtons?.forEach((btn)=>btn.addEventListener('click',()=>{this.setTab(btn.dataset.mode); if(global.innerWidth<900)this.openSidebar();})); },
     setTab(tabName) { this.cancelEdit(); this.activeTab=tabName; this.$.tabs.forEach((t)=>{const active=t.dataset.tab===tabName;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));}); this.$.modeButtons?.forEach((t)=>{const active=t.dataset.mode===tabName;t.classList.toggle('active',active);t.setAttribute('aria-current',active?'true':'false');}); this.$.panels.forEach((p)=>{const active=p.dataset.panel===tabName;p.classList.toggle('active',active);p.hidden=!active;}); this.updatePreviews(); this.updateActionBar(); },
+    bindTabs() {
+      const tabs = this.$?.tabs || [];
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => this.setTab(tab.dataset.tab));
+        tab.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); this.moveTab(1); }
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); this.moveTab(-1); }
+          else if (event.key === 'Home') { event.preventDefault(); tabs[0]?.focus(); this.setTab(tabs[0]?.dataset.tab); }
+          else if (event.key === 'End') { event.preventDefault(); tabs[tabs.length - 1]?.focus(); this.setTab(tabs[tabs.length - 1]?.dataset.tab); }
+        });
+      });
+      this.$?.modeButtons?.forEach((button) => {
+        button.addEventListener('click', () => this.setTab(button.dataset.mode));
+      });
+    },
+
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceExpr','surfaceRange','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
@@ -293,13 +422,15 @@
       this.$.mobileMore?.addEventListener('click',()=>{const open=this.$.modeSidebar.classList.toggle('mobile-expanded');this.$.mobileMore.setAttribute('aria-expanded',String(open));requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.sidebarToggle?.addEventListener('click',()=>this.toggleSidebar());
-      this.$.controlsCollapse?.addEventListener('click',()=>{ const collapsed=!this.$.workspace.classList.contains('controls-collapsed'); if(collapsed) this.closeSidebar(); else this.openSidebar(); });
+      this.$.mobileModesBtn?.addEventListener('click',()=>{ const open=this.$.modeSidebar?.classList.contains('mobile-open'); open?this.closeModesMobile():this.openModesMobile(); });
+      this.$.mobileControlsBtn?.addEventListener('click',()=>this.toggleControlsSidebar());
+      this.$.controlsCollapse?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
-      this.$.backdrop?.addEventListener('click',()=>this.closeSidebar());
+      this.$.backdrop?.addEventListener('click',()=>{this.closeSidebar(false);this.closeModesMobile(false);this.engine.resize();this.engine.requestRender();});
       this.$.mobileMenuBtn?.addEventListener('click',()=>this.openSidebar());
       this.$.saveSessionBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');}); this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
       global.addEventListener('keydown',(event)=>this.handleSidebarKeydown?.(event));
-      this.$.showControls?.addEventListener('click',()=>this.openSidebar());
+      this.$.showControls?.addEventListener('click',()=>this.toggleControlsSidebar());
       document.querySelectorAll('[data-tooltip]').forEach((el)=>el.setAttribute('title',el.dataset.tooltip));
       this.bindKeyboard();
     },
@@ -319,7 +450,7 @@
     toMathEngine(expr){return MathEngine.normalize(expr);},
     toLatex(expr){let s=String(expr??'').trim().replace(/−/g,'-').replace(/π/g,'\\pi').replace(/τ/g,'\\tau').replace(/φ/g,'\\phi').replace(/²/g,'^{2}').replace(/³/g,'^{3}').replace(/×/g,'\\cdot ').replace(/÷/g,'\\div ').replace(/\b(sen|sin)\b/g,'\\operatorname{sen}').replace(/\b(arcsen|asin)\b/g,'\\operatorname{arcsen}').replace(/\b(arccos|acos)\b/g,'\\operatorname{arccos}').replace(/\b(arctg|atan)\b/g,'\\operatorname{arctg}').replace(/\b(cos|tan|sinh|cosh|tanh|log|log2|ln|sqrt|abs|exp|sign)\b/g,'\\$1'); s=this.convertFractionsToLatex(s); s=s.replace(/√\(([^()]*)\)/g,'\\sqrt{$1}'); return s||'\\;';},
     convertFractionsToLatex(s){let out=s;for(let i=0;i<3;i++){out=out.replace(/\(([^()]+)\)\s*\\div\s*\(([^()]+)\)/g,'\\frac{$1}{$2}').replace(/\b([0-9]+(?:\.[0-9]+)?)\s*\\div\s*([0-9]+(?:\.[0-9]+)?)/g,'\\frac{$1}{$2}');}return out;},
-    renderKatex(target,expr){const el=document.getElementById(target);if(!el)return;if(global.katex)global.katex.render(this.toLatex(expr),el,{throwOnError:false,displayMode:false});else el.textContent=expr;},
+    renderKatex(target,expr){const el=document.getElementById(target);if(!el)return;const safe=this.escapeHtml(this.display(String(expr??'')));el.innerHTML=`<span class="math-fallback">${safe}</span>`;el.classList.add('math-preview-fallback');},
     getFunctionVariable(){return this.$.functionVariable?.value==='y'?'y':'x'},
     updateFunctionEquationHint(){const v=this.getFunctionVariable(); const hint=v==='y'?'x = f(y)':'y = f(x)'; if(this.$.functionEquationHint)this.$.functionEquationHint.textContent=hint; this.$.functionExpr?.setAttribute('aria-label',`Expressão da função em ${v}`);},
     updatePreviews(){const v=this.getFunctionVariable(); const lhs=v==='y'?'x':'y'; this.renderKatex('functionPreview',`${lhs} = f(${v}) = ${this.$.functionExpr.value}`);this.renderKatex('paramPreview',`x(t) = ${this.$.paramX.value}, y(t) = ${this.$.paramY.value}`);this.updateGeometryPreview();if(this.$.surfaceExpr)this.renderKatex('surfacePreview',`z = ${this.$.surfaceExpr.value}`);if(this.$.curve3dX)this.renderKatex('curve3dPreview',`(x(t), y(t), z(t)) = (${this.$.curve3dX.value}, ${this.$.curve3dY.value}, ${this.$.curve3dZ.value})`);if(this.$.line3dX1)this.renderKatex('line3dPreview',`P_1=(${this.$.line3dX1.value},${this.$.line3dY1.value},${this.$.line3dZ1.value}), P_2=(${this.$.line3dX2.value},${this.$.line3dY2.value},${this.$.line3dZ2.value})`);},

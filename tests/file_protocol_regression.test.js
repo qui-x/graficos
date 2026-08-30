@@ -1,0 +1,13 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const main = fs.readFileSync(path.join(root, 'js', 'main.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
+if (/https:\/\/cdn\.jsdelivr\.net\/npm\/katex/i.test(html)) throw new Error('External KaTeX CDN must not be hard-required');
+if (/rel="manifest"/i.test(html)) throw new Error('Manifest must be injected conditionally for file:// safety');
+if (!main.includes("window.location.protocol === 'http:' || window.location.protocol === 'https:'")) throw new Error('HTTP(S) protocol guard missing');
+if (!ui.includes('bindTabs() {')) throw new Error('bindTabs() missing');
+if (!ui.includes('this.$?.tabs')) throw new Error('bindTabs() is not wired to tabs');
+if (!ui.includes('math-preview-fallback')) throw new Error('Math preview fallback missing');
+console.log('file protocol regression OK');

@@ -66,3 +66,15 @@ A aplicação suporta superfícies `z=f(x,y)`, curvas paramétricas 3D `(x(t),y(
 
 ### Variável independente da função
 Na aba Função, escolha `x` para `y=f(x)` ou `y` para `x=f(y)`. O mesmo contexto é usado para validação e desenho.
+
+
+## v39 — Painéis mobile e alça desktop
+- Desktop: Modos à esquerda, gráfico central e controles à direita; a seta de reabertura permanece visível na borda direita quando os controles estão recolhidos.
+- Mobile: dois botões superiores independentes para Modos e Controles.
+- Modos abre como drawer lateral; Controles abre como bottom sheet.
+
+## Execução local e PWA
+
+Abrir `index.html` diretamente com `file://` continua funcionando para uso local, mas os recursos PWA (manifest e Service Worker) não são ativados nesse modo por restrições do navegador. Para testar instalação PWA/offline localmente, execute `iniciar_local.bat` e abra `http://localhost:8000/`.
+
+O preview matemático possui fallback local sem dependências externas, portanto a interface não depende do CDN do KaTeX para funcionar.

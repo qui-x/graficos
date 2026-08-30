@@ -3,18 +3,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#10151d" name="theme-color"/>
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Calculadora Gráfica" name="apple-mobile-web-app-title"/>
-<link href="manifest.webmanifest" rel="manifest"/>
 <link href="icons/icon-192.png" rel="icon" type="image/png"/>
 <link href="icons/icon-192.png" rel="apple-touch-icon"/>
 <title>Calculadora Gráfica</title>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css" rel="stylesheet"/>
-<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
 <link href="css/style.css" rel="stylesheet"/>
 </head>
 <body>
@@ -26,7 +26,16 @@
 <p>Funções, curvas paramétricas, vetores e geometria analítica 2D/3D em um único espaço.</p>
 </div>
 <div class="top-actions">
-<button aria-expanded="true" aria-label="Abrir controles" class="menu-toggle" id="sidebarToggle" title="Abrir controles" type="button">
+<div class="mobile-panel-actions" aria-label="Painéis">
+<button class="menu-toggle mobile-panel-btn" id="mobileModesBtn" type="button" aria-label="Abrir modos" aria-expanded="false" title="Modos">
+<svg class="panel-menu-icon" aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+<svg class="panel-close-icon hidden" aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</button>
+<button class="menu-toggle mobile-panel-btn" id="mobileControlsBtn" type="button" aria-label="Abrir controles" aria-expanded="false" title="Controles">
+<svg class="panel-controls-icon" aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h10M18 17h2"></path><circle cx="16" cy="7" r="2" fill="currentColor" stroke="none"></circle><circle cx="9" cy="12" r="2" fill="currentColor" stroke="none"></circle><circle cx="16" cy="17" r="2" fill="currentColor" stroke="none"></circle></svg>
+</button>
+</div>
+<button aria-expanded="true" aria-label="Abrir modos" class="menu-toggle" id="sidebarToggle" title="Abrir modos" type="button">
 <svg aria-hidden="true" class="menu-icon" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
 <svg aria-hidden="true" class="close-menu-icon hidden" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
@@ -245,6 +254,32 @@
 <button class="primary-btn" data-panel-action="true" id="addLine3DBtn" type="button">Adicionar reta 3D</button>
 </section>
 </div></section></div>
+<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
+<section class="panel graph-panel">
+<div class="graph-toolbar">
+<div class="toolbar-group">
+<button class="tool-btn" id="resetViewBtn" type="button">Recentrar</button>
+<button aria-pressed="true" class="tool-btn" id="gridBtn" type="button">Grade</button>
+<button aria-pressed="true" class="tool-btn" id="axesBtn" type="button">Eixos</button>
+<button class="tool-btn" id="reset3DBtn" title="Reiniciar orientação 3D" type="button">Orientação 3D</button>
+</div>
+<div aria-atomic="true" aria-live="polite" class="coordinate-readout" id="coordinateReadout">x: 0 · y: 0</div>
+</div>
+<button aria-label="Abrir controles" class="fab hidden" id="mobileMenuBtn" title="Abrir controles" type="button">
+<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 0 24 24" width="24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</button>
+<button aria-label="Mostrar controles" class="show-controls-btn hidden" id="showControlsBtn" title="Mostrar controles" type="button"><svg aria-hidden="true" class="show-controls-icon" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg><span>Mostrar controles</span></button>
+<div class="canvas-wrap" id="canvasWrap">
+<canvas aria-describedby="graphHelp" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." id="graphCanvas" role="img" tabindex="0"></canvas>
+<div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
+</div>
+<div class="sr-only" id="graphHelp">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div aria-live="polite" class="toast" id="toast" role="status"></div><div class="statusbar">
+<span id="statusText">Pronto</span>
+<span>Arraste para mover · roda para zoom · arraste em 3D para girar · passe o cursor para coordenadas</span>
+</div>
+</section>
+</section>
+</main>
 <div class="settings-modal hidden" id="extrasModal" aria-hidden="true">
   <div class="settings-modal-backdrop" data-close-extras="true"></div>
   <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="extrasModalTitle" tabindex="-1">
@@ -291,37 +326,13 @@
 
     </div>
   </section>
-</div>
-<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
-<section class="panel graph-panel">
-<div class="graph-toolbar">
-<div class="toolbar-group">
-<button class="tool-btn" id="resetViewBtn" type="button">Recentrar</button>
-<button aria-pressed="true" class="tool-btn" id="gridBtn" type="button">Grade</button>
-<button aria-pressed="true" class="tool-btn" id="axesBtn" type="button">Eixos</button>
-<button class="tool-btn" id="reset3DBtn" title="Reiniciar orientação 3D" type="button">Orientação 3D</button>
-</div>
-<div aria-atomic="true" aria-live="polite" class="coordinate-readout" id="coordinateReadout">x: 0 · y: 0</div>
-</div>
-<button aria-label="Abrir controles" class="fab hidden" id="mobileMenuBtn" title="Abrir controles" type="button">
-<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 0 24 24" width="24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
-</button>
-<button aria-label="Mostrar controles" class="show-controls-btn hidden" id="showControlsBtn" title="Mostrar controles" type="button"><svg aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg><span>Mostrar controles</span></button>
-<div class="canvas-wrap" id="canvasWrap">
-<canvas aria-describedby="graphHelp" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." id="graphCanvas" role="img" tabindex="0"></canvas>
-<div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
-</div>
-<div class="sr-only" id="graphHelp">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div aria-live="polite" class="toast" id="toast" role="status"></div><div class="statusbar">
-<span id="statusText">Pronto</span>
-<span>Arraste para mover · roda para zoom · arraste em 3D para girar · passe o cursor para coordenadas</span>
-</div>
-</section>
-</section>
-</main>
+
 <script src="js/mathEngine.js"></script>
 <script src="js/graphObjects.js"></script>
 <script src="js/graphEngine.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>
+</div>
+
 </body>
 </html>

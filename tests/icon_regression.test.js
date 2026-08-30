@@ -18,7 +18,7 @@ if (!html.includes('class="controls-arrow-right"')) throw new Error('ícone dire
 for (const legacy of ['>↶<','>↷<','>□<']) if (html.includes(legacy)) throw new Error(`ícone Unicode legado encontrado: ${legacy}`);
 if (!ui.includes("left?.classList.toggle('hidden', !collapsed)")) throw new Error('toggle do ícone esquerdo ausente');
 if (!ui.includes("right?.classList.toggle('hidden', collapsed)")) throw new Error('toggle do ícone direito ausente');
-if (!ui.includes("this.$.showControls?.classList.toggle('hidden',!collapsed)")) throw new Error('toggle do botão flutuante ausente');
+if (!ui.includes("this.$?.showControls?.classList.toggle('hidden', !collapsed)")) throw new Error('toggle do botão flutuante ausente');
 if (!ui.includes("this.$.showControls?.addEventListener('click',()=>this.openSidebar())")) throw new Error('listener do botão flutuante ausente');
 if (!css.includes('.show-controls-btn{position:absolute')) throw new Error('CSS do botão flutuante ausente');
 if (!css.includes('.icon-btn,.action-btn{display:inline-flex')) throw new Error('alinhamento de ícones ausente');
