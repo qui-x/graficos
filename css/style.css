@@ -167,3 +167,118 @@ button{appearance:none;-webkit-appearance:none;font:inherit}
 .parameter-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.parameter-chip{flex:1;min-width:0;border:0;background:transparent;color:#dce8f5;text-align:left;font:inherit;cursor:pointer;padding:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.parameter-chip:hover{color:var(--accent)}
 
 .function-context-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:8px}.function-equation-hint{min-height:40px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--muted);font-family:"Cambria Math", "STIX Two Math", serif;display:flex;align-items:center;white-space:nowrap}.function-context-row .select-input{width:100%;min-height:40px}@media(max-width:700px){.function-context-row{grid-template-columns:1fr}.function-equation-hint{min-height:38px}}
+
+
+/* =========================================================
+   Responsive architecture — mobile first
+   ========================================================= */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  gap: 0;
+}
+.graph-panel { order: 1; flex: 1 1 auto; min-width: 0; min-height: 50vh; }
+.controls-panel {
+  order: 2;
+  flex: 0 0 auto;
+  max-height: 45vh;
+  min-height: 0;
+  border-right: 0;
+  border-top: 1px solid var(--line);
+  overflow-y: auto;
+}
+.tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+.tab { flex: 0 0 auto; min-width: 92px; min-height: 44px; white-space: nowrap; }
+.math-input, .numeric-input, .select-input { min-height: 44px; font-size: 16px; }
+.primary-btn, .secondary-btn, .tool-btn, .row-btn, .icon-btn, .action-btn { min-height: 44px; }
+.math-menu { max-width: calc(100vw - 28px); z-index: 100; }
+.math-menu button, .quick-grid button { min-height: 44px; min-width: 44px; }
+.topbar { flex-wrap: wrap; gap: 10px; }
+.top-actions { flex-wrap: wrap; }
+.canvas-wrap { min-height: 0; }
+.show-controls-btn { z-index: 200; }
+
+@media (min-width: 900px) {
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) 1fr;
+  }
+  .graph-panel { order: 2; min-height: 0; }
+  .controls-panel {
+    order: 1;
+    max-height: none;
+    overflow-y: auto;
+    border-top: 0;
+    border-right: 1px solid var(--line);
+  }
+  .tabs { display: grid; overflow: visible; }
+  .tab { min-height: 0; }
+}
+
+@media (max-width: 899px) {
+  .app-shell {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+    max-width: none;
+    max-height: none;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .topbar {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .topbar > div:first-child { min-width: 0; flex: 1 1 100%; }
+  .topbar h1 { font-size: clamp(20px, 6vw, 24px); }
+  .topbar p { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .top-actions { width: 100%; justify-content: flex-start; gap: 6px; }
+  .workspace { grid-template-columns: none; grid-template-rows: minmax(60dvh, 1fr) auto; }
+  .graph-panel { min-height: 60dvh; }
+  .controls-panel { max-height: 35dvh; padding: 10px; }
+  .controls-panel.collapsed {
+    display: none;
+    width: auto;
+    min-width: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .workspace.controls-collapsed { display: flex; flex-direction: column; }
+  .workspace.controls-collapsed .graph-panel { order: 1; min-height: 0; flex: 1 1 auto; }
+  .workspace.controls-collapsed .controls-panel { order: 2; }
+  .graph-toolbar { flex-wrap: wrap; gap: 6px; padding: 8px; }
+  .coordinate-readout { width: 100%; text-align: center; font-size: 11px; }
+  .statusbar { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 600px) {
+  .controls-panel { padding: 8px; max-height: 34dvh; }
+  .tabs { gap: 2px; padding-bottom: 2px; }
+  .tab { min-width: 88px; padding: 9px 10px; }
+  .two-col, .three-col { gap: 6px; }
+  .four-col { grid-template-columns: 1fr 1fr; }
+  .top-actions .action-btn { padding-inline: 9px; }
+  .icon-btn { min-width: 44px; }
+  .action-btn { min-width: 44px; }
+  .show-controls-btn { bottom: max(14px, env(safe-area-inset-bottom)); min-height: 44px; padding: 10px 14px; max-width: calc(100% - 24px); }
+  .math-menu { width: min(320px, calc(100vw - 24px)); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vector-coords { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controls-panel { transition: none !important; }
+}

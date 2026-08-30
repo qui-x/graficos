@@ -9,7 +9,44 @@
   const AppUI = {
     objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, parameterValues: {}, parameterStorageKey: 'graphCalculator.parameters.v1',
     init(objects, engine) {
-      this.objects = objects; this.engine = engine; this.cache(); this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters();
+      this.objects = objects; this.engine = engine; this.cache(); this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters(); this.initMobileLayout();
+    },
+    initMobileLayout() {
+      const applyViewportLayout = () => {
+        const mobile = global.innerWidth < 900;
+        if (!mobile) {
+          this.$.controls?.classList.remove('collapsed');
+          this.$.workspace?.classList.remove('controls-collapsed');
+          this.$.showControls?.classList.add('hidden');
+          this.$.showControls?.setAttribute('aria-hidden', 'true');
+          return;
+        }
+        const collapsed = this.$.controls?.classList.contains('collapsed');
+        if (typeof collapsed !== 'boolean') return;
+        if (!this.$.controls.dataset.mobileInitialized) {
+          this.$.controls.classList.add('collapsed');
+          this.$.workspace?.classList.add('controls-collapsed');
+          this.$.collapse?.setAttribute('aria-pressed', 'true');
+          this.$.collapse?.setAttribute('aria-label', 'Mostrar controles');
+          this.$.collapse?.setAttribute('title', 'Mostrar controles');
+          const left = this.$.collapse?.querySelector('.collapse-icon-left');
+          const right = this.$.collapse?.querySelector('.collapse-icon-right');
+          left?.classList.add('hidden');
+          right?.classList.remove('hidden');
+          this.$.showControls?.classList.remove('hidden');
+          this.$.showControls?.setAttribute('aria-hidden', 'false');
+          this.$.controls.dataset.mobileInitialized = 'true';
+        }
+      };
+      applyViewportLayout();
+      const recalibrate = () => { this.engine?.resize?.(); this.engine?.requestRender?.(); };
+      requestAnimationFrame(() => requestAnimationFrame(recalibrate));
+      const onViewportChange = () => {
+        applyViewportLayout();
+        requestAnimationFrame(() => requestAnimationFrame(recalibrate));
+      };
+      global.addEventListener('resize', onViewportChange, { passive: true });
+      global.addEventListener('orientationchange', onViewportChange, { passive: true });
     },
     getConfiguredVariableNames() {
       const selected = this.$?.variableOptions?.filter((el) => el.checked).map((el) => el.value) || [];
@@ -150,7 +187,7 @@
       document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('reset3DBtn')?.addEventListener('click',()=>{this.engine.rotationX=0.62;this.engine.rotationY=0.78;this.engine.projectionScale=1;this.engine.requestRender();this.showToast('Orientação 3D restaurada.');}); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
       document.getElementById('exportBtn').addEventListener('click',()=>this.engine.exportPng()); document.getElementById('exportSvgBtn').addEventListener('click',()=>this.engine.exportSvg()); document.getElementById('fullscreenBtn').addEventListener('click',()=>this.toggleFullscreen());
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
-      const toggleControls=(force=null)=>{const collapsed=force===null?!this.$.controls.classList.contains('collapsed'):Boolean(force);this.$.controls.classList.toggle('collapsed',collapsed);this.$.workspace?.classList.toggle('controls-collapsed',collapsed);this.$.collapse.setAttribute('aria-pressed',String(collapsed));this.$.collapse.setAttribute('aria-label',collapsed?'Mostrar controles':'Ocultar controles');this.$.collapse.setAttribute('title',collapsed?'Mostrar controles':'Ocultar controles');const leftIcon=this.$.collapse.querySelector('.collapse-icon-left');const rightIcon=this.$.collapse.querySelector('.collapse-icon-right');const collapseText=this.$.collapse.querySelector('.collapse-text');leftIcon?.classList.toggle('hidden',collapsed);rightIcon?.classList.toggle('hidden',!collapsed);if(collapseText)collapseText.textContent=collapsed?'Mostrar controles':'Ocultar controles';this.$.showControls?.classList.toggle('hidden',!collapsed);this.$.showControls?.setAttribute('aria-hidden',String(!collapsed));requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));};
+      const toggleControls=(force=null)=>{const collapsed=force===null?!this.$.controls.classList.contains('collapsed'):Boolean(force);this.$.controls.classList.toggle('collapsed',collapsed);this.$.workspace?.classList.toggle('controls-collapsed',collapsed);this.$.collapse.setAttribute('aria-pressed',String(collapsed));this.$.collapse.setAttribute('aria-label',collapsed?'Mostrar controles':'Ocultar controles');this.$.collapse.setAttribute('title',collapsed?'Mostrar controles':'Ocultar controles');const leftIcon=this.$.collapse.querySelector('.collapse-icon-left');const rightIcon=this.$.collapse.querySelector('.collapse-icon-right');const collapseText=this.$.collapse.querySelector('.collapse-text');leftIcon?.classList.toggle('hidden',collapsed);rightIcon?.classList.toggle('hidden',!collapsed);if(collapseText)collapseText.textContent=collapsed?'Mostrar controles':'Ocultar controles';this.$.showControls?.classList.toggle('hidden',!collapsed);this.$.showControls?.setAttribute('aria-hidden',String(!collapsed));this.$.controls.dataset.mobileInitialized='true';requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));};
       this.$.collapse.addEventListener('click',()=>toggleControls());
       this.$.showControls?.addEventListener('click',()=>toggleControls(false));
       document.querySelectorAll('[data-tooltip]').forEach((el)=>el.setAttribute('title',el.dataset.tooltip));

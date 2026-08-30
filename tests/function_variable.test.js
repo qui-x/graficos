@@ -13,5 +13,5 @@ if (!ui.includes('const variable=this.getFunctionVariable()')) throw new Error('
 if (!ui.includes("{expression:expr,variable}")) throw new Error('function variable is not stored in object');
 if (!engine.includes("obj.data.variable === 'y'")) throw new Error('graph variable context missing');
 if (!math.includes("let defaultVariables = Object.freeze(['x', 'y', 'z', 't'])")) throw new Error('default xyz/t variables missing');
-if (!sw.includes('calc-grafica-v26')) throw new Error('service worker cache version not bumped');
+if (!sw.includes('calc-grafica-v27')) throw new Error('service worker cache version not bumped');
 console.log('function-variable OK');
