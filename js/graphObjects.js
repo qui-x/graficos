@@ -106,6 +106,14 @@
 
     addLine3D(p1, p2, color) { return this.add('line3d', { p1: clone(p1), p2: clone(p2) }, color); }
 
+    addVector3D(p1, p2, color, arrow = true) {
+      return this.add('vector', { p1: clone(p1), p2: clone(p2), arrow: arrow !== false }, color);
+    }
+
+    addSegment3D(p1, p2, color) {
+      return this.addVector3D(p1, p2, color, false);
+    }
+
     get visible() { return this.items.filter((o) => o.visible); }
   }
 

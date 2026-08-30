@@ -219,7 +219,23 @@
       c.font='bold 16px system-ui'; c.textAlign='left'; c.textBaseline='middle'; if(oy>=14&&oy<=h-14)c.fillText('x',w-28,oy-13); if(ox>=14&&ox<=w-14){c.textBaseline='top';c.fillText('y',Math.min(w-16,ox+10),8);} c.restore();
     }
 
-    has3DObjects() { return this.objects.items.some((o) => ['surface', 'curve3d', 'line3d'].includes(o.type)); }
+    has3DObjects() {
+      return this.objects.items.some((o) => ['surface', 'curve3d', 'line3d'].includes(o.type) || (o.type === 'vector' && this.vectorIs3D(o)));
+    }
+
+    vectorIs3D(obj) {
+      const d = obj?.data || {};
+      if (Array.isArray(d.p1) && Array.isArray(d.p2)) return d.p1.length >= 3 || d.p2.length >= 3;
+      return Object.prototype.hasOwnProperty.call(d, 'z1') || Object.prototype.hasOwnProperty.call(d, 'z2');
+    }
+
+    getVector3DPoints(obj) {
+      const d = obj?.data || {};
+      if (Array.isArray(d.p1) && Array.isArray(d.p2)) {
+        return [[Number(d.p1[0]) || 0, Number(d.p1[1]) || 0, Number(d.p1[2]) || 0], [Number(d.p2[0]) || 0, Number(d.p2[1]) || 0, Number(d.p2[2]) || 0]];
+      }
+      return [[Number(d.x1) || 0, Number(d.y1) || 0, Number(d.z1) || 0], [Number(d.x2) || 0, Number(d.y2) || 0, Number(d.z2) || 0]];
+    }
 
     project3D(x, y, z) {
       const cy = Math.cos(this.rotationY), sy = Math.sin(this.rotationY);
@@ -290,6 +306,7 @@
       return vars;
     }
 
+    getVars() { const names = window.MathEngine?.defaultVariables || ['x','y','z','t']; return Object.fromEntries(names.map((name)=>[name,0])); }
     getCompiled(id, expression, variables) {
       const key = `${id}|${expression}|${Object.keys(variables).join(',')}`;
       const cached = this.cache.get(key);
@@ -334,10 +351,26 @@
     }
 
     drawVector(obj) {
-      const { x1, y1, x2, y2 } = obj.data; const a = this.worldToScreen(x1, y1); const b = this.worldToScreen(x2, y2);
-      this.lineStyle(obj.color, 2.5); this.ctx.beginPath(); this.ctx.moveTo(a.x, a.y); this.ctx.lineTo(b.x, b.y); this.ctx.stroke();
+      const c = this.ctx;
+      let a, b, arrow = obj.data?.arrow !== false;
+      if (this.vectorIs3D(obj)) {
+        const [p1, p2] = this.getVector3DPoints(obj);
+        a = this.project3D(...p1);
+        b = this.project3D(...p2);
+      } else {
+        const { x1 = 0, y1 = 0, x2 = 0, y2 = 0 } = obj.data || {};
+        a = this.worldToScreen(x1, y1);
+        b = this.worldToScreen(x2, y2);
+      }
+      this.lineStyle(obj.color, 2.5);
+      c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+      if (!arrow) return;
       const ang = Math.atan2(b.y - a.y, b.x - a.x), len = 12;
-      this.ctx.fillStyle = obj.color; this.ctx.beginPath(); this.ctx.moveTo(b.x, b.y); this.ctx.lineTo(b.x - len * Math.cos(ang - Math.PI / 6), b.y - len * Math.sin(ang - Math.PI / 6)); this.ctx.lineTo(b.x - len * Math.cos(ang + Math.PI / 6), b.y - len * Math.sin(ang + Math.PI / 6)); this.ctx.closePath(); this.ctx.fill();
+      c.fillStyle = obj.color; c.beginPath();
+      c.moveTo(b.x, b.y);
+      c.lineTo(b.x - len * Math.cos(ang - Math.PI / 6), b.y - len * Math.sin(ang - Math.PI / 6));
+      c.lineTo(b.x - len * Math.cos(ang + Math.PI / 6), b.y - len * Math.sin(ang + Math.PI / 6));
+      c.closePath(); c.fill();
     }
 
     drawPoint(obj) { const p = this.worldToScreen(obj.data.x, obj.data.y); this.ctx.fillStyle = obj.color; this.ctx.beginPath(); this.ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); this.ctx.fill(); }
@@ -426,7 +459,15 @@
       const p = (x, y) => this.worldToScreen(x, y);
       const color = obj.color || '#5ac8fa';
       if (obj.type === 'point') { const q = p(obj.data.x, obj.data.y); return `<circle cx="${q.x.toFixed(2)}" cy="${q.y.toFixed(2)}" r="4" fill="${color}"/>`; }
-      if (obj.type === 'vector') { const a = p(obj.data.x1, obj.data.y1), b = p(obj.data.x2, obj.data.y2); return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5" marker-end="url(#vectorArrow)"/>`; }
+      if (obj.type === 'vector') {
+        if (this.vectorIs3D(obj)) {
+          const [p1,p2] = this.getVector3DPoints(obj), a = this.project3D(...p1), b = this.project3D(...p2);
+          const marker = obj.data?.arrow === false ? '' : ' marker-end="url(#vectorArrow)"';
+          return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5"${marker}/>`;
+        }
+        const a = p(obj.data.x1, obj.data.y1), b = p(obj.data.x2, obj.data.y2); const marker = obj.data?.arrow === false ? '' : ' marker-end="url(#vectorArrow)"';
+        return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5"${marker}/>`;
+      }
       if (obj.type === 'circle') { const q = p(obj.data.cx, obj.data.cy); return `<circle cx="${q.x.toFixed(2)}" cy="${q.y.toFixed(2)}" r="${(obj.data.r * this.scale).toFixed(2)}" fill="none" stroke="${color}" stroke-width="2.2"/>`; }
       if (obj.type === 'ellipse') { const q = p(obj.data.cx, obj.data.cy); return `<ellipse cx="${q.x.toFixed(2)}" cy="${q.y.toFixed(2)}" rx="${(obj.data.a * this.scale).toFixed(2)}" ry="${(obj.data.b * this.scale).toFixed(2)}" fill="none" stroke="${color}" stroke-width="2.2"/>`; }
       if (obj.type === 'line') { const { a, b, c } = obj.data; if (Math.abs(b) > 1e-12) { const xmin = this.screenToWorld(0, 0).x - 2, xmax = this.screenToWorld(w, 0).x + 2; return this.svgLine(xmin, (-a*xmin-c)/b, xmax, (-a*xmax-c)/b, color); } if (Math.abs(a) > 1e-12) { const x=-c/a; return this.svgLine(x,this.screenToWorld(0,h).y-2,x,this.screenToWorld(0,0).y+2,color); } console.warn('[GraphEngine] Reta inválida para SVG:', obj); return ''; }

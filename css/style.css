@@ -145,3 +145,19 @@ button{appearance:none;-webkit-appearance:none;font:inherit}
 .tab{white-space:nowrap}
 .three-col .numeric-input{min-width:0}
 @media(max-width:900px){.tabs{grid-template-columns:repeat(4,minmax(92px,1fr));overflow-x:auto}.tab-content{min-width:0}}
+
+
+/* Configuração explícita de variáveis/identificadores */
+.variables-config{margin:10px 0 12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2,rgba(255,255,255,.025))}
+.variables-config-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.variables-config h2{margin:2px 0 4px;font-size:14px}
+.section-kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.section-help,.field-help{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+.variable-presets{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.variable-check{display:inline-flex;align-items:center;gap:5px;min-width:44px;justify-content:center;padding:7px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--text);background:transparent;transition:.18s ease}
+.variable-check.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.variable-check input{accent-color:var(--accent)}
+.variables-input{width:100%;box-sizing:border-box}
+.variables-summary{margin-top:8px;padding:7px 9px;border-radius:8px;background:rgba(45,212,191,.08);color:var(--text);font-size:11px}
+.variables-reset-btn{height:34px;min-width:auto;padding:0 10px}
+@media (max-width:700px){.variables-config{margin:8px 0}.variables-config-head{flex-direction:column}.variables-reset-btn{align-self:flex-end}.variable-check{min-height:36px}.variables-input{min-height:44px;font-size:16px}}

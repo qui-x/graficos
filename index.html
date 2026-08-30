@@ -72,6 +72,29 @@
           <div class="math-menu hidden global-math-menu" id="globalMathMenu"></div>
         </div>
 
+        <section class="variables-config" aria-labelledby="variablesConfigTitle">
+          <div class="variables-config-head">
+            <div>
+              <div class="section-kicker">ESCOPO DA EXPRESSÃO</div>
+              <h2 id="variablesConfigTitle">Variáveis e identificadores</h2>
+              <p class="section-help">Escolha quais letras podem ser usadas nas expressões. Ex.: <strong>x, y, z, t, a, b</strong>.</p>
+            </div>
+            <button class="secondary-btn variables-reset-btn" id="resetVariablesBtn" type="button" title="Restaurar variáveis padrão">Padrão</button>
+          </div>
+          <div class="variable-presets" role="group" aria-label="Variáveis padrão">
+            <label class="variable-check"><input type="checkbox" class="variable-option" value="x" checked><span>x</span></label>
+            <label class="variable-check"><input type="checkbox" class="variable-option" value="y" checked><span>y</span></label>
+            <label class="variable-check"><input type="checkbox" class="variable-option" value="z" checked><span>z</span></label>
+            <label class="variable-check"><input type="checkbox" class="variable-option" value="t" checked><span>t</span></label>
+          </div>
+          <div class="custom-vars-row">
+            <label class="field-label" for="customVariables">Outros identificadores</label>
+            <input id="customVariables" class="numeric-input variables-input" type="text" value="" placeholder="Ex.: a, b, c" autocomplete="off" spellcheck="false" aria-describedby="variablesHelp">
+          </div>
+          <div id="variablesHelp" class="field-help">Use nomes simples separados por vírgula. Funções e constantes reservadas não podem ser usadas como variáveis.</div>
+          <div id="variablesSummary" class="variables-summary" aria-live="polite">Variáveis ativas: x, y, z, t</div>
+        </section>
+
         <div class="tab-content">
           <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
             <label class="field-label" for="functionExpr">y = f(x)</label>
@@ -104,21 +127,39 @@
           </section>
 
           <section class="tab-panel" id="panel-vector" data-panel="vector" role="tabpanel" hidden>
-            <div class="two-col">
-              <div><label class="field-label" for="vx1">x₁</label><input id="vx1" class="numeric-input" type="text" value="0"></div>
-              <div><label class="field-label" for="vy1">y₁</label><input id="vy1" class="numeric-input" type="text" value="0"></div>
-              <div><label class="field-label" for="vx2">x₂</label><input id="vx2" class="numeric-input" type="text" value="3"></div>
-              <div><label class="field-label" for="vy2">y₂</label><input id="vy2" class="numeric-input" type="text" value="4"></div>
+            <div class="vector-mode-row">
+              <label class="field-label" for="vectorType">Representação</label>
+              <select id="vectorType" class="select-input" aria-label="Tipo de representação vetorial">
+                <option value="vector">Vetor (com seta)</option>
+                <option value="segment">Segmento (ligar pontos)</option>
+              </select>
             </div>
-            <div class="vector-result" id="vectorResult" aria-live="polite">v = (3, 4) · ‖v‖ = 5</div>
+            <div class="vector-endpoint">
+              <div class="field-label endpoint-title">Ponto inicial P₁</div>
+              <div class="three-col vector-coords">
+                <label>x₁<input id="vx1" class="numeric-input" type="text" value="0"></label>
+                <label>y₁<input id="vy1" class="numeric-input" type="text" value="0"></label>
+                <label>z₁<input id="vz1" class="numeric-input" type="text" value="0"></label>
+              </div>
+            </div>
+            <div class="vector-endpoint">
+              <div class="field-label endpoint-title">Ponto final P₂</div>
+              <div class="three-col vector-coords">
+                <label>x₂<input id="vx2" class="numeric-input" type="text" value="3"></label>
+                <label>y₂<input id="vy2" class="numeric-input" type="text" value="4"></label>
+                <label>z₂<input id="vz2" class="numeric-input" type="text" value="0"></label>
+              </div>
+            </div>
+            <div class="vector-result" id="vectorResult" aria-live="polite">v = (3, 4, 0) · ‖v‖ = 5</div>
             <button class="primary-btn" id="addVectorBtn" type="button">Adicionar vetor</button>
             <div class="vector-ops">
-              <div class="field-label">Produto entre vetores</div>
-              <div class="two-col">
-                <input id="v2x" class="numeric-input" type="text" value="1" aria-label="Segundo vetor x">
-                <input id="v2y" class="numeric-input" type="text" value="0" aria-label="Segundo vetor y">
+              <div class="field-label">Segundo vetor (para produto)</div>
+              <div class="three-col vector-coords">
+                <label>x<input id="v2x" class="numeric-input" type="text" value="1" aria-label="Segundo vetor x"></label>
+                <label>y<input id="v2y" class="numeric-input" type="text" value="0" aria-label="Segundo vetor y"></label>
+                <label>z<input id="v2z" class="numeric-input" type="text" value="0" aria-label="Segundo vetor z"></label>
               </div>
-              <div class="inline-actions"><button class="secondary-btn" id="dotBtn" type="button">Produto escalar</button><button class="secondary-btn" id="crossBtn" type="button">Produto vetorial 2D</button></div>
+              <div class="inline-actions"><button class="secondary-btn" id="dotBtn" type="button">Produto escalar</button><button class="secondary-btn" id="crossBtn" type="button">Produto vetorial</button></div>
               <div class="vector-result" id="vectorOpsResult"></div>
             </div>
           </section>

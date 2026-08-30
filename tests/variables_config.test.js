@@ -1,0 +1,12 @@
+const fs = require('fs');
+const assert = require('assert');
+const html = fs.readFileSync('index.html', 'utf8');
+const ui = fs.readFileSync('js/ui.js', 'utf8');
+const me = fs.readFileSync('js/mathEngine.js', 'utf8');
+assert(html.includes('id="customVariables"'), 'custom variables input missing');
+for (const name of ['x','y','z','t']) assert(html.includes(`class="variable-option" value="${name}"`), `missing ${name}`);
+assert(html.includes('Variáveis e identificadores'), 'variable panel missing');
+assert(ui.includes('getConfiguredVariableNames'), 'config helper missing');
+assert(ui.includes('MathEngine.setDefaultVariables'), 'UI does not apply variable config');
+assert(me.includes('setDefaultVariables'), 'MathEngine API missing');
+console.log('variables config OK');
