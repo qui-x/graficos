@@ -152,32 +152,43 @@
 
     drawGrid() {
       if (!this.showGrid) return;
-      const { w, h } = this.size, c = this.ctx;
-      const rawPixels = Math.max(18, this.scale);
-      const exponent = Math.floor(Math.log10(Math.max(rawPixels, 1)));
-      const mantissa = rawPixels / Math.pow(10, exponent);
-      const factor = mantissa >= 5 ? 5 : mantissa >= 2 ? 2 : 1;
+      const { w, h } = this.size;
+      const c = this.ctx;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
+      const ox = w / 2 + this.offsetX;
+      const oy = h / 2 + this.offsetY;
+      const targetPixels = 60;
+      const rawWorldStep = targetPixels / Math.max(this.scale, 1e-9);
+      const exponent = Math.floor(Math.log10(Math.max(rawWorldStep, 1e-12)));
+      const normalized = rawWorldStep / Math.pow(10, exponent);
+      const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
       const worldStep = factor * Math.pow(10, exponent);
-      const step = Math.max(18, worldStep * this.scale);
-      const ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
+      const step = Math.max(28, worldStep * this.scale);
+      const majorEvery = worldStep >= 5 ? 2 : 5;
+      const majorStep = worldStep * majorEvery;
+      const firstX = Math.floor((0 - ox) / step);
+      const lastX = Math.ceil((w - ox) / step);
+      const firstY = Math.floor((0 - oy) / step);
+      const lastY = Math.ceil((h - oy) / step);
       c.save();
-      c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1;
-      for (let x = ((ox % step) + step) % step; x < w; x += step) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
-      for (let y = ((oy % step) + step) % step; y < h; y += step) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
-
-      c.fillStyle = 'rgba(255,255,255,.48)'; c.font = '11px system-ui';
-      const firstX = Math.ceil((-ox) / step);
-      for (let i = firstX; ; i++) {
-        const sx = ox + i * step;
-        if (sx >= w) break;
-        if (sx >= 6 && sx <= w - 6 && oy >= 0 && oy <= h) c.fillText(this.formatGridLabel(i * worldStep), sx + 3, Math.min(h - 5, oy + 14));
-      }
-      const firstY = Math.ceil((-oy) / step);
-      for (let i = firstY; ; i++) {
-        const sy = oy + i * step;
-        if (sy >= h) break;
-        if (sy >= 12 && sy <= h - 6 && ox >= 0 && ox <= w) c.fillText(this.formatGridLabel(-i * worldStep), Math.min(w - 28, ox + 6), sy - 4);
-      }
+      c.lineWidth = 1;
+      c.strokeStyle = lightTheme ? 'rgba(0,0,0,.10)' : 'rgba(255,255,255,.18)';
+      for (let i = firstX; i <= lastX; i++) { const x = ox + i * step; c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
+      for (let j = firstY; j <= lastY; j++) { const y = oy + j * step; c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
+      const majorPx = majorStep * this.scale;
+      const majorFirstX = Math.floor((0 - ox) / majorPx);
+      const majorLastX = Math.ceil((w - ox) / majorPx);
+      const majorFirstY = Math.floor((0 - oy) / majorPx);
+      const majorLastY = Math.ceil((h - oy) / majorPx);
+      c.lineWidth = 1.5;
+      c.strokeStyle = lightTheme ? 'rgba(0,0,0,.18)' : 'rgba(255,255,255,.30)';
+      for (let i = majorFirstX; i <= majorLastX; i++) { const x = ox + i * majorPx; c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
+      for (let j = majorFirstY; j <= majorLastY; j++) { const y = oy + j * majorPx; c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
+      c.fillStyle = lightTheme ? 'rgba(0,0,0,.70)' : 'rgba(255,255,255,.78)';
+      c.font = '12px system-ui'; c.textBaseline = 'middle';
+      if (oy > 0 && oy < h) { c.textAlign='center'; for(let i=firstX;i<=lastX;i++){ const sx=ox+i*step; const value=i*worldStep; if(Math.abs(value)<1e-12||sx<8||sx>w-18) continue; c.fillText(this.formatGridLabel(value),sx,Math.min(h-8,oy+15)); } }
+      if (ox > 24 && ox < w-24) { c.textAlign='right'; for(let j=firstY;j<=lastY;j++){ const sy=oy+j*step; const value=-j*worldStep; if(Math.abs(value)<1e-12||sy<8||sy>h-8) continue; c.fillText(this.formatGridLabel(value),ox-8,sy); } }
+      if (ox>=0&&ox<=w&&oy>=0&&oy<=h) { c.font='bold 12px system-ui'; c.fillStyle=lightTheme?'rgba(0,0,0,.90)':'rgba(255,255,255,.92)'; c.textAlign='right'; c.textBaseline='top'; c.fillText('0',ox-6,oy+5); }
       c.restore();
     }
 
@@ -185,14 +196,14 @@
 
     drawAxes() {
       if (!this.showAxes) return;
-      const { w, h } = this.size, c = this.ctx, ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
-      c.save(); c.strokeStyle = 'rgba(255,255,255,.52)'; c.fillStyle = 'rgba(255,255,255,.76)'; c.lineWidth = 1.5;
-      c.beginPath(); c.moveTo(0, oy); c.lineTo(w, oy); c.stroke();
-      c.beginPath(); c.moveTo(ox, h); c.lineTo(ox, 0); c.stroke();
-      c.beginPath(); c.moveTo(w - 9, oy - 4); c.lineTo(w - 1, oy); c.lineTo(w - 9, oy + 4); c.fill();
-      c.beginPath(); c.moveTo(ox - 4, 9); c.lineTo(ox, 1); c.lineTo(ox + 4, 9); c.fill();
-      c.font = '12px system-ui'; c.fillText('x', w - 20, Math.max(14, oy - 9)); c.fillText('y', Math.min(w - 16, ox + 8), 17);
-      c.restore();
+      const { w, h } = this.size; const c=this.ctx; const ox=w/2+this.offsetX; const oy=h/2+this.offsetY;
+      const lightTheme=document.documentElement.classList.contains('theme-light');
+      const axisColor=lightTheme?'#17202b':'#f1f5f9';
+      c.save(); c.strokeStyle=axisColor; c.fillStyle=axisColor; c.lineWidth=2.5; c.lineCap='round';
+      const tickStep=Math.max(this.scale,1e-9);
+      if(oy>=0&&oy<=h){ c.beginPath();c.moveTo(0,oy);c.lineTo(w-14,oy);c.stroke(); c.beginPath();c.moveTo(w-14,oy-7);c.lineTo(w,oy);c.lineTo(w-14,oy+7);c.fill(); for(let i=Math.ceil((0-ox)/tickStep);i<=Math.floor((w-ox)/tickStep);i++){const x=ox+i*tickStep;if(x<0||x>w)continue;c.beginPath();c.moveTo(x,oy-5);c.lineTo(x,oy+5);c.stroke();} }
+      if(ox>=0&&ox<=w){ c.beginPath();c.moveTo(ox,h);c.lineTo(ox,14);c.stroke(); c.beginPath();c.moveTo(ox-7,14);c.lineTo(ox,0);c.lineTo(ox+7,14);c.fill(); for(let i=Math.ceil((0-oy)/tickStep);i<=Math.floor((h-oy)/tickStep);i++){const y=oy+i*tickStep;if(y<0||y>h)continue;c.beginPath();c.moveTo(ox-5,y);c.lineTo(ox+5,y);c.stroke();} }
+      c.font='bold 16px system-ui'; c.textAlign='left'; c.textBaseline='middle'; if(oy>=14&&oy<=h-14)c.fillText('x',w-28,oy-13); if(ox>=14&&ox<=w-14){c.textBaseline='top';c.fillText('y',Math.min(w-16,ox+10),8);} c.restore();
     }
 
     getCompiled(id, expression, variables) {
