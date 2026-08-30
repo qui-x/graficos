@@ -1,1 +1,1 @@
-v48 - menu de símbolos matemáticos com abrir/fechar por clique e estado visual ativo
+v49 - Toggle explícito do menu de símbolos matemáticos

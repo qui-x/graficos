@@ -312,23 +312,34 @@
     buildMenus() {
       const menus = [...document.querySelectorAll('.math-menu')];
       const globalMenu = document.getElementById('globalMathMenu');
+      const globalBtn = document.getElementById('globalMathBtn');
+      this.mathMenuOpen = false;
+      this.lastMathMenuAnchor = null;
+
       menus.forEach((m) => {
         if (m === globalMenu) return;
         m.innerHTML = '';
         m.classList.add('hidden');
       });
-      if (!globalMenu) return;
+      if (!globalMenu || !globalBtn) return;
+
       globalMenu.innerHTML = menuHtml;
       globalMenu.classList.add('hidden');
+      globalMenu.classList.remove('floating-math-menu');
+      globalMenu.style.display = '';
 
-      const closeMenus = () => {
-        menus.forEach((m) => m.classList.add('hidden'));
-        const gb = document.getElementById('globalMathBtn');
-        if (gb) {
-          gb.setAttribute('aria-expanded', 'false');
-          gb.classList.remove('is-active');
-        }
+      const setButtonState = (open) => {
+        globalBtn.setAttribute('aria-expanded', String(open));
+        globalBtn.classList.toggle('is-active', open);
       };
+
+      const closeGlobalMenu = () => {
+        this.mathMenuOpen = false;
+        globalMenu.classList.add('hidden');
+        setButtonState(false);
+        this.lastMathMenuAnchor = null;
+      };
+
       const positionMenu = (anchor) => {
         const r = anchor.getBoundingClientRect();
         const width = Math.min(320, Math.max(220, window.innerWidth - 24));
@@ -346,49 +357,53 @@
         globalMenu.style.maxHeight = `${maxHeight}px`;
       };
 
-      document.querySelectorAll('.dropdown-btn').forEach((btn) => btn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const isSame = this.lastMathMenuAnchor === btn && !globalMenu.classList.contains('hidden');
-        closeMenus();
-        if (isSame) { this.lastMathMenuAnchor = null; return; }
-        this.lastMathInputId = btn.closest('.math-editor')?.querySelector('.math-input')?.id || this.lastMathInputId;
-        this.lastMathMenuAnchor = btn;
+      const openGlobalMenu = (anchor = globalBtn) => {
+        this.mathMenuOpen = true;
         globalMenu.classList.remove('hidden');
-        positionMenu(btn);
-      }));
+        setButtonState(true);
+        this.lastMathMenuAnchor = anchor;
+        positionMenu(anchor);
+      };
 
-      const globalBtn = document.getElementById('globalMathBtn');
-      if (globalBtn) globalBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const isOpen = !globalMenu.classList.contains('hidden');
-        if (isOpen) {
-          closeMenus();
-          this.lastMathMenuAnchor = null;
+      const toggleGlobalMenu = (anchor = globalBtn) => {
+        if (this.mathMenuOpen && !globalMenu.classList.contains('hidden')) {
+          closeGlobalMenu();
           return;
         }
-        closeMenus();
-        this.lastMathMenuAnchor = globalBtn;
-        globalMenu.classList.remove('hidden');
-        positionMenu(globalBtn);
-        globalBtn.setAttribute('aria-expanded', 'true');
-        globalBtn.classList.add('is-active');
+        openGlobalMenu(anchor);
+      };
+
+      globalBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleGlobalMenu(globalBtn);
       });
 
+      document.querySelectorAll('.dropdown-btn').forEach((btn) => btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.lastMathInputId = btn.closest('.math-editor')?.querySelector('.math-input')?.id || this.lastMathInputId;
+        if (this.mathMenuOpen && this.lastMathMenuAnchor === btn) {
+          closeGlobalMenu();
+        } else {
+          openGlobalMenu(btn);
+        }
+      }));
+
       globalMenu.querySelectorAll('[data-insert]').forEach((button) => button.addEventListener('click', (event) => {
+        event.preventDefault();
         event.stopPropagation();
         this.insertAtActive(button.dataset.insert);
-        closeMenus();
-        this.lastMathMenuAnchor = null;
+        closeGlobalMenu();
       }));
 
       document.addEventListener('click', (event) => {
-        if (!event.target.closest('.math-editor') && !event.target.closest('.global-math-tools') && !event.target.closest('#globalMathMenu')) {
-          closeMenus();
-          this.lastMathMenuAnchor = null;
+        if (this.mathMenuOpen && !globalMenu.contains(event.target) && !globalBtn.contains(event.target) && !event.target.closest('.dropdown-btn')) {
+          closeGlobalMenu();
         }
       });
-      window.addEventListener('resize', closeMenus, { passive: true });
-      window.addEventListener('scroll', closeMenus, { passive: true });
+      window.addEventListener('resize', closeGlobalMenu, { passive: true });
+      window.addEventListener('scroll', closeGlobalMenu, { passive: true });
     },
     setTab(tabName) { this.cancelEdit(); this.activeTab=tabName; this.$.tabs.forEach((t)=>{const active=t.dataset.tab===tabName;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));}); this.$.modeButtons?.forEach((t)=>{const active=t.dataset.mode===tabName;t.classList.toggle('active',active);t.setAttribute('aria-current',active?'true':'false');}); this.$.panels.forEach((p)=>{const active=p.dataset.panel===tabName;p.classList.toggle('active',active);p.hidden=!active;}); this.updatePreviews(); this.updateActionBar(); },
     bindTabs() {

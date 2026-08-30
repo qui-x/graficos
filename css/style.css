@@ -1431,3 +1431,19 @@ body.modal-open { overflow:hidden; }
   .line-value{grid-template-columns:64px minmax(0,1fr)}
   .line-preview{font-size:15px}
 }
+
+/* v49 — estado de abertura/fechamento do menu matemático controlado explicitamente */
+.global-math-tools .math-tools-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  cursor:pointer;
+  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.global-math-tools .math-tools-btn.is-active {
+  border-color:var(--accent);
+  background:#172b3b;
+  box-shadow:0 0 0 2px rgba(90,200,250,.10);
+}
+#globalMathMenu.hidden { display:none !important; }
