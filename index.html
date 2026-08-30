@@ -25,8 +25,8 @@
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"/></svg>
         </button>
         <button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false">
-          <svg class="collapse-icon-left" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z" fill="currentColor"/></svg>
-          <svg class="collapse-icon-right hidden" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z" fill="currentColor"/></svg>
+          <svg class="collapse-icon-left" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z" fill="currentColor"/></svg>
+          <svg class="collapse-icon-right hidden" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z" fill="currentColor"/></svg>
           <span class="collapse-text sr-only">Ocultar controles</span>
         </button>
         <button class="icon-btn" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Ativar tela cheia">
@@ -138,10 +138,7 @@
           </div>
           <div class="coordinate-readout" id="coordinateReadout" aria-live="polite" aria-atomic="true">x: 0 · y: 0</div>
         </div>
-        <button class="show-controls-btn hidden" id="showControlsBtn" type="button" aria-label="Mostrar controles" title="Mostrar controles">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z" fill="currentColor"/></svg>
-          <span>Mostrar controles</span>
-        </button>
+        <button class="show-controls-btn hidden" id="showControlsBtn" type="button" aria-label="Mostrar controles" title="Mostrar controles"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg><span>Mostrar controles</span></button>
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="graphCanvas" aria-label="Plano cartesiano interativo" aria-describedby="graphHelp"></canvas>
           <div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>

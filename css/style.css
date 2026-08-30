@@ -54,3 +54,12 @@
     grid-row: 1;
   }
 }
+
+/* Iconografia e controles de recolhimento — versão consolidada */
+.icon-btn,.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;}
+.icon-btn svg,.action-btn svg{display:block;flex:0 0 auto;}
+.collapse-icon-left,.collapse-icon-right{transition:opacity .2s ease,transform .2s ease;}
+.collapse-icon-right.hidden,.collapse-icon-left.hidden{display:none;}
+.show-controls-btn{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:40px;width:auto;max-width:calc(100% - 24px);background:var(--accent);color:#000;border:0;border-radius:30px;font-weight:700;font-size:13px;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:20;white-space:nowrap;}
+.show-controls-btn:hover{background:#7dd3fc;}
+.show-controls-btn.hidden{display:none!important;}
