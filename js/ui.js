@@ -53,9 +53,39 @@
     moveTab(delta){const i=this.$.tabs.findIndex(t=>t.dataset.tab===this.activeTab);const next=(i+delta+this.$.tabs.length)%this.$.tabs.length;this.$.tabs[next].focus();this.setTab(this.$.tabs[next].dataset.tab);},
     addActiveTab(){if(this.activeTab==='function')this.addFunction();else if(this.activeTab==='parametric')this.addParametric();else if(this.activeTab==='vector')this.addVector();else this.addGeometry();},
     isMathField(el){return !!el&&el.tagName==='MATH-FIELD';},
-    getFieldValue(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el)){try{return el.getValue('ascii-math')||'';}catch{return el.value||'';}}return el.value||'';} ,
+    getFieldValue(id){
+      const el=document.getElementById(id);
+      if(!el)return '';
+      if(this.isMathField(el)){
+        try{
+          const ascii=typeof el.getExpression==='function'?el.getExpression('ascii-math'):'';
+          if(ascii)return String(ascii);
+        }catch(_){}
+        try{
+          const ascii=typeof el.getValue==='function'?el.getValue('ascii-math'):'';
+          if(ascii)return String(ascii);
+        }catch(_){}
+        const latex=el.value||'';
+        if(latex){
+          try{
+            if(global.MathLive?.convertLatexToAsciiMath)return global.MathLive.convertLatexToAsciiMath(latex);
+          }catch(_){}
+          return latex;
+        }
+        return '';
+      }
+      return el.value||'';
+    },
     getFieldLatex(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el))return el.value||'';return this.toLatex(el.value||'');},
-    setFieldValue(id,value){const el=document.getElementById(id);if(!el)return;if(this.isMathField(el)){const latex=this.toLatex(String(value||''));try{el.setValue(latex);}catch{el.value=latex;}}else{el.value=this.display(String(value||''));}},
+    setFieldValue(id,value){
+      const el=document.getElementById(id);
+      if(!el)return;
+      if(this.isMathField(el)){
+        const latex=this.toLatex(String(value||''));
+        if(typeof el.setValue==='function')el.setValue(latex);
+        else el.value=latex;
+      }else{el.value=this.display(String(value||''));}
+    },
     normalizeInput(id){return this.getFieldValue(id);},
     toMathEngine(expr){return MathEngine.normalize(expr);},
     toLatex(expr){let s=String(expr??'').trim().replace(/−/g,'-').replace(/π/g,'\\pi').replace(/τ/g,'\\tau').replace(/φ/g,'\\phi').replace(/²/g,'^{2}').replace(/³/g,'^{3}').replace(/⁴/g,'^{4}').replace(/⁵/g,'^{5}').replace(/×/g,'\\cdot ').replace(/÷/g,'/').replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|log|log2|ln|sqrt|abs|exp|sign)\b/g,'\\$1');s=s.replace(/sqrt\(([^()]+)\)/g,'\\sqrt{$1}');s=this.convertFractionsToLatex(s);s=s.replace(/\bpi\b/g,'\\pi').replace(/\btau\b/g,'\\tau').replace(/\bphi\b/g,'\\phi');return s||'\\;';},

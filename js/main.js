@@ -6,7 +6,10 @@
   if (globalThis.customElements?.whenDefined) {
     customElements.whenDefined('math-field').then(() => {
       document.querySelectorAll('math-field').forEach((field) => field.classList.add('mathlive-ready'));
+      try { if (globalThis.MathLive?.renderMathInDocument) globalThis.MathLive.renderMathInDocument(); } catch (_) {}
     });
+  } else {
+    try { if (globalThis.MathLive?.renderMathInDocument) globalThis.MathLive.renderMathInDocument(); } catch (_) {}
   }
   engine.center();
   const recalibrate = () => { engine.resize(); engine.requestRender(); };

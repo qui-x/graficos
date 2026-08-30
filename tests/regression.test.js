@@ -7,7 +7,7 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const css=fs.readFileSync(path.join(root,'css/style.css'),'utf8');
 if((engine.match(/const lightTheme = document\.documentElement\.classList\.contains\('theme-light'\);/g)||[]).length<2) throw new Error('lightTheme guard missing from drawGrid/drawAxes');
 if(!ui.includes("el.setValue(latex)")) throw new Error('MathLive setValue missing');
-if(!ui.includes("el.getValue('ascii-math')")) throw new Error('MathLive getValue missing');
+if(!ui.includes("el.getExpression('ascii-math')")) throw new Error('MathLive getExpression missing');
 if(!ui.includes("input.executeCommand(['insert',latex])")) throw new Error('MathLive executeCommand insert missing');
 if(!html.includes('id="paramError"')) throw new Error('paramError missing');
 if(!html.includes('mathlive@0.110.0')) throw new Error('MathLive script missing');
