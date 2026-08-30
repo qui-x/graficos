@@ -65,3 +65,26 @@ button:focus-visible,input:focus-visible,select:focus-visible,math-field:focus-v
   .graph-tooltip{right:8px;bottom:8px;max-width:calc(100% - 16px)}
   .canvas-wrap{min-height:0}
 }
+
+
+/* Mobile graph-first layout */
+@media (max-width:700px){
+  .app-shell{width:100vw;height:100dvh;margin:0;border-radius:0}
+  .workspace{grid-template-columns:1fr;grid-template-rows:minmax(60dvh,1fr) auto}
+  .graph-panel{order:1;min-height:0}
+  .controls-panel{order:2;max-height:35dvh;overflow-y:auto;border-right:0;border-top:1px solid var(--line);padding:10px}
+  .controls-panel.collapsed{max-height:0;padding:0;border-top:0;overflow:hidden}
+  .workspace.controls-collapsed{grid-template-columns:1fr;grid-template-rows:1fr}
+  .topbar{flex-wrap:wrap;gap:8px;padding:10px 12px}
+  .top-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .icon-btn,.action-btn,.tool-btn,.primary-btn,.secondary-btn,.row-btn{min-height:44px}
+  .math-input,.numeric-input,.select-input,math-field.math-field{min-height:44px;font-size:16px}
+  .graph-toolbar{flex-wrap:wrap;gap:8px;padding:8px}
+  .coordinate-readout{width:100%;font-size:11px}
+  .graph-legend{max-width:62%;top:8px;right:8px}
+  .graph-tooltip{right:8px;bottom:8px;max-width:calc(100% - 16px)}
+  .canvas-wrap{min-height:0}
+}
+
+.mobile-controls-toggle{display:none;position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:30;min-height:44px;padding:10px 18px;border:1px solid var(--accent);border-radius:999px;background:var(--accent);color:#001018;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.28)}.mobile-controls-toggle.hidden{display:none}
+@media(max-width:700px){.mobile-controls-toggle:not(.hidden){display:block}.mobile-controls-toggle[aria-hidden="true"]{display:none}}

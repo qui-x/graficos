@@ -1,5 +1,6 @@
 (function (global) {
   'use strict';
+  const MathLive = global.mathlive || global.MathLive || null;
 
   const colors = ['#5ac8fa','#b28cff','#ff6fae','#63d391','#ffd166','#ff9f66','#78a7ff','#d29bff'];
   const symbols = [['π','pi'],['√','sqrt('],['x²','^2'],['x³','^3'],['×','*'],['÷','/'],['·','*'],['sin','sin('],['cos','cos('],['tan','tan('],['asin','asin('],['acos','acos('],['sqrt','sqrt('],['log','log('],['ln','ln('],['abs','abs('],['exp','exp('],['τ','tau'],['φ','phi'],['(', '('],[')', ')']];
@@ -32,11 +33,12 @@
       document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
       document.getElementById('exportBtn').addEventListener('click',()=>this.engine.exportPng()); document.getElementById('exportSvgBtn').addEventListener('click',()=>this.engine.exportSvg()); document.getElementById('fullscreenBtn').addEventListener('click',()=>this.toggleFullscreen());
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
-      this.$.collapse.addEventListener('click',()=>{const collapsed=this.$.controls.classList.toggle('collapsed');this.$.workspace?.classList.toggle('controls-collapsed',collapsed);this.$.collapse.setAttribute('aria-pressed',String(collapsed));this.$.collapse.setAttribute('aria-label',collapsed?'Mostrar controles':'Ocultar controles');this.$.collapse.setAttribute('title',collapsed?'Mostrar controles':'Ocultar controles');const icon=this.$.collapse.querySelector('.collapse-icon');if(icon)icon.textContent=collapsed?'›':'‹';requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
+      this.$.collapse.addEventListener('click',()=>{const collapsed=!this.$.controls.classList.contains('collapsed');this.setControlsCollapsed(collapsed);});
       document.querySelectorAll('[data-tooltip]').forEach((el)=>el.setAttribute('title',el.dataset.tooltip));
       this.bindKeyboard();
-      this.$.themeBtn?.addEventListener('click',()=>this.toggleTheme());
+      this.$.themeBtn?.addEventListener('click',()=>this.toggleTheme()); const mobileToggle=document.getElementById('mobileControlsToggle'); if(mobileToggle) mobileToggle.addEventListener('click',()=>this.setControlsCollapsed(false));
     },
+    setControlsCollapsed(collapsed){this.$.controls.classList.toggle('collapsed',collapsed);this.$.workspace?.classList.toggle('controls-collapsed',collapsed);this.$.collapse.setAttribute('aria-pressed',String(collapsed));this.$.collapse.setAttribute('aria-label',collapsed?'Mostrar controles':'Ocultar controles');this.$.collapse.setAttribute('title',collapsed?'Mostrar controles':'Ocultar controles');const icon=this.$.collapse.querySelector('.collapse-icon');if(icon)icon.textContent=collapsed?'›':'‹';const mobileToggle=document.getElementById('mobileControlsToggle');if(mobileToggle){mobileToggle.classList.toggle('hidden',!collapsed);mobileToggle.setAttribute('aria-hidden',String(!collapsed));}requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));},
     toggleTheme(){const light=!document.documentElement.classList.contains('theme-light');document.documentElement.classList.toggle('theme-light',light);localStorage.setItem('graphCalcTheme',light?'light':'dark');this.showToast(light?'Tema claro ativado.':'Tema escuro ativado.');},
     restoreTheme(){if(localStorage.getItem('graphCalcTheme')==='light')document.documentElement.classList.add('theme-light');},
     setBusy(on){this.$.statusSpinner?.classList.toggle('hidden',!on);},
@@ -58,25 +60,23 @@
       if(!el)return '';
       if(this.isMathField(el)){
         try{
-          const ascii=typeof el.getExpression==='function'?el.getExpression('ascii-math'):'';
+          const ascii=el.getValue('ascii-math');
           if(ascii)return String(ascii);
         }catch(_){}
         try{
-          const ascii=typeof el.getValue==='function'?el.getValue('ascii-math'):'';
+          const ascii=el.getExpression('ascii-math');
           if(ascii)return String(ascii);
         }catch(_){}
         const latex=el.value||'';
         if(latex){
           try{
-            if(global.MathLive?.convertLatexToAsciiMath)return global.MathLive.convertLatexToAsciiMath(latex);
+            if(MathLive?.convertLatexToAsciiMath)return MathLive.convertLatexToAsciiMath(latex);
           }catch(_){}
           return latex;
         }
-        return '';
       }
       return el.value||'';
     },
-    getFieldLatex(id){const el=document.getElementById(id);if(!el)return '';if(this.isMathField(el))return el.value||'';return this.toLatex(el.value||'');},
     setFieldValue(id,value){
       const el=document.getElementById(id);
       if(!el)return;
