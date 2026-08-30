@@ -266,6 +266,8 @@
         c.font='bold 13px system-ui'; c.fillText(label,p.x+6,p.y-6);
       }
       c.fillStyle='rgba(255,255,255,.16)';
+      // Malha no plano XY para dar referência espacial mesmo quando o vetor
+      // está predominantemente orientado no eixo Z.
       const range=4, step=1;
       for(let i=-range;i<=range;i+=step){
         const a=this.project3D(i,0,-range), b=this.project3D(i,0,range); c.strokeStyle='rgba(90,200,250,.09)'; c.lineWidth=1; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
@@ -355,11 +357,15 @@
 
     drawVector(obj) {
       const c = this.ctx;
-      let a, b, arrow = obj.data?.arrow !== false;
-      if (this.vectorIs3D(obj)) {
+      const arrow = obj.data?.arrow !== false;
+      let a, b;
+      const is3D = this.vectorIs3D(obj);
+      if (is3D) {
         const [p1, p2] = this.getVector3DPoints(obj);
-        a = this.project3D(...p1);
-        b = this.project3D(...p2);
+        // O vetor 3D sempre é projetado pelos três eixos. Não descarte z=0:
+        // a presença estrutural de z/flag 3D é suficiente para usar a projeção.
+        a = this.project3D(p1[0], p1[1], p1[2]);
+        b = this.project3D(p2[0], p2[1], p2[2]);
       } else {
         const d = obj.data || {};
         const x1 = Number.isFinite(Number(d.x1)) ? Number(d.x1) : Number(d.p1?.[0] ?? 0);
@@ -369,10 +375,14 @@
         a = this.worldToScreen(x1, y1);
         b = this.worldToScreen(x2, y2);
       }
-      this.lineStyle(obj.color, 2.5);
+      if (![a.x, a.y, b.x, b.y].every(Number.isFinite)) return;
+      this.lineStyle(obj.color, is3D ? 3 : 2.5);
       c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
       if (!arrow) return;
-      const ang = Math.atan2(b.y - a.y, b.x - a.x), len = 12;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const length = Math.hypot(dx, dy);
+      if (length < 1e-6) return;
+      const ang = Math.atan2(dy, dx), len = 12;
       c.fillStyle = obj.color; c.beginPath();
       c.moveTo(b.x, b.y);
       c.lineTo(b.x - len * Math.cos(ang - Math.PI / 6), b.y - len * Math.sin(ang - Math.PI / 6));

@@ -114,11 +114,16 @@
         a.length = Math.min(2, a.length);
         b.length = Math.min(2, b.length);
       }
+      const finalIs3D = Boolean(is3D || a.length >= 3 || b.length >= 3);
+      const finalP1 = finalIs3D ? [Number(a[0]) || 0, Number(a[1]) || 0, Number(a[2]) || 0] : [Number(a[0]) || 0, Number(a[1]) || 0];
+      const finalP2 = finalIs3D ? [Number(b[0]) || 0, Number(b[1]) || 0, Number(b[2]) || 0] : [Number(b[0]) || 0, Number(b[1]) || 0];
       return this.add('vector', {
-        p1: a,
-        p2: b,
+        p1: finalP1,
+        p2: finalP2,
         arrow: arrow !== false,
-        is3D: Boolean(is3D)
+        is3D: finalIs3D,
+        x1: finalP1[0], y1: finalP1[1], z1: finalIs3D ? finalP1[2] : 0,
+        x2: finalP2[0], y2: finalP2[1], z2: finalIs3D ? finalP2[2] : 0
       }, color);
     }
 
