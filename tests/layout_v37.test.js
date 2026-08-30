@@ -1,0 +1,13 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+if (!css.includes('grid-template-areas: "modes graph controls"')) throw new Error('Expected modes | graph | controls layout');
+if (!css.includes('grid-template-columns: 180px minmax(0, 1fr) 360px')) throw new Error('Expected desktop sidebar widths');
+if (!css.includes('grid-template-columns: 72px minmax(0, 1fr) 360px')) throw new Error('Expected collapsed modes rail');
+if (!css.includes('grid-template-columns: 180px minmax(0, 1fr) 0')) throw new Error('Expected controls collapse on right');
+if (!css.includes('@media (max-width: 899px)')) throw new Error('Expected mobile layout');
+if (!css.includes('bottom: calc(68px + env(safe-area-inset-bottom))')) throw new Error('Expected mobile bottom sheet position');
+if (!html.includes('mode-sidebar') || !html.includes('controls-panel') || !html.includes('graph-panel')) throw new Error('Expected three layout regions');
+console.log('layout v37 OK');
