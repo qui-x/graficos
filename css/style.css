@@ -1182,3 +1182,35 @@ body {
     transition: none !important;
   }
 }
+
+
+/* v38 — barra direita: único controle de recolhimento + configurações extras em modal central */
+.controls-header .desktop-controls-collapse { margin-left:auto; }
+.desktop-controls-collapse { display:inline-flex; align-items:center; justify-content:center; }
+.desktop-controls-collapse .controls-arrow-left,
+.desktop-controls-collapse .controls-arrow-right { display:block; }
+.desktop-controls-collapse .controls-arrow-left.hidden,
+.desktop-controls-collapse .controls-arrow-right.hidden { display:none; }
+body.modal-open { overflow:hidden; }
+.settings-modal { position:fixed; inset:0; z-index:500; display:grid; place-items:center; padding:24px; }
+.settings-modal.hidden { display:none; }
+.settings-modal-backdrop { position:absolute; inset:0; background:rgba(3,8,14,.68); backdrop-filter:blur(5px); }
+.settings-dialog { position:relative; width:min(560px,calc(100vw - 32px)); max-height:min(760px,calc(100vh - 48px)); display:flex; flex-direction:column; overflow:hidden; background:linear-gradient(180deg,#111b26,#0b131c); border:1px solid #2a3a4e; border-radius:16px; box-shadow:0 28px 80px rgba(0,0,0,.48); color:var(--text); }
+.settings-dialog-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:18px 18px 14px; border-bottom:1px solid var(--line); }
+.settings-dialog-header h2 { margin:4px 0 4px; font-size:20px; }
+.settings-dialog-header p { margin:0; color:var(--muted); font-size:12px; }
+.settings-dialog-content { overflow:auto; padding:4px 0 10px; }
+.settings-dialog-content .extras-group { padding:16px 18px 0; }
+.settings-dialog-content .extras-group:first-child { padding-top:10px; }
+.settings-dialog-content .extras-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.settings-dialog-content .extras-actions-3 { grid-template-columns:repeat(3,1fr); }
+.settings-dialog-content .secondary-btn { min-height:42px; }
+@media (max-width:600px) {
+  .settings-modal { padding:12px; }
+  .settings-dialog { width:100%; max-height:calc(100dvh - 24px); border-radius:14px; }
+  .settings-dialog-content .extras-actions,
+  .settings-dialog-content .extras-actions-3 { grid-template-columns:1fr; }
+}
+@media (max-width:899px) {
+  .controls-header .desktop-controls-collapse { display:none !important; }
+}

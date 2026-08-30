@@ -9,7 +9,7 @@ const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
 const mustHave = [
   'id="showControlsBtn"', 'class="show-controls-btn hidden"', 'id="sidebarToggle"',
   'id="backdrop"', 'id="mobileMenuBtn"', 'id="closeControlsBtn"',
-  'class="collapse-icon-left"', 'class="collapse-icon-right hidden"',
+  'class="controls-arrow-left hidden"', 'class="controls-arrow-right"',
   'id="undoBtn"', 'id="redoBtn"', 'id="exportBtn"', 'id="exportSvgBtn"'
 ];
 for (const token of mustHave) if (!html.includes(token)) throw new Error(`HTML token missing: ${token}`);

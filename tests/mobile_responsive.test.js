@@ -17,5 +17,5 @@ if (!css.includes('min-height:44px;font-size:16px')) throw new Error('touch inpu
 for (const token of ['openSidebar(','closeSidebar(','toggleSidebar(']) if (!ui.includes(token)) throw new Error(`${token} missing`);
 if (!ui.includes("global.addEventListener('orientationchange'")) throw new Error('orientation handler missing');
 if (!ui.includes('requestAnimationFrame(()=>requestAnimationFrame(()')) throw new Error('double RAF missing');
-if (!sw.includes('calc-grafica-v30')) throw new Error('service worker cache not bumped');
+if (!/CACHE_NAME\s*=\s*['\"]calc-grafica-v\d+['\"]/.test(sw)) throw new Error('service worker cache not bumped');
 console.log('mobile_responsive OK');

@@ -39,15 +39,6 @@
 <button aria-label="Instalar aplicativo" class="action-btn install-btn hidden" id="installBtn" title="Instalar aplicativo" type="button">
 <svg aria-hidden="true" height="17" viewbox="0 0 24 24" width="17"><path d="M11 3h2v10.2l3.5-3.5 1.4 1.4L12 17l-5.9-5.9 1.4-1.4 3.5 3.5V3zM5 19h14v2H5z" fill="currentColor"></path></svg><span>Instalar</span>
 </button>
-<button aria-label="Ocultar controles" aria-pressed="false" class="action-btn collapse-btn" id="collapseControlsBtn" title="Ocultar controles" type="button">
-<svg aria-hidden="true" class="collapse-icon-left" fill="currentColor" height="18" viewbox="0 0 24 24" width="18">
-<path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path>
-</svg>
-<svg aria-hidden="true" class="collapse-icon-right hidden" fill="currentColor" height="18" viewbox="0 0 24 24" width="18">
-<path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"></path>
-</svg>
-<span class="collapse-text sr-only">Ocultar controles</span>
-</button>
 
 </div>
 </header>
@@ -81,7 +72,10 @@
 </section>
 <aside aria-label="Controles de entrada" class="panel controls-panel"><div class="controls-header">
 <span>Configurações</span>
-<button aria-label="Recolher controles" class="icon-btn desktop-controls-collapse" id="controlsCollapseBtn" title="Recolher controles" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg></button>
+<button aria-label="Recolher controles" aria-pressed="false" class="icon-btn desktop-controls-collapse" id="controlsCollapseBtn" title="Recolher controles" type="button">
+  <svg class="controls-arrow-left hidden" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+  <svg class="controls-arrow-right" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg>
+</button>
 <button aria-label="Fechar controles" class="icon-btn close-controls-btn" id="closeControlsBtn" title="Fechar controles" type="button">
 <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
@@ -251,8 +245,21 @@
 <button class="primary-btn" data-panel-action="true" id="addLine3DBtn" type="button">Adicionar reta 3D</button>
 </section>
 </div></section></div>
-<details class="extras-section" id="extrasSection">
-  <summary><svg class="extras-summary-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.65-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.14.33-.11.66-.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"/></svg><span>Configurações extras</span></summary>
+<div class="settings-modal hidden" id="extrasModal" aria-hidden="true">
+  <div class="settings-modal-backdrop" data-close-extras="true"></div>
+  <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="extrasModalTitle" tabindex="-1">
+    <header class="settings-dialog-header">
+      <div>
+        <span class="section-kicker">CONFIGURAÇÕES</span>
+        <h2 id="extrasModalTitle">Configurações extras</h2>
+        <p>Ajustes de exportação, visualização e sessão.</p>
+      </div>
+      <button class="icon-btn settings-dialog-close" id="closeExtrasModalBtn" type="button" aria-label="Fechar configurações extras" title="Fechar">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="settings-dialog-content">
+
   <div class="extras-content">
     <section class="extras-group" aria-labelledby="extrasExportTitle">
       <div class="extras-title" id="extrasExportTitle">Exportação</div>
@@ -281,7 +288,10 @@
       </div>
     </section>
   </div>
-</details>
+
+    </div>
+  </section>
+</div>
 <div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
 <section class="panel graph-panel">
 <div class="graph-toolbar">
@@ -296,7 +306,7 @@
 <button aria-label="Abrir controles" class="fab hidden" id="mobileMenuBtn" title="Abrir controles" type="button">
 <svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 0 24 24" width="24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
 </button>
-<button aria-label="Mostrar controles" class="show-controls-btn hidden" id="showControlsBtn" title="Mostrar controles" type="button"><svg aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"></path></svg><span>Mostrar controles</span></button>
+<button aria-label="Mostrar controles" class="show-controls-btn hidden" id="showControlsBtn" title="Mostrar controles" type="button"><svg aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg><span>Mostrar controles</span></button>
 <div class="canvas-wrap" id="canvasWrap">
 <canvas aria-describedby="graphHelp" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." id="graphCanvas" role="img" tabindex="0"></canvas>
 <div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>

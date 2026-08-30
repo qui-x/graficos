@@ -2,7 +2,7 @@ const fs = require('fs');
 const html = fs.readFileSync('index.html','utf8');
 const css = fs.readFileSync('css/style.css','utf8');
 const ui = fs.readFileSync('js/ui.js','utf8');
-for (const id of ['mode-sidebar','modeCollapseBtn','controls-panel','controlsCollapseBtn','mobileMenuBtn','backdrop','mobileMoreBtn','extrasSection','exportBtn','exportSvgBtn','extrasBtn']) {
+for (const id of ['mode-sidebar','modeCollapseBtn','controls-panel','controlsCollapseBtn','mobileMenuBtn','backdrop','mobileMoreBtn','extrasModal','exportBtn','exportSvgBtn','extrasBtn']) {
   if (!html.includes(id)) throw new Error(`missing ${id}`);
 }
 for (const cls of ['sidebar-modes-collapsed','controls-collapsed','mode-sidebar','controls-panel','mobile-more-btn']) {

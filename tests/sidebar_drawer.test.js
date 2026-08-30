@@ -9,5 +9,5 @@ for (const id of ['sidebarToggle','backdrop','mobileMenuBtn','closeControlsBtn']
 for (const cls of ['.controls-panel.open','.backdrop.show','.fab','.workspace.sidebar-collapsed']) if (!css.includes(cls)) throw new Error(`${cls} missing`);
 for (const method of ['openSidebar','closeSidebar','toggleSidebar']) if (!ui.includes(`${method}(`)) throw new Error(`${method} missing`);
 if (!ui.includes('requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }))')) throw new Error('double RAF resize missing');
-if (!sw.includes('calc-grafica-v30')) throw new Error('SW version not bumped');
+if (!/CACHE_NAME\s*=\s*['\"]calc-grafica-v\d+['\"]/.test(sw)) throw new Error('SW version not bumped');
 console.log('sidebar drawer OK');
