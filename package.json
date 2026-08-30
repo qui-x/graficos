@@ -1,1 +1,7 @@
-{"name":"graph-calculator","private":true,"scripts":{"test":"node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/smoke.test.js && node tests/uiux.test.js"}}
+{
+  "name": "graph-calculator",
+  "private": true,
+  "scripts": {
+    "test": "node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/smoke.test.js && node tests/ui-icons.test.js"
+  }
+}

@@ -17,9 +17,27 @@
         <h1>Calculadora Gráfica</h1>
         <p>Funções, curvas paramétricas, vetores e geometria analítica em um único espaço.</p>
       </div>
-      <div class="top-actions"><button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>↶</button><button class="icon-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" aria-label="Refazer" disabled>↷</button><button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false"><span class="collapse-icon" aria-hidden="true">‹</span><span class="sr-only">Ocultar controles</span></button>
-        <button class="icon-btn" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Ativar tela cheia">□</button>
-        <button class="action-btn" id="saveBtn" type="button" title="Salvar sessão agora" aria-label="Salvar sessão agora">Salvar</button><button class="action-btn" id="exportBtn" type="button" title="Exportar PNG" aria-label="Exportar PNG">PNG</button><button class="action-btn" id="exportSvgBtn" type="button" title="Exportar SVG" aria-label="Exportar SVG">SVG</button>
+      <div class="top-actions">
+        <button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" aria-label="Refazer" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"/></svg>
+        </button>
+        <button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false">
+          <svg class="collapse-icon-left" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z" fill="currentColor"/></svg>
+          <svg class="collapse-icon-right hidden" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z" fill="currentColor"/></svg>
+          <span class="collapse-text sr-only">Ocultar controles</span>
+        </button>
+        <button class="icon-btn" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Ativar tela cheia">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/></svg>
+        </button>
+        <button class="action-btn" id="exportBtn" type="button" title="Exportar PNG" aria-label="Exportar PNG">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z" fill="currentColor"/></svg><span>PNG</span>
+        </button>
+        <button class="action-btn" id="exportSvgBtn" type="button" title="Exportar SVG" aria-label="Exportar SVG">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v10.17l3.59-3.58L17 11l-5 5-5-5 1.41-1.41L10 13.17V3h2zm-7 16h14v2H5v-2z" fill="currentColor"/></svg><span>SVG</span>
+        </button>
       </div>
     </header>
 
@@ -46,7 +64,7 @@
               <button class="dropdown-btn" type="button" data-menu="math-menu-function" aria-label="Abrir símbolos matemáticos">▼</button>
               <div class="math-menu hidden" id="math-menu-function"></div>
             </div>
-            <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div><div class="field-error" id="functionError" aria-live="polite"></div>
+            <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div>
             <div class="quick-grid" data-target="functionExpr">
               <button type="button" data-token="sin(">sin</button><button type="button" data-token="cos(">cos</button><button type="button" data-token="tan(">tan</button>
               <button type="button" data-token="sqrt(">√</button><button type="button" data-token="^2">x²</button><button type="button" data-token="^3">x³</button>
@@ -64,7 +82,7 @@
               <div><label class="field-label" for="tMin">t mín.</label><input id="tMin" class="numeric-input" type="text" value="0"></div>
               <div><label class="field-label" for="tMax">t máx.</label><input id="tMax" class="numeric-input" type="text" value="2*pi"></div>
             </div>
-            <div class="math-preview" id="paramPreview" aria-live="polite" aria-label="Pré-visualização matemática da curva paramétrica"></div><div class="field-error" id="paramError" aria-live="polite"></div>
+            <div class="math-preview" id="paramPreview" aria-live="polite" aria-label="Pré-visualização matemática da curva paramétrica"></div>
             <button class="primary-btn" id="addParamBtn" type="button">Adicionar curva paramétrica</button>
           </section>
 
@@ -120,18 +138,19 @@
           </div>
           <div class="coordinate-readout" id="coordinateReadout" aria-live="polite" aria-atomic="true">x: 0 · y: 0</div>
         </div>
+        <button class="show-controls-btn hidden" id="showControlsBtn" type="button" aria-label="Mostrar controles" title="Mostrar controles">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z" fill="currentColor"/></svg>
+          <span>Mostrar controles</span>
+        </button>
         <div class="canvas-wrap" id="canvasWrap">
-          <canvas id="graphCanvas" tabindex="0" role="img" aria-label="Plano cartesiano interativo" aria-describedby="graphHelp"></canvas>
-          <div id="graphLegend" class="graph-legend" hidden aria-label="Legenda do gráfico"></div>
-          <div id="graphTooltip" class="graph-tooltip" hidden role="status" aria-live="polite"></div>
+          <canvas id="graphCanvas" aria-label="Plano cartesiano interativo" aria-describedby="graphHelp"></canvas>
           <div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
         </div>
-        <div id="graphHelp" class="sr-only">Use o mouse ou toque para mover o plano. Use a roda do mouse, gesto de pinça ou teclas +/− para zoom. Use as setas para mover o plano. Shift + arraste cria um zoom por seleção. O valor das coordenadas e de f(x) aparece ao mover o ponteiro.</div><div id="toast" class="toast" role="status" aria-live="polite"></div><div class="statusbar">
+        <div id="graphHelp" class="sr-only">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div id="toast" class="toast" role="status" aria-live="polite"></div><div class="statusbar">
           <span id="statusText">Pronto</span>
           <span>Arraste para mover · roda para zoom · passe o cursor para coordenadas</span>
         </div>
       </section>
-    <button id="mobileControlsFab" class="mobile-controls-fab" type="button" aria-label="Mostrar controles" hidden>▲ Mostrar controles</button>
     </section>
   </main>
 
