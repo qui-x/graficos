@@ -1,1 +1,1 @@
-v49 - Toggle explícito do menu de símbolos matemáticos
+v50 - Distribuição limpa da Calculadora Gráfica
