@@ -106,12 +106,28 @@
 
     addLine3D(p1, p2, color) { return this.add('line3d', { p1: clone(p1), p2: clone(p2) }, color); }
 
+    addVector(p1, p2, color, options = {}) {
+      const { arrow = true, is3D = false } = options;
+      const a = clone(p1);
+      const b = clone(p2);
+      if (!is3D) {
+        a.length = Math.min(2, a.length);
+        b.length = Math.min(2, b.length);
+      }
+      return this.add('vector', {
+        p1: a,
+        p2: b,
+        arrow: arrow !== false,
+        is3D: Boolean(is3D)
+      }, color);
+    }
+
     addVector3D(p1, p2, color, arrow = true) {
-      return this.add('vector', { p1: clone(p1), p2: clone(p2), arrow: arrow !== false }, color);
+      return this.addVector(p1, p2, color, { arrow, is3D: true });
     }
 
     addSegment3D(p1, p2, color) {
-      return this.addVector3D(p1, p2, color, false);
+      return this.addVector(p1, p2, color, { arrow: false, is3D: true });
     }
 
     get visible() { return this.items.filter((o) => o.visible); }

@@ -225,6 +225,8 @@
 
     vectorIs3D(obj) {
       const d = obj?.data || {};
+      if (d.is3D === true) return true;
+      if (d.is3D === false) return false;
       if (Array.isArray(d.p1) && Array.isArray(d.p2)) return d.p1.length >= 3 || d.p2.length >= 3;
       return Object.prototype.hasOwnProperty.call(d, 'z1') || Object.prototype.hasOwnProperty.call(d, 'z2');
     }
@@ -359,7 +361,11 @@
         a = this.project3D(...p1);
         b = this.project3D(...p2);
       } else {
-        const { x1 = 0, y1 = 0, x2 = 0, y2 = 0 } = obj.data || {};
+        const d = obj.data || {};
+        const x1 = Number.isFinite(Number(d.x1)) ? Number(d.x1) : Number(d.p1?.[0] ?? 0);
+        const y1 = Number.isFinite(Number(d.y1)) ? Number(d.y1) : Number(d.p1?.[1] ?? 0);
+        const x2 = Number.isFinite(Number(d.x2)) ? Number(d.x2) : Number(d.p2?.[0] ?? 0);
+        const y2 = Number.isFinite(Number(d.y2)) ? Number(d.y2) : Number(d.p2?.[1] ?? 0);
         a = this.worldToScreen(x1, y1);
         b = this.worldToScreen(x2, y2);
       }
@@ -503,7 +509,12 @@
           const marker = obj.data?.arrow === false ? '' : ' marker-end="url(#vectorArrow)"';
           return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5"${marker}/>`;
         }
-        const a = p(obj.data.x1, obj.data.y1), b = p(obj.data.x2, obj.data.y2); const marker = obj.data?.arrow === false ? '' : ' marker-end="url(#vectorArrow)"';
+        const d = obj.data || {};
+        const x1 = Number.isFinite(Number(d.x1)) ? Number(d.x1) : Number(d.p1?.[0] ?? 0);
+        const y1 = Number.isFinite(Number(d.y1)) ? Number(d.y1) : Number(d.p1?.[1] ?? 0);
+        const x2 = Number.isFinite(Number(d.x2)) ? Number(d.x2) : Number(d.p2?.[0] ?? 0);
+        const y2 = Number.isFinite(Number(d.y2)) ? Number(d.y2) : Number(d.p2?.[1] ?? 0);
+        const a = p(x1, y1), b = p(x2, y2); const marker = d.arrow === false ? '' : ' marker-end="url(#vectorArrow)"';
         return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5"${marker}/>`;
       }
       if (obj.type === 'circle') { const q = p(obj.data.cx, obj.data.cy); return `<circle cx="${q.x.toFixed(2)}" cy="${q.y.toFixed(2)}" r="${(obj.data.r * this.scale).toFixed(2)}" fill="none" stroke="${color}" stroke-width="2.2"/>`; }

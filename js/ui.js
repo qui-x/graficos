@@ -7,14 +7,14 @@
   const ICON = Object.freeze({ hide: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>', show: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M3 12s3-5.5 9-5.5 9 5.5 9 5.5-3 5.5-9 5.5S3 12 3 12z" fill="none" stroke="currentColor" stroke-width="2"/></svg>' });
 
   const AppUI = {
-    objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, parameterValues: {}, parameterStorageKey: 'graphCalculator.parameters.v1', lineLiveCommitted: false,
+    objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, lineLiveCommitted: false,
     init(objects, engine) {
       this.objects = objects; this.engine = engine; this.cache();
       // Configurações extras é um modal global e não depende da barra de controles.
       if (this.$?.extrasModal && this.$.extrasModal.parentElement !== document.body) {
         document.body.appendChild(this.$.extrasModal);
       }
-      this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.loadParameters(); this.initMobileLayout();
+      this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.initMobileLayout();
     },
     initMobileLayout() {
       const apply = () => {
@@ -213,7 +213,7 @@
         .split(/[,;\s]+/)
         .map((name) => name.trim().toLowerCase())
         .filter(Boolean);
-      return [...new Set([...selected, ...custom, ...Object.keys(this.parameterValues || {})])];
+      return [...new Set([...selected, ...custom])];
     },
     syncVariableConfig(showFeedback=false) {
       try {
@@ -237,18 +237,6 @@
         return false;
       }
     },
-    getParameterValues() {
-      const out = {};
-      const entries = Object.entries(this.parameterValues || {});
-      for (const [name, raw] of entries) {
-        try {
-          const normalized = this.toMathEngine(String(raw));
-          const value = Number.isFinite(Number(normalized)) ? Number(normalized) : MathEngine.evalExpr(normalized, { ...this.getDefaultVariablesBase(), ...out });
-          if (Number.isFinite(value)) out[name] = value;
-        } catch (_) {}
-      }
-      return out;
-    },
     getDefaultVariablesBase() {
       const vars = {};
       const names = MathEngine.defaultVariables || ['x','y','z','t'];
@@ -258,56 +246,10 @@
     getDefaultVariables() {
       return { ...this.getDefaultVariablesBase(), ...this.getParameterValues() };
     },
-    loadParameters() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(this.parameterStorageKey) || '{}');
-        if (saved && typeof saved === 'object') this.parameterValues = saved;
-      } catch (_) { this.parameterValues = {}; }
-      this.renderParameters();
-    },
-    saveParameters() {
-      try { localStorage.setItem(this.parameterStorageKey, JSON.stringify(this.parameterValues)); } catch (_) {}
-      this.renderParameters();
-      this.engine?.invalidateCache?.('parameters');
-      this.engine?.requestRender?.();
-    },
-    addParameter() {
-      const name = String(this.$.parameterName?.value || '').trim().toLowerCase();
-      const value = String(this.$.parameterValue?.value || '').trim();
-      if (!/^[a-z_][a-z0-9_]*$/i.test(name)) return this.showToast('Use um identificador como a, b ou parametro1.', true);
-      if ((MathEngine.constants || []).includes(name) || (MathEngine.functions || []).includes(name) || ['mod'].includes(name)) return this.showToast('Esse nome é reservado pela matemática.', true);
-      if (!value) return this.showToast('Informe um valor para o parâmetro.', true);
-      try {
-        const scope = { ...this.getDefaultVariablesBase(), ...this.parameterValues };
-        MathEngine.evalExpr(this.toMathEngine(value), scope);
-        MathEngine.setDefaultVariables([...new Set([...(MathEngine.defaultVariables || []), name])]);
-        this.parameterValues[name] = value;
-        this.$.parameterName.value = ''; this.$.parameterValue.value = '';
-        this.saveParameters();
-        this.syncVariableConfig(false);
-        this.showToast(`Parâmetro ${name} definido.`);
-      } catch (error) { this.showError(error); }
-    },
-    removeParameter(name) {
-      delete this.parameterValues[name];
-      const builtins = ['x','y','z','t'];
-      const selected = this.$?.variableOptions?.filter(el=>el.checked).map(el=>el.value) || builtins;
-      MathEngine.setDefaultVariables([...new Set([...selected, ...Object.keys(this.parameterValues)])]);
-      this.saveParameters();
-      this.syncVariableConfig(false);
-    },
-    renderParameters() {
-      const list = this.$?.parameterList; if (!list) return;
-      const entries = Object.entries(this.parameterValues || {});
-      list.innerHTML = entries.length ? entries.map(([name,value]) => `<div class="parameter-row"><button class="parameter-chip" type="button" data-use-param="${this.escapeHtml(name)}" title="Inserir ${this.escapeHtml(name)}">${this.escapeHtml(name)} = ${this.escapeHtml(String(value))}</button><button class="row-btn danger" type="button" data-remove-param="${this.escapeHtml(name)}" aria-label="Remover parâmetro ${this.escapeHtml(name)}">Remover</button></div>`).join('') : '<div class="empty-list">Nenhum parâmetro definido.</div>';
-      list.querySelectorAll('[data-remove-param]').forEach(btn=>btn.addEventListener('click',()=>this.removeParameter(btn.dataset.removeParam)));
-      list.querySelectorAll('[data-use-param]').forEach(btn=>btn.addEventListener('click',()=>this.insertAtActive(btn.dataset.useParam)));
-      if (this.$.vectorVariableHelp) { const names=[...new Set([...(MathEngine.defaultVariables||[]),...Object.keys(this.parameterValues||{})])]; this.$.vectorVariableHelp.textContent=`Variáveis disponíveis: ${names.join(', ') || 'nenhuma'}`; }
-    },
     escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); },
     cache() {
       this.lastMathInputId='functionExpr';
-      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), showControls:document.getElementById('showControlsBtn'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasModal:document.getElementById('extrasModal'), closeExtrasModalBtn:document.getElementById('closeExtrasModalBtn'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'), mobileMore:document.getElementById('mobileMoreBtn'), mobileModesBtn:document.getElementById('mobileModesBtn'), mobileControlsBtn:document.getElementById('mobileControlsBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
+      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vx1:document.getElementById('vx1'), vy1:document.getElementById('vy1'), vz1:document.getElementById('vz1'), vx2:document.getElementById('vx2'), vy2:document.getElementById('vy2'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2x:document.getElementById('v2x'), v2y:document.getElementById('v2y'), v2z:document.getElementById('v2z'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), showControls:document.getElementById('showControlsBtn'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasModal:document.getElementById('extrasModal'), closeExtrasModalBtn:document.getElementById('closeExtrasModalBtn'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'), mobileMore:document.getElementById('mobileMoreBtn'), mobileModesBtn:document.getElementById('mobileModesBtn'), mobileControlsBtn:document.getElementById('mobileControlsBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
     },
     buildMenus() {
       const menus = [...document.querySelectorAll('.math-menu')];
@@ -427,7 +369,7 @@
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
-      this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);}); this.$.addParameter?.addEventListener('click',()=>this.addParameter()); this.$.parameterValue?.addEventListener('keydown',(e)=>{if(e.key==='Enter')this.addParameter();});
+      this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);});
       this.$.addFunction.addEventListener('click',()=>this.addFunction()); this.$.functionVariable?.addEventListener('change',()=>{this.updateFunctionEquationHint(); this.updatePreviews(); this.validateExpressionField(this.$.functionExpr); this.engine?.invalidateCache?.('function-variable'); this.engine?.requestRender?.();}); this.$.addParam.addEventListener('click',()=>this.addParametric()); this.$.addSurface?.addEventListener('click',()=>this.addSurface()); this.$.addCurve3D?.addEventListener('click',()=>this.addCurve3D()); this.$.addLine3D?.addEventListener('click',()=>this.addLine3D()); this.$.addVector.addEventListener('click',()=>this.addVector());
       ['vx1','vy1','vz1','vx2','vy2','vz2','v2x','v2y','v2z'].forEach(id=>document.getElementById(id).addEventListener('input',(e)=>{this.updateVectorResult();this.validateExpressionField(e.currentTarget);}));
       document.getElementById('dotBtn').addEventListener('click',()=>this.vectorOperation('dot')); document.getElementById('crossBtn').addEventListener('click',()=>this.vectorOperation('cross'));
@@ -489,7 +431,7 @@
     addFunction(){if(!this.requireNonEmpty(this.$.functionExpr.value,'Digite uma função, por exemplo x² + sen(x).'))return;const expr=this.toMathEngine(this.$.functionExpr.value);const variable=this.getFunctionVariable();try{MathEngine.compile(expr,{...this.getDefaultVariables(),[variable]:0});if(this.editingId){this.objects.update(this.editingId,{expression:expr,variable});this.showToast('Curva atualizada.');}else{const obj=this.objects.add('function',{expression:expr,variable},colors[this.objects.items.length%colors.length]);const lhs=variable==='y'?'x':'y';this.addHistory(`${lhs} = f(${variable}) = ${this.$.functionExpr.value}`,obj);this.showToast('Curva adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     addParametric(){if(!this.requireNonEmpty(this.$.paramX.value,'Preencha x(t).')||!this.requireNonEmpty(this.$.paramY.value,'Preencha y(t).'))return;const xExpr=this.toMathEngine(this.$.paramX.value),yExpr=this.toMathEngine(this.$.paramY.value);try{const tMin=this.parseNum(this.$.tMin.value,{pi:Math.PI}),tMax=this.parseNum(this.$.tMax.value,{pi:Math.PI});MathEngine.compile(xExpr,this.getDefaultVariables());MathEngine.compile(yExpr,this.getDefaultVariables());if(!(tMax>tMin))throw new Error('t máx. deve ser maior que t mín.');const data={xExpr,yExpr,tMin,tMax};if(this.editingId){this.objects.update(this.editingId,data);this.showToast('Curva paramétrica atualizada.');}else{const obj=this.objects.add('parametric',data,colors[this.objects.items.length%colors.length]);this.addHistory(`x(t) = ${this.$.paramX.value}, y(t) = ${this.$.paramY.value}`,obj);this.showToast('Curva paramétrica adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     parseNum(v,vars){const normalized=this.toMathEngine(String(v));if(!normalized.trim())throw new Error('Valor numérico vazio.');const n=Number(normalized);const value=Number.isFinite(n)?n:MathEngine.evalExpr(normalized,vars || this.getDefaultVariables());if(!Number.isFinite(value))throw new Error('Valor numérico inválido. Use, por exemplo, 1,5 ou 2·π.');return value;},
-    addVector(){try{const p1=[this.parseNum(this.$.vx1.value),this.parseNum(this.$.vy1.value),this.parseNum(this.$.vz1.value)],p2=[this.parseNum(this.$.vx2.value),this.parseNum(this.$.vy2.value),this.parseNum(this.$.vz2.value)];if(p1.every((v,i)=>Math.abs(v-p2[i])<1e-12))throw new Error('Os pontos inicial e final devem ser diferentes.');const arrow=this.$.vectorType?.value!=='segment',data={p1,p2,arrow};if(this.editingId){this.objects.update(this.editingId,data);this.showToast(arrow?'Vetor atualizado.':'Segmento atualizado.');}else{const obj=this.objects.addVector3D(p1,p2,colors[this.objects.items.length%colors.length],arrow);this.addHistory(`${arrow?'Vetor':'Segmento'} (${p1.join(', ')}) ${arrow?'→':'—'} (${p2.join(', ')})`,obj);this.showToast(arrow?'Vetor adicionado.':'Segmento adicionado.');}this.cancelEdit();}catch(e){this.showError(e);}},
+    addVector(){try{const rawP1=[this.$.vx1.value,this.$.vy1.value,this.$.vz1.value],rawP2=[this.$.vx2.value,this.$.vy2.value,this.$.vz2.value];const p1=rawP1.map(v=>this.parseNum(v)),p2=rawP2.map(v=>this.parseNum(v));if(p1.every((v,i)=>Math.abs(v-p2[i])<1e-12))throw new Error('Os pontos inicial e final devem ser diferentes.');const arrow=this.$.vectorType?.value!=='segment';const z1=String(rawP1[2]??'').trim(),z2=String(rawP2[2]??'').trim();const is3D=Math.abs(p1[2])>1e-12||Math.abs(p2[2])>1e-12||!/^[+-]?0+(?:[.,]0+)?$/.test(z1)||!/^[+-]?0+(?:[.,]0+)?$/.test(z2);const data={p1:is3D?p1:p1.slice(0,2),p2:is3D?p2:p2.slice(0,2),arrow,is3D};if(this.editingId){this.objects.update(this.editingId,data);this.showToast(arrow?'Vetor atualizado.':'Segmento atualizado.');}else{const obj=this.objects.addVector(data.p1,data.p2,colors[this.objects.items.length%colors.length],{arrow,is3D});this.addHistory(`${arrow?'Vetor':'Segmento'} (${data.p1.join(', ')}) ${arrow?'→':'—'} (${data.p2.join(', ')})`,obj);this.showToast(arrow?'Vetor adicionado.':'Segmento adicionado.');}this.cancelEdit();}catch(e){this.showError(e);}},
     updateVectorResult(){try{const x1=this.parseNum(this.$.vx1.value),y1=this.parseNum(this.$.vy1.value),z1=this.parseNum(this.$.vz1.value),x2=this.parseNum(this.$.vx2.value),y2=this.parseNum(this.$.vy2.value),z2=this.parseNum(this.$.vz2.value);const dx=x2-x1,dy=y2-y1,dz=z2-z1;const is2D=Math.abs(z1)<1e-12&&Math.abs(z2)<1e-12;document.getElementById('vectorResult').textContent=is2D?`v = (${this.fmt(dx)}, ${this.fmt(dy)}) · ‖v‖ = ${this.fmt(Math.hypot(dx,dy))}`:`v = (${this.fmt(dx)}, ${this.fmt(dy)}, ${this.fmt(dz)}) · ‖v‖ = ${this.fmt(Math.hypot(dx,dy,dz))}`;}catch{document.getElementById('vectorResult').textContent='—';}},
     vectorOperation(type){try{const ax=this.parseNum(this.$.vx2.value)-this.parseNum(this.$.vx1.value),ay=this.parseNum(this.$.vy2.value)-this.parseNum(this.$.vy1.value),az=this.parseNum(this.$.vz2.value)-this.parseNum(this.$.vz1.value),bx=this.parseNum(this.$.v2x.value),by=this.parseNum(this.$.v2y.value),bz=this.parseNum(this.$.v2z.value);if(type==='dot'){const r=ax*bx+ay*by+az*bz;document.getElementById('vectorOpsResult').textContent=`v · w = ${this.fmt(r)}`;}else{const cx=ay*bz-az*by,cy=az*bx-ax*bz,cz=ax*by-ay*bx;document.getElementById('vectorOpsResult').textContent=`v × w = (${this.fmt(cx)}, ${this.fmt(cy)}, ${this.fmt(cz)})`;}this.showToast(type==='dot'?'Produto escalar calculado.':'Produto vetorial calculado.');}catch(e){this.showError(e);}},
     fmt(n){return Number(n.toFixed(8)).toString();},

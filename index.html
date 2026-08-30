@@ -81,7 +81,7 @@
 <button aria-label="Fechar controles" class="icon-btn close-controls-btn" id="closeControlsBtn" title="Fechar controles" type="button">
 <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
-</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone"><div class="zone-header"><span class="zone-title">Contexto da expressão</span><span class="zone-description">Tipo de representação, símbolos e variáveis</span></div><div aria-label="Tipo de objeto gráfico" class="tabs" role="tablist">
+</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone"><div aria-label="Tipo de objeto gráfico" class="tabs" role="tablist">
 <button aria-controls="panel-function" aria-selected="true" class="tab active" data-tab="function" role="tab" title="Função"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Função</span></button>
 <button aria-controls="panel-parametric" aria-selected="false" class="tab" data-tab="parametric" role="tab" title="Curva paramétrica"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Paramétrica</span></button>
 <button aria-controls="panel-vector" aria-selected="false" class="tab" data-tab="vector" role="tab" title="Vetor"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Vetor</span></button>
@@ -113,7 +113,7 @@
 </div>
 <div class="field-help" id="variablesHelp">Use nomes simples separados por vírgula. Funções e constantes reservadas não podem ser usadas como variáveis.</div>
 <div aria-live="polite" class="variables-summary" id="variablesSummary">Variáveis ativas: x, y, z, t</div>
-</section></details></section><section class="panel-zone input-zone"><div class="zone-header"><span class="zone-title">Entrada de dados</span><span class="zone-description">Configure o objeto antes de adicionar ao gráfico</span></div><div class="tab-content">
+</section></details></section><section class="panel-zone input-zone"><div class="tab-content">
 <section class="tab-panel active" data-panel="function" id="panel-function" role="tabpanel">
 <div class="function-context-row">
 <div>
@@ -153,18 +153,6 @@
 <button class="primary-btn" data-panel-action="true" id="addParamBtn" type="button">Adicionar curva paramétrica</button>
 </section>
 <section class="tab-panel" data-panel="vector" hidden="" id="panel-vector" role="tabpanel">
-<section aria-labelledby="vectorVariablesTitle" class="vector-variable-box">
-<div class="section-kicker">VARIÁVEIS NOS CAMPOS DO VETOR</div>
-<h2 id="vectorVariablesTitle">Use variáveis e parâmetros</h2>
-<p class="section-help">Os campos aceitam números ou expressões. Ex.: <strong>a</strong>, <strong>a+3</strong>, <strong>2·b</strong>.</p>
-<div class="parameter-create">
-<input aria-label="Nome do parâmetro" autocomplete="off" class="numeric-input" id="parameterName" maxlength="24" placeholder="Nome (ex.: a)" spellcheck="false" type="text"/>
-<input aria-label="Valor do parâmetro" autocomplete="off" class="numeric-input" id="parameterValue" maxlength="80" placeholder="Valor (ex.: 2 ou π/2)" spellcheck="false" type="text"/>
-<button class="secondary-btn" id="addParameterBtn" type="button">Adicionar parâmetro</button>
-</div>
-<div aria-live="polite" class="parameter-list" id="parameterList"></div>
-<div class="variables-summary" id="vectorVariableHelp">Variáveis disponíveis: x, y, z, t</div>
-</section>
 <div class="vector-mode-row">
 <label class="field-label" for="vectorType">Representação</label>
 <select aria-label="Tipo de representação vetorial" class="select-input" id="vectorType">
@@ -188,7 +176,7 @@
 <label>z₂<input class="numeric-input expression-input" id="vz2" type="text" value="0"/></label>
 </div>
 </div>
-<div aria-live="polite" class="vector-result" id="vectorResult">v = (3, 4, 0) · ‖v‖ = 5</div>
+<div aria-live="polite" class="vector-result" id="vectorResult">v = (3, 4) · ‖v‖ = 5</div>
 <button class="primary-btn" data-panel-action="true" id="addVectorBtn" type="button">Adicionar vetor</button>
 <div class="vector-ops">
 <div class="field-label">Segundo vetor (para produto)</div>
