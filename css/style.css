@@ -63,3 +63,157 @@
 .show-controls-btn{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:40px;width:auto;max-width:calc(100% - 24px);background:var(--accent);color:#000;border:0;border-radius:30px;font-weight:700;font-size:13px;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:20;white-space:nowrap;}
 .show-controls-btn:hover{background:#7dd3fc;}
 .show-controls-btn.hidden{display:none!important;}
+
+/* Final inline SVG icon alignment */
+.icon-btn, .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.icon-btn svg, .action-btn svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.collapse-icon-left, .collapse-icon-right {
+  transition: opacity .2s ease, transform .2s ease;
+}
+.collapse-icon-left.hidden, .collapse-icon-right.hidden {
+  display: none !important;
+}
+
+
+/* === Iconografia e botoes: acabamento visual consistente === */
+button{appearance:none;-webkit-appearance:none}
+.icon-btn,
+.action-btn,
+.tool-btn,
+.secondary-btn,
+.text-btn,
+.math-tools-btn,
+.clear-field-btn,
+.dropdown-btn,
+.row-btn{
+  font-family:inherit;
+}
+.icon-btn,
+.action-btn,
+.math-tools-btn{
+  border:1px solid var(--line);
+  background:#131d28;
+  color:var(--text);
+  border-radius:8px;
+  cursor:pointer;
+}
+.icon-btn:hover,
+.action-btn:hover,
+.math-tools-btn:hover{
+  border-color:#3e5168;
+  background:#182433;
+}
+.icon-btn:active,
+.action-btn:active,
+.math-tools-btn:active{transform:translateY(1px)}
+.action-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:auto;
+  min-width:38px;
+  height:38px;
+  padding:0 11px;
+  font-size:12px;
+  font-weight:650;
+  white-space:nowrap;
+}
+.icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  min-width:38px;
+  height:38px;
+  padding:0;
+}
+.icon-btn svg,
+.action-btn svg{
+  width:18px;
+  height:18px;
+  display:block;
+  flex:0 0 auto;
+  color:currentColor;
+}
+.action-btn > span{line-height:1}
+#exportBtn svg,#exportSvgBtn svg{width:16px;height:16px}
+.collapse-btn{
+  width:38px;
+  min-width:38px;
+  padding:0;
+  gap:0;
+}
+.collapse-btn .collapse-text{position:absolute}
+.collapse-icon-left,.collapse-icon-right{transition:opacity .18s ease,transform .18s ease}
+.collapse-icon-left.hidden,.collapse-icon-right.hidden{display:none!important}
+.math-tools-btn{
+  min-height:34px;
+  padding:0 10px;
+  font-size:11px;
+  font-weight:650;
+}
+.clear-field-btn{
+  position:absolute;
+  right:38px;
+  top:5px;
+  width:32px;
+  height:32px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  border-radius:7px;
+  cursor:pointer;
+}
+.clear-field-btn:hover{color:var(--text);background:#121d28;border-color:var(--line)}
+.dropdown-btn{
+  position:absolute;
+  right:5px;
+  top:5px;
+  width:28px;
+  height:32px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  border-radius:7px;
+  cursor:pointer;
+}
+.dropdown-btn:hover{color:var(--text);background:#121d28;border-color:var(--line)}
+.show-controls-btn{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:auto;
+  max-width:min(90%,320px);
+  min-height:40px;
+  padding:10px 16px;
+  background:var(--accent);
+  color:#071018;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  font-size:13px;
+  font-weight:750;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+}
+.show-controls-btn.hidden{display:none!important}
+.show-controls-btn:hover{background:#7dd3fc}
+.top-actions .action-btn,
+.top-actions .icon-btn{flex:0 0 auto}
+@media(max-width:600px){
+  .action-btn,.icon-btn{min-height:44px}
+  .icon-btn{width:44px;min-width:44px}
+  .collapse-btn{width:44px;min-width:44px}
+  .action-btn{padding:0 10px}
+  .math-tools-btn{min-height:44px}
+}
