@@ -18,6 +18,9 @@
       this.pointerActive = false;
       this.activePointers = new Map();
       this.pinchDistance = null;
+      this.rotationX = 0.62;
+      this.rotationY = 0.78;
+      this.projectionScale = 1;
       this.cache = new Map();
       this.resizeObserver = new ResizeObserver(() => this.resize());
       this.resizeObserver.observe(canvas.parentElement);
@@ -61,6 +64,9 @@
     center() {
       this.offsetX = 0;
       this.offsetY = 0;
+      this.rotationX = 0.62;
+      this.rotationY = 0.78;
+      this.projectionScale = 1;
       this.scale = Math.max(24, Math.min(64, this.size.w / 16));
       this.requestRender();
     }
@@ -123,8 +129,15 @@
           return;
         }
         if (!this.dragging) return;
-        this.offsetX += e.clientX - this.last.x;
-        this.offsetY += e.clientY - this.last.y;
+        const has3D = this.has3DObjects();
+        if (has3D && !e.shiftKey) {
+          this.rotationY += (e.clientX - this.last.x) * 0.008;
+          this.rotationX += (e.clientY - this.last.y) * 0.008;
+          this.rotationX = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, this.rotationX));
+        } else {
+          this.offsetX += e.clientX - this.last.x;
+          this.offsetY += e.clientY - this.last.y;
+        }
         this.last = { x: e.clientX, y: e.clientY };
         this.requestRender();
       });
@@ -206,6 +219,70 @@
       c.font='bold 16px system-ui'; c.textAlign='left'; c.textBaseline='middle'; if(oy>=14&&oy<=h-14)c.fillText('x',w-28,oy-13); if(ox>=14&&ox<=w-14){c.textBaseline='top';c.fillText('y',Math.min(w-16,ox+10),8);} c.restore();
     }
 
+    has3DObjects() { return this.objects.items.some((o) => ['surface', 'curve3d', 'line3d'].includes(o.type)); }
+
+    project3D(x, y, z) {
+      const cy = Math.cos(this.rotationY), sy = Math.sin(this.rotationY);
+      const rx = x * cy + z * sy;
+      const rz = -x * sy + z * cy;
+      const cx = Math.cos(this.rotationX), sx = Math.sin(this.rotationX);
+      const ry = y * cx - rz * sx;
+      const { w, h } = this.size;
+      const scale = this.scale * this.projectionScale;
+      return { x: w / 2 + this.offsetX + rx * scale, y: h / 2 + this.offsetY - ry * scale, depth: rz };
+    }
+
+    draw3DAxes() {
+      const c = this.ctx;
+      const axisLen = 4.5;
+      const O = this.project3D(0,0,0);
+      const X = this.project3D(axisLen,0,0);
+      const Y = this.project3D(0,axisLen,0);
+      const Z = this.project3D(0,0,axisLen);
+      c.save(); c.lineCap='round'; c.lineWidth=2;
+      const axes=[[X,'#ff6b6b','x'],[Y,'#63d391','y'],[Z,'#5ac8fa','z']];
+      for (const [p,color,label] of axes) {
+        c.strokeStyle=color; c.fillStyle=color; c.beginPath(); c.moveTo(O.x,O.y); c.lineTo(p.x,p.y); c.stroke();
+        const ang=Math.atan2(p.y-O.y,p.x-O.x), len=8;
+        c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-len*Math.cos(ang-Math.PI/6),p.y-len*Math.sin(ang-Math.PI/6)); c.lineTo(p.x-len*Math.cos(ang+Math.PI/6),p.y-len*Math.sin(ang+Math.PI/6)); c.closePath(); c.fill();
+        c.font='bold 13px system-ui'; c.fillText(label,p.x+6,p.y-6);
+      }
+      c.fillStyle='rgba(255,255,255,.16)';
+      const range=4, step=1;
+      for(let i=-range;i<=range;i+=step){
+        const a=this.project3D(i,0,-range), b=this.project3D(i,0,range); c.strokeStyle='rgba(90,200,250,.09)'; c.lineWidth=1; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
+        const aa=this.project3D(-range,0,i), bb=this.project3D(range,0,i); c.beginPath(); c.moveTo(aa.x,aa.y); c.lineTo(bb.x,bb.y); c.stroke();
+      }
+      c.restore();
+    }
+
+    drawSurface(obj) {
+      let solver; try { solver=this.getCompiled(obj.id,obj.data.expression,{x:0,y:0}); } catch { return; }
+      const steps=20, range=Math.max(1, Number(obj.data.range)||5), points=[];
+      for(let i=0;i<=steps;i++){
+        const row=[]; const x=-range+(2*range)*i/steps;
+        for(let j=0;j<=steps;j++){ const y=-range+(2*range)*j/steps, z=solver({x,y}); row.push(Number.isFinite(z)&&Math.abs(z)<1e5?this.project3D(x,y,z):null); }
+        points.push(row);
+      }
+      const c=this.ctx; c.save(); c.lineWidth=1;
+      for(let i=0;i<steps;i++) for(let j=0;j<steps;j++){
+        const a=points[i][j],b=points[i+1][j],d=points[i][j+1],e=points[i+1][j+1]; if(!a||!b||!d||!e) continue;
+        c.fillStyle=obj.color+'18'; c.strokeStyle=obj.color+'88'; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.lineTo(e.x,e.y); c.lineTo(d.x,d.y); c.closePath(); c.fill(); c.stroke();
+      } c.restore();
+    }
+
+    drawCurve3D(obj) {
+      let sx,sy,sz; try { sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}); sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0}); sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,{t:0}); } catch { return; }
+      const c=this.ctx; c.save(); c.strokeStyle=obj.color; c.lineWidth=2.4; c.lineCap='round'; c.beginPath(); let started=false;
+      for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700; const x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)||Math.max(Math.abs(x),Math.abs(y),Math.abs(z))>1e5){started=false;continue;} const p=this.project3D(x,y,z); if(!started){c.moveTo(p.x,p.y);started=true;} else c.lineTo(p.x,p.y); } c.stroke(); c.restore();
+    }
+
+    drawLine3D(obj) {
+      const p1=this.project3D(...obj.data.p1), p2=this.project3D(...obj.data.p2);
+      const c=this.ctx; c.save(); c.strokeStyle=obj.color; c.fillStyle=obj.color; c.lineWidth=2.5; c.beginPath(); c.moveTo(p1.x,p1.y); c.lineTo(p2.x,p2.y); c.stroke();
+      const ang=Math.atan2(p2.y-p1.y,p2.x-p1.x), len=12; c.beginPath(); c.moveTo(p2.x,p2.y); c.lineTo(p2.x-len*Math.cos(ang-Math.PI/6),p2.y-len*Math.sin(ang-Math.PI/6)); c.lineTo(p2.x-len*Math.cos(ang+Math.PI/6),p2.y-len*Math.sin(ang+Math.PI/6)); c.closePath(); c.fill(); c.restore();
+    }
+
     getCompiled(id, expression, variables) {
       const key = `${id}|${expression}|${Object.keys(variables).join(',')}`;
       const cached = this.cache.get(key);
@@ -278,6 +355,9 @@
       else if (obj.type === 'circle') this.drawCircle(obj);
       else if (obj.type === 'ellipse') this.drawEllipse(obj);
       else if (obj.type === 'line') this.drawLine(obj);
+      else if (obj.type === 'surface') this.drawSurface(obj);
+      else if (obj.type === 'curve3d') this.drawCurve3D(obj);
+      else if (obj.type === 'line3d') this.drawLine3D(obj);
     }
 
     render() {
@@ -286,6 +366,7 @@
       this.ctx.fillStyle = '#0d131b';
       this.ctx.fillRect(0, 0, w, h);
       this.drawGrid(); this.drawAxes();
+      if (this.has3DObjects()) this.draw3DAxes();
       for (const obj of this.objects.items) if (obj.visible) this.drawObject(obj);
       if (global.AppUI) global.AppUI.renderPreview(this);
     }
@@ -357,6 +438,9 @@
           return segments.map(seg=>`<path d="${seg.map((q,i)=>`${i?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
         } catch (error) { console.warn('[GraphEngine] Falha ao exportar objeto:', obj, error); return ''; }
       }
+      if (obj.type === 'line3d') { const a=this.project3D(...obj.data.p1), b=this.project3D(...obj.data.p2); return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5" marker-end="url(#vectorArrow)"/>`; }
+      if (obj.type === 'curve3d') { try { const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0}), sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,{t:0}); let d='',started=false; for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700,x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)){started=false;continue;} const q=this.project3D(x,y,z); d+=`${started?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `; started=true;} return `<path d="${d.trim()}" fill="none" stroke="${color}" stroke-width="2.2"/>`; } catch(e){console.warn('[GraphEngine] Falha ao exportar curva 3D:',e);return '';}}
+      if (obj.type === 'surface') { try { const solver=this.getCompiled(obj.id,obj.data.expression,{x:0,y:0}), steps=20, range=Math.max(1,Number(obj.data.range)||5); let out='<g fill="none" stroke="'+color+'" stroke-opacity=".45" stroke-width="1">'; for(let i=0;i<=steps;i++){let d='';for(let j=0;j<=steps;j++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}for(let j=0;j<=steps;j++){let d='';for(let i=0;i<=steps;i++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}return out+'</g>'; } catch(e){console.warn('[GraphEngine] Falha ao exportar superfície 3D:',e);return '';}}
       console.warn('[GraphEngine] Tipo de objeto não reconhecido para SVG:', obj.type, obj);
       return '';
     }

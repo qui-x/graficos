@@ -2,6 +2,6 @@
   "name": "graph-calculator",
   "private": true,
   "scripts": {
-    "test": "node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/smoke.test.js && node tests/ui-icons.test.js && node tests/icon_regression.test.js && node tests/header_icons_final.test.js && node tests/button_style_regression.test.js && node tests/uiux.test.js"
+    "test": "node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/smoke.test.js && node tests/ui-icons.test.js && node tests/icon_regression.test.js && node tests/header_icons_final.test.js && node tests/button_style_regression.test.js && node tests/uiux.test.js && node tests/math_notation_ui.test.js && node tests/pwa_session.test.js && node tests/graph3d.test.js"
   }
 }

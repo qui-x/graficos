@@ -116,3 +116,32 @@ button{appearance:none;-webkit-appearance:none;font:inherit}
   .coordinate-readout{width:100%;font-size:11px}
   .objects-list,.history-list{max-height:150px}
 }
+
+/* === Mathematical notation keypad === */
+.math-keypad button, .math-menu button {
+  font-family: "Cambria Math", "STIX Two Math", "DejaVu Serif", "Times New Roman", serif;
+  font-variant-numeric: normal;
+  font-size: 16px;
+  line-height: 1;
+}
+.math-keypad button { min-height: 38px; }
+.math-keypad .math-power { display:inline-flex; align-items:baseline; }
+.math-keypad sup, .math-menu sup { font-size:.72em; line-height:0; position:relative; top:-.25em; }
+.math-menu button[data-insert="asin("] , .math-menu button[data-insert="acos("] , .math-menu button[data-insert="atan("] { font-size: 15px; }
+.math-menu button[data-insert="abs("] { font-size: 17px; }
+.math-menu button[data-insert="exp("] { font-size: 17px; }
+
+@media (max-width: 700px) {
+  .math-keypad button, .math-menu button { min-height: 44px; }
+}
+
+/* PWA install action */
+.install-btn { color: var(--text); }
+.install-btn.hidden { display: none !important; }
+@media (max-width: 600px) { .install-btn { min-height: 44px; } }
+
+/* Extensão 3D */
+.tabs{grid-template-columns:repeat(4,minmax(90px,1fr));overflow-x:auto;scrollbar-width:thin}
+.tab{white-space:nowrap}
+.three-col .numeric-input{min-width:0}
+@media(max-width:900px){.tabs{grid-template-columns:repeat(4,minmax(92px,1fr));overflow-x:auto}.tab-content{min-width:0}}

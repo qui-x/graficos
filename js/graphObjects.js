@@ -98,6 +98,14 @@
       } catch { /* sessão corrompida é ignorada */ }
     }
 
+    addSurface(expression, color) { return this.add('surface', { expression }, color); }
+
+    addCurve3D(xExpr, yExpr, zExpr, tMin, tMax, color) {
+      return this.add('curve3d', { xExpr, yExpr, zExpr, tMin, tMax }, color);
+    }
+
+    addLine3D(p1, p2, color) { return this.add('line3d', { p1: clone(p1), p2: clone(p2) }, color); }
+
     get visible() { return this.items.filter((o) => o.visible); }
   }
 

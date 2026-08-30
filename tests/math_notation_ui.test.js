@@ -1,0 +1,11 @@
+const fs=require('fs');
+const path=require('path');
+const root=path.join(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const ui=fs.readFileSync(path.join(root,'js','ui.js'),'utf8');
+const css=fs.readFileSync(path.join(root,'css','style.css'),'utf8');
+for(const text of ['√','x²','x³','π','÷','sin⁻¹','cos⁻¹','tan⁻¹','|x|','eˣ']) if(!html.includes(text) && !ui.includes(text)) throw new Error(`symbol missing: ${text}`);
+if(ui.includes("['sqrt','sqrt(']")) throw new Error('programmatic sqrt label still present');
+if(ui.includes("['asin','asin(']")) throw new Error('raw asin label still present');
+if(!css.includes('Cambria Math')) throw new Error('math font stack missing');
+console.log('math notation UI OK');
