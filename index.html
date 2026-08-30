@@ -51,18 +51,39 @@
 <button aria-label="Ativar tela cheia" class="icon-btn" id="fullscreenBtn" title="Tela cheia" type="button">
 <svg aria-hidden="true" height="18" viewbox="0 0 24 24" width="18"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"></path></svg>
 </button>
-<button aria-label="Exportar PNG" class="action-btn" id="exportBtn" title="Exportar PNG" type="button">
-<svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z" fill="currentColor"></path></svg><span>PNG</span>
-</button>
-<button aria-label="Exportar SVG" class="action-btn" id="exportSvgBtn" title="Exportar SVG" type="button">
-<svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 3v10.17l3.59-3.58L17 11l-5 5-5-5 1.41-1.41L10 13.17V3h2zm-7 16h14v2H5v-2z" fill="currentColor"></path></svg><span>SVG</span>
-</button>
 </div>
 </header>
 <div aria-hidden="true" class="backdrop hidden" id="backdrop"></div>
 <section class="workspace">
+<section class="mode-sidebar" aria-label="Modos de representação">
+  <div class="mode-sidebar-header">
+    <span class="mode-sidebar-title">Modos</span>
+    <button class="icon-btn mode-collapse-btn" id="modeCollapseBtn" type="button" aria-label="Recolher barra de modos" aria-pressed="false" title="Recolher barra de modos">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+    </button>
+  </div>
+  <nav class="mode-nav" aria-label="Tipos de representação">
+    <button class="mode-btn active" data-mode="function" type="button" aria-current="true" title="Função"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17c4-1 5-9 9-10 3-.7 4.2 4.8 7 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Função</span></button>
+    <button class="mode-btn" data-mode="parametric" type="button" title="Paramétrica"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c3-8 13-8 16 0M4 8c3 8 13 8 16 0" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Paramétrica</span></button>
+    <button class="mode-btn" data-mode="vector" type="button" title="Vetor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5M13 5h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Vetor</span></button>
+    <button class="mode-btn" data-mode="geometry" type="button" title="Geometria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18L9 6l10 4-4 10z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Geometria</span></button>
+    <button class="mode-btn" data-mode="surface" type="button" title="Superfície 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l6-8 10 4-6 8zM10 8v8M4 16l10 4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span>Superfície</span></button>
+    <button class="mode-btn" data-mode="curve3d" type="button" title="Curva 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2-9 6 9 8 0s6-9 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Curva 3D</span></button>
+    <button class="mode-btn" data-mode="line3d" type="button" title="Reta 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20L20 4M7 20h-3v-3M17 4h3v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Reta 3D</span></button>
+  </nav>
+  <button class="mobile-more-btn" id="mobileMoreBtn" type="button" aria-expanded="false" aria-label="Mais opções" title="Mais opções"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><span>Mais</span></button>
+  <div class="mode-actions">
+    <button class="icon-btn" id="extrasBtn" type="button" aria-label="Abrir configurações extras" title="Configurações extras">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.04.32-.07.65-.07.98s.02.66.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"/></svg>
+    </button>
+  </div>
+  <div class="mode-manage">
+<section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row"><h2>Objetos</h2><button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section>
+  </div>
+</section>
 <aside aria-label="Controles de entrada" class="panel controls-panel"><div class="controls-header">
 <span>Configurações</span>
+<button aria-label="Recolher controles" class="icon-btn desktop-controls-collapse" id="controlsCollapseBtn" title="Recolher controles" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg></button>
 <button aria-label="Fechar controles" class="icon-btn close-controls-btn" id="closeControlsBtn" title="Fechar controles" type="button">
 <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
@@ -231,7 +252,39 @@
 <div aria-label="Pré-visualização da reta 3D" aria-live="polite" class="math-preview" id="line3dPreview"></div>
 <button class="primary-btn" data-panel-action="true" id="addLine3DBtn" type="button">Adicionar reta 3D</button>
 </section>
-</div></section><section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row"><h2>Objetos</h2><button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section></div><div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
+</div></section></div>
+<details class="extras-section" id="extrasSection">
+  <summary><svg class="extras-summary-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.65-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.14.33-.11.66-.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"/></svg><span>Configurações extras</span></summary>
+  <div class="extras-content">
+    <section class="extras-group" aria-labelledby="extrasExportTitle">
+      <div class="extras-title" id="extrasExportTitle">Exportação</div>
+      <div class="extras-actions">
+        <button class="secondary-btn action-btn" id="exportBtn" type="button" title="Exportar o gráfico como PNG" aria-label="Exportar gráfico como PNG">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z"/></svg><span>PNG</span>
+        </button>
+        <button class="secondary-btn action-btn" id="exportSvgBtn" type="button" title="Exportar o gráfico como SVG" aria-label="Exportar gráfico como SVG">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M4 4h16v16H4zM8 8l2 2-2 2 2 2-2 2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>SVG</span>
+        </button>
+      </div>
+    </section>
+    <section class="extras-group" aria-labelledby="extrasViewTitle">
+      <div class="extras-title" id="extrasViewTitle">Visualização</div>
+      <div class="extras-actions extras-actions-3">
+        <button class="secondary-btn" id="extraGridBtn" type="button">Grade</button>
+        <button class="secondary-btn" id="extraAxesBtn" type="button">Eixos</button>
+        <button class="secondary-btn" id="extraResetViewBtn" type="button">Recentrar</button>
+      </div>
+    </section>
+    <section class="extras-group" aria-labelledby="extrasSessionTitle">
+      <div class="extras-title" id="extrasSessionTitle">Sessão</div>
+      <div class="extras-actions">
+        <button class="secondary-btn" id="extraSaveBtn" type="button">Salvar sessão</button>
+        <button class="secondary-btn danger-btn" id="extraClearBtn" type="button">Limpar objetos</button>
+      </div>
+    </section>
+  </div>
+</details>
+<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
 <section class="panel graph-panel">
 <div class="graph-toolbar">
 <div class="toolbar-group">

@@ -1,0 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
+if (!html.includes('class="mode-sidebar"')) throw new Error('mode sidebar missing');
+if (!/class="[^"]*controls-panel/.test(html)) throw new Error('controls sidebar missing');
+if (!/class="[^"]*graph-panel/.test(html)) throw new Error('graph panel missing');
+if (!css.includes("grid-template-areas: 'modes graph controls'")) throw new Error('desktop order must be modes|graph|controls');
+if (!css.includes('grid-template-columns: 180px minmax(0, 1fr) 320px')) throw new Error('desktop columns incorrect');
+if (!css.includes('grid-template-columns: 180px minmax(0, 1fr) 0')) throw new Error('collapsed controls layout incorrect');
+console.log('desktop layout modes | graph | controls OK');

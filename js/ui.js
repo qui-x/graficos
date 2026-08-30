@@ -17,17 +17,16 @@
         if (!mobile) {
           this.$.controls?.classList.remove('open');
           this.$.controls?.classList.remove('collapsed');
-          this.$.workspace?.classList.remove('sidebar-collapsed');
-          this.$.workspace?.classList.remove('controls-collapsed');
+          this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
           this.$.backdrop?.classList.remove('show');
           this.$.backdrop?.classList.add('hidden');
           this.$.mobileMenuBtn?.classList.add('hidden');
-          this.$.showControls?.classList.toggle('hidden', !this.$.workspace?.classList.contains('sidebar-collapsed'));
+          this.$.showControls?.classList.toggle('hidden', true);
           this.$.showControls?.setAttribute('aria-hidden', String(!this.$.workspace?.classList.contains('sidebar-collapsed')));
           this.updateSidebarButtons(false);
           return;
         }
-        this.$.workspace?.classList.remove('sidebar-collapsed');
+        this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
         this.closeSidebar(false);
       };
@@ -70,7 +69,7 @@
         this.updateSidebarButtons(false);
         requestAnimationFrame(()=>this.focusFirstSidebarControl());
       } else {
-        this.$.workspace?.classList.remove('sidebar-collapsed');
+        this.$.workspace?.classList.remove('controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
         this.$.showControls?.classList.add('hidden');
         this.$.sidebarToggle?.setAttribute('aria-expanded','true');
@@ -96,7 +95,7 @@
         this.$.sidebarToggle?.querySelector('.close-menu-icon')?.classList.add('hidden');
         this.updateSidebarButtons(true);
       } else {
-        this.$.workspace?.classList.add('sidebar-collapsed');
+        this.$.workspace?.classList.add('controls-collapsed');
         this.$.controls?.classList.add('collapsed');
         this.$.showControls?.classList.remove('hidden');
         this.$.showControls?.setAttribute('aria-hidden','false');
@@ -109,12 +108,13 @@
       }
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
+
     toggleSidebar() {
       const mobile = global.innerWidth < 900;
       if (mobile) {
         this.$.controls?.classList.contains('open') ? this.closeSidebar() : this.openSidebar();
       } else {
-        this.$.workspace?.classList.contains('sidebar-collapsed') ? this.openSidebar() : this.closeSidebar();
+        this.$.workspace?.classList.contains('controls-collapsed') ? this.openSidebar() : this.closeSidebar();
       }
     },
     focusFirstSidebarControl() {
@@ -125,7 +125,7 @@
     handleSidebarKeydown(event) {
       if(event.key!=='Escape') return;
       const mobile=global.innerWidth<900;
-      const open=mobile ? this.$?.controls?.classList.contains('open') : !this.$?.workspace?.classList.contains('sidebar-collapsed');
+      const open=mobile ? this.$?.controls?.classList.contains('open') : !this.$?.workspace?.classList.contains('controls-collapsed');
       if(open) { event.preventDefault(); this.closeSidebar(); this.$?.sidebarToggle?.focus(); }
     },
     getConfiguredVariableNames() {
@@ -228,7 +228,7 @@
     escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); },
     cache() {
       this.lastMathInputId='functionExpr';
-      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), collapse:document.getElementById('collapseControlsBtn'), showControls:document.getElementById('showControlsBtn'), sidebarToggle:document.getElementById('sidebarToggle'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
+      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceExpr'), surfaceRange:document.getElementById('surfaceRange'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vz1:document.getElementById('vz1'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2z:document.getElementById('v2z'), parameterName:document.getElementById('parameterName'), parameterValue:document.getElementById('parameterValue'), addParameter:document.getElementById('addParameterBtn'), parameterList:document.getElementById('parameterList'), vectorVariableHelp:document.getElementById('vectorVariableHelp'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), collapse:document.getElementById('collapseControlsBtn'), showControls:document.getElementById('showControlsBtn'), sidebarToggle:document.getElementById('sidebarToggle'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasSection:document.getElementById('extrasSection'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'),  mobileMore:document.getElementById('mobileMoreBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasSection:document.getElementById('extrasSection'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'),  controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
     },
     buildMenus() { document.querySelectorAll('.math-menu').forEach((m)=>{m.innerHTML=menuHtml;}); const globalMenu=document.getElementById('globalMathMenu'); if(globalMenu) globalMenu.innerHTML=menuHtml; document.querySelectorAll('.dropdown-btn').forEach((b)=>b.addEventListener('click',()=>{const m=document.getElementById(b.dataset.menu);if(m)m.classList.toggle('hidden');})); const globalBtn=document.getElementById('globalMathBtn'); if(globalBtn)globalBtn.addEventListener('click',()=>{const open=document.getElementById('globalMathMenu')?.classList.toggle('hidden')===false;globalBtn.setAttribute('aria-expanded',String(open));}); document.querySelectorAll('.math-menu [data-insert]').forEach((b)=>b.addEventListener('click',()=>{this.insertAtActive(b.dataset.insert);document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');})); document.addEventListener('click',(e)=>{if(!e.target.closest('.math-editor')&&!e.target.closest('.global-math-tools')){document.querySelectorAll('.math-menu').forEach(m=>m.classList.add('hidden'));const gb=document.getElementById('globalMathBtn');if(gb)gb.setAttribute('aria-expanded','false');}}); },
     initPWAInstall() {
@@ -251,8 +251,8 @@
         this.$.install.classList.add('hidden');
       });
     },
-    bindTabs() { this.$.tabs.forEach((tab)=>tab.addEventListener('click',()=>this.setTab(tab.dataset.tab))); },
-    setTab(tabName) { this.cancelEdit(); this.activeTab=tabName; this.$.tabs.forEach((t)=>{const active=t.dataset.tab===tabName;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));}); this.$.panels.forEach((p)=>{const active=p.dataset.panel===tabName;p.classList.toggle('active',active);p.hidden=!active;}); this.updatePreviews(); this.updateActionBar(); },
+    bindTabs() { this.$.tabs.forEach((tab)=>tab.addEventListener('click',()=>this.setTab(tab.dataset.tab))); this.$.modeButtons?.forEach((btn)=>btn.addEventListener('click',()=>{this.setTab(btn.dataset.mode); if(global.innerWidth<900)this.openSidebar();})); },
+    setTab(tabName) { this.cancelEdit(); this.activeTab=tabName; this.$.tabs.forEach((t)=>{const active=t.dataset.tab===tabName;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));}); this.$.modeButtons?.forEach((t)=>{const active=t.dataset.mode===tabName;t.classList.toggle('active',active);t.setAttribute('aria-current',active?'true':'false');}); this.$.panels.forEach((p)=>{const active=p.dataset.panel===tabName;p.classList.toggle('active',active);p.hidden=!active;}); this.updatePreviews(); this.updateActionBar(); },
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceExpr','surfaceRange','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
@@ -265,14 +265,21 @@
       document.getElementById('geometryType').addEventListener('change',()=>{this.initGeometryFields();this.updateGeometryPreview();}); this.$.addGeometry.addEventListener('click',()=>this.addGeometry());
       this.$.clearObjects.addEventListener('click',()=>{this.objects.clear();this.persistSession();}); this.$.clearHistory.addEventListener('click',()=>this.clearHistory()); this.$.undo.addEventListener('click',()=>this.undo()); this.$.redo.addEventListener('click',()=>this.redo());
       document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('reset3DBtn')?.addEventListener('click',()=>{this.engine.rotationX=0.62;this.engine.rotationY=0.78;this.engine.projectionScale=1;this.engine.requestRender();this.showToast('Orientação 3D restaurada.');}); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
-      document.getElementById('exportBtn').addEventListener('click',()=>this.engine.exportPng()); document.getElementById('exportSvgBtn').addEventListener('click',()=>this.engine.exportSvg()); document.getElementById('fullscreenBtn').addEventListener('click',()=>this.toggleFullscreen());
+      this.$.exportBtn?.addEventListener('click',()=>this.engine.exportPng()); this.$.exportSvgBtn?.addEventListener('click',()=>this.engine.exportSvg()); document.getElementById('fullscreenBtn').addEventListener('click',()=>this.toggleFullscreen());
+      this.$.extrasBtn?.addEventListener('click',()=>{ const open=!!this.$.extrasSection?.open; if(this.$.extrasSection){ this.$.extrasSection.open=!open; if(!open)this.$.extrasSection.scrollIntoView({behavior:'smooth',block:'nearest'}); } });
+      this.$.extraGridBtn?.addEventListener('click',()=>{ this.engine.showGrid=!this.engine.showGrid; this.engine.requestRender(); });
+      this.$.extraAxesBtn?.addEventListener('click',()=>{ this.engine.showAxes=!this.engine.showAxes; this.engine.requestRender(); });
+      this.$.extraResetViewBtn?.addEventListener('click',()=>this.engine.center());
+      this.$.extraSaveBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');});
+      this.$.extraClearBtn?.addEventListener('click',()=>this.$.clearObjects?.click());
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
+      this.$.mobileMore?.addEventListener('click',()=>{const open=this.$.modeSidebar.classList.toggle('mobile-expanded');this.$.mobileMore.setAttribute('aria-expanded',String(open));requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
+      this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.sidebarToggle?.addEventListener('click',()=>this.toggleSidebar());
       this.$.collapse?.addEventListener('click',()=>this.toggleSidebar());
       this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
       this.$.backdrop?.addEventListener('click',()=>this.closeSidebar());
       this.$.mobileMenuBtn?.addEventListener('click',()=>this.openSidebar());
-      this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
       this.$.saveSessionBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');}); this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
       global.addEventListener('keydown',(event)=>this.handleSidebarKeydown?.(event));
       this.$.showControls?.addEventListener('click',()=>this.openSidebar());

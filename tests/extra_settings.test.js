@@ -1,0 +1,12 @@
+const fs=require('fs');
+const html=fs.readFileSync('index.html','utf8');
+const ui=fs.readFileSync('js/ui.js','utf8');
+if(!html.includes('id="extrasSection"')) throw new Error('extras section missing');
+if(!html.includes('id="exportBtn"')||!html.includes('id="exportSvgBtn"')) throw new Error('export buttons missing from extras');
+if(!html.includes('id="extrasBtn"')) throw new Error('extras button missing');
+if((html.match(/id="exportBtn"/g)||[]).length!==1) throw new Error('duplicate exportBtn');
+if((html.match(/id="exportSvgBtn"/g)||[]).length!==1) throw new Error('duplicate exportSvgBtn');
+if(ui.includes('toggleControlsPanel()')) throw new Error('obsolete duplicate control toggle remains');
+if((ui.match(/modeCollapse\?\.addEventListener\('click'/g)||[]).length!==1) throw new Error('duplicate mode collapse handler');
+if((ui.match(/closeControls\?\.addEventListener\('click'/g)||[]).length!==1) throw new Error('duplicate close handler');
+console.log('extra settings OK');
