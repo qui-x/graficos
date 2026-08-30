@@ -58,3 +58,6 @@ Os testes atuais cobrem o parser matemático, gerenciamento de objetos, persist�
 ## Observação sobre a entrada matemática
 
 A interface atual mantém o campo textual com preview KaTeX porque isso preserva compatibilidade com o parser seguro existente. Uma migração futura para MathQuill/MathLive pode ser feita como camada de edição, mantendo o mesmo `MathEngine` por trás.
+
+## Entrada matemática visual
+A versão atual usa MathLive 0.110.0 via CDN para os campos de função e curvas paramétricas. O componente `<math-field>` oferece edição matemática estruturada, teclado virtual e saída em LaTeX/AsciiMath; a expressão em AsciiMath é normalizada pelo `MathEngine` seguro antes da avaliação.

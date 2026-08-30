@@ -18,6 +18,7 @@
       this.pointerActive = false;
       this.activePointers = new Map();
       this.pinchDistance = null;
+      this.boxZoom = { active: false, startX: 0, startY: 0, x: 0, y: 0 };
       this.cache = new Map();
       this.resizeObserver = new ResizeObserver(() => this.resize());
       this.resizeObserver.observe(canvas.parentElement);
@@ -28,11 +29,15 @@
     resize() {
       const parent = this.canvas?.parentElement;
       if (!parent) return;
-      const rect = parent.getBoundingClientRect();
-      const fallbackW = Number.isFinite(global.innerWidth) ? global.innerWidth : 320;
-      const fallbackH = Number.isFinite(global.innerHeight) ? global.innerHeight : 320;
-      const w = Math.max(320, Math.floor(rect.width > 0 ? rect.width : fallbackW));
-      const h = Math.max(320, Math.floor(rect.height > 0 ? rect.height : fallbackH));
+      const fallbackW = Number.isFinite(global.innerWidth) ? global.innerWidth : 800;
+      const fallbackH = Number.isFinite(global.innerHeight) ? global.innerHeight : 600;
+      const clientW = Number(parent.clientWidth) || 0;
+      const clientH = Number(parent.clientHeight) || 0;
+      const rect = typeof parent.getBoundingClientRect === 'function' ? parent.getBoundingClientRect() : null;
+      const rectW = Number(rect?.width) || 0;
+      const rectH = Number(rect?.height) || 0;
+      const w = Math.max(320, Math.floor(clientW || rectW || fallbackW));
+      const h = Math.max(320, Math.floor(clientH || rectH || fallbackH));
       const dpr = Math.max(1, Math.min(2, global.devicePixelRatio || 1));
       const pixelW = Math.floor(w * dpr);
       const pixelH = Math.floor(h * dpr);
@@ -40,8 +45,9 @@
         this.canvas.width = pixelW;
         this.canvas.height = pixelH;
       }
-      this.canvas.style.width = `${w}px`;
-      this.canvas.style.height = `${h}px`;
+      this.canvas.style.width = '100%';
+      this.canvas.style.height = '100%';
+      this.canvas.style.display = 'block';
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       this.invalidateCache('resize');
       this.requestRender();
@@ -84,6 +90,17 @@
           this.dragging = false;
           return;
         }
+        const rect = this.canvas.getBoundingClientRect();
+        const localX = e.clientX - rect.left;
+        const localY = e.clientY - rect.top;
+        if (e.shiftKey) {
+          this.boxZoom = { active: true, startX: localX, startY: localY, x: localX, y: localY };
+          global.AppUI?.showZoomBox?.(this.boxZoom);
+          this.dragging = false;
+          this.pointerActive = true;
+          this.canvas.setPointerCapture(e.pointerId);
+          return;
+        }
         this.dragging = true;
         this.pointerActive = true;
         this.last = { x: e.clientX, y: e.clientY };
@@ -94,8 +111,19 @@
         const rect = this.canvas.getBoundingClientRect();
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
+        if (px < 0 || py < 0 || px > rect.width || py > rect.height || !Number.isFinite(rect.width) || !Number.isFinite(rect.height) || rect.width <= 0 || rect.height <= 0) {
+          this.pointer = null;
+          global.AppUI?.updateCoordinates(null);
+          return;
+        }
         this.pointer = this.screenToWorld(px, py);
         global.AppUI?.updateCoordinates(this.pointer);
+        global.AppUI?.updateGraphTooltip?.(this.pointer, px, py);
+        if (this.boxZoom.active) {
+          this.boxZoom.x = px; this.boxZoom.y = py;
+          global.AppUI?.showZoomBox?.(this.boxZoom);
+          return;
+        }
         if (this.activePointers.size >= 2) {
           const points = [...this.activePointers.values()];
           const nextDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
@@ -118,10 +146,11 @@
         this.last = { x: e.clientX, y: e.clientY };
         this.requestRender();
       });
-      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null; this.dragging = false; this.pointerActive = false; };
+      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null; this.dragging = false; this.pointerActive = false; if (this.boxZoom.active) { this.applyBoxZoom(); } };
       this.canvas.addEventListener('pointerup', stop);
       this.canvas.addEventListener('pointercancel', stop);
-      this.canvas.addEventListener('pointerleave', () => { this.pointerActive = false; });
+      this.canvas.addEventListener('pointerleave', () => { this.pointerActive = false; this.pointer = null; global.AppUI?.updateCoordinates(null); global.AppUI?.updateGraphTooltip?.(null); });
+      this.canvas.addEventListener('dblclick', (e) => { const r=this.canvas.getBoundingClientRect(); const px=e.clientX-r.left, py=e.clientY-r.top; const before=this.screenToWorld(px,py); this.scale=Math.max(5,Math.min(300,this.scale*1.6)); const after=this.screenToWorld(px,py); this.offsetX+=(after.x-before.x)*this.scale; this.offsetY-=(after.y-before.y)*this.scale; this.invalidateCache('zoom'); this.requestRender(); });
       this.canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const r = this.canvas.getBoundingClientRect();
@@ -138,35 +167,92 @@
       }, { passive: false });
     }
 
+    applyBoxZoom(){if(!this.boxZoom.active)return;const {startX,startY,x,y}=this.boxZoom;this.boxZoom.active=false;global.AppUI?.showZoomBox?.(this.boxZoom);const left=Math.min(startX,x),right=Math.max(startX,x),top=Math.min(startY,y),bottom=Math.max(startY,y);if(right-left<12||bottom-top<12)return;const {w,h}=this.size;const worldTL=this.screenToWorld(left,top),worldBR=this.screenToWorld(right,bottom);const worldW=Math.max(1e-9,worldBR.x-worldTL.x),worldH=Math.max(1e-9,worldTL.y-worldBR.y);const targetScale=Math.min((w-20)/worldW,(h-20)/worldH);this.scale=Math.max(5,Math.min(300,targetScale));const centerX=(worldTL.x+worldBR.x)/2,centerY=(worldTL.y+worldBR.y)/2;this.offsetX=w/2-centerX*this.scale;this.offsetY=-(h/2-centerY*this.scale);this.invalidateCache('zoom');this.requestRender();}
+
     lineStyle(color, width = 2) { this.ctx.strokeStyle = color; this.ctx.lineWidth = width; this.ctx.lineCap = 'round'; this.ctx.lineJoin = 'round'; }
 
     drawGrid() {
       if (!this.showGrid) return;
-      const { w, h } = this.size, c = this.ctx;
-      const rawPixels = Math.max(18, this.scale);
-      const exponent = Math.floor(Math.log10(Math.max(rawPixels, 1)));
-      const mantissa = rawPixels / Math.pow(10, exponent);
-      const factor = mantissa >= 5 ? 5 : mantissa >= 2 ? 2 : 1;
-      const worldStep = factor * Math.pow(10, exponent);
-      const step = Math.max(18, worldStep * this.scale);
-      const ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
-      c.save();
-      c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1;
-      for (let x = ((ox % step) + step) % step; x < w; x += step) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
-      for (let y = ((oy % step) + step) % step; y < h; y += step) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+      const { w, h } = this.size;
+      const c = this.ctx;
+      const ox = w / 2 + this.offsetX;
+      const oy = h / 2 + this.offsetY;
 
-      c.fillStyle = 'rgba(255,255,255,.48)'; c.font = '11px system-ui';
-      const firstX = Math.ceil((-ox) / step);
-      for (let i = firstX; ; i++) {
-        const sx = ox + i * step;
-        if (sx >= w) break;
-        if (sx >= 6 && sx <= w - 6 && oy >= 0 && oy <= h) c.fillText(this.formatGridLabel(i * worldStep), sx + 3, Math.min(h - 5, oy + 14));
+      // Mantém a grade em uma densidade legível (~8–12 divisões por eixo).
+      const targetPixels = 90;
+      const rawWorldStep = targetPixels / Math.max(this.scale, 1e-9);
+      const exponent = Math.floor(Math.log10(Math.max(rawWorldStep, 1e-12)));
+      const normalized = rawWorldStep / Math.pow(10, exponent);
+      const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+      const worldStep = factor * Math.pow(10, exponent);
+      const step = Math.max(28, worldStep * this.scale);
+
+      const majorEvery = worldStep >= 5 ? 2 : 5;
+      const majorStep = worldStep * majorEvery;
+      const firstX = Math.floor((0 - ox) / step);
+      const lastX = Math.ceil((w - ox) / step);
+      const firstY = Math.floor((0 - oy) / step);
+      const lastY = Math.ceil((h - oy) / step);
+
+      c.save();
+      c.lineWidth = 1;
+      c.strokeStyle = 'rgba(86, 150, 190, .22)';
+      for (let i = firstX; i <= lastX; i += 1) {
+        const x = ox + i * step;
+        if (x < -1 || x > w + 1) continue;
+        c.beginPath(); c.moveTo(Math.round(x) + 0.5, 0); c.lineTo(Math.round(x) + 0.5, h); c.stroke();
       }
-      const firstY = Math.ceil((-oy) / step);
-      for (let i = firstY; ; i++) {
-        const sy = oy + i * step;
-        if (sy >= h) break;
-        if (sy >= 12 && sy <= h - 6 && ox >= 0 && ox <= w) c.fillText(this.formatGridLabel(-i * worldStep), Math.min(w - 28, ox + 6), sy - 4);
+      for (let i = firstY; i <= lastY; i += 1) {
+        const y = oy + i * step;
+        if (y < -1 || y > h + 1) continue;
+        c.beginPath(); c.moveTo(0, Math.round(y) + 0.5); c.lineTo(w, Math.round(y) + 0.5); c.stroke();
+      }
+
+      // Linhas principais a cada 5/10 unidades visualmente, com maior contraste.
+      c.strokeStyle = 'rgba(105, 171, 208, .34)';
+      c.lineWidth = 1.25;
+      for (let valueIndex = Math.floor((0 - ox) / (majorStep * this.scale)); valueIndex <= Math.ceil((w - ox) / (majorStep * this.scale)); valueIndex += 1) {
+        const x = ox + valueIndex * majorStep * this.scale;
+        if (x < -1 || x > w + 1) continue;
+        c.beginPath(); c.moveTo(Math.round(x) + 0.5, 0); c.lineTo(Math.round(x) + 0.5, h); c.stroke();
+      }
+      for (let valueIndex = Math.floor((0 - oy) / (majorStep * this.scale)); valueIndex <= Math.ceil((h - oy) / (majorStep * this.scale)); valueIndex += 1) {
+        const y = oy + valueIndex * majorStep * this.scale;
+        if (y < -1 || y > h + 1) continue;
+        c.beginPath(); c.moveTo(0, Math.round(y) + 0.5); c.lineTo(w, Math.round(y) + 0.5); c.stroke();
+      }
+
+      // Numeração somente quando o eixo correspondente está visível.
+      c.fillStyle = lightTheme ? 'rgba(31, 41, 51, .82)' : 'rgba(232, 243, 251, .82)';
+      c.font = '12px system-ui, sans-serif';
+      c.textBaseline = 'middle';
+
+      if (oy > 0 && oy < h) {
+        for (let i = firstX; i <= lastX; i += 1) {
+          if (Math.abs(i * worldStep) < 1e-12) continue;
+          const sx = ox + i * step;
+          if (sx < 4 || sx > w - 26) continue;
+          c.textAlign = 'center';
+          c.fillText(this.formatGridLabel(i * worldStep), sx, oy + 15);
+        }
+      }
+      if (ox > 28 && ox < w - 8) {
+        for (let i = firstY; i <= lastY; i += 1) {
+          if (Math.abs(i * worldStep) < 1e-12) continue;
+          const sy = oy + i * step;
+          if (sy < 9 || sy > h - 9) continue;
+          c.textAlign = 'right';
+          c.fillText(this.formatGridLabel(-i * worldStep), ox - 8, sy);
+        }
+      }
+
+      // Origem claramente identificada.
+      if (ox >= 0 && ox <= w && oy >= 0 && oy <= h) {
+        c.textAlign = 'right';
+        c.textBaseline = 'top';
+        c.font = 'bold 12px system-ui, sans-serif';
+        c.fillStyle = lightTheme ? 'rgba(31, 41, 51, .95)' : 'rgba(245, 250, 255, .95)';
+        c.fillText('0', ox - 6, oy + 5);
       }
       c.restore();
     }
@@ -175,13 +261,36 @@
 
     drawAxes() {
       if (!this.showAxes) return;
-      const { w, h } = this.size, c = this.ctx, ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
-      c.save(); c.strokeStyle = 'rgba(255,255,255,.52)'; c.fillStyle = 'rgba(255,255,255,.76)'; c.lineWidth = 1.5;
-      c.beginPath(); c.moveTo(0, oy); c.lineTo(w, oy); c.stroke();
-      c.beginPath(); c.moveTo(ox, h); c.lineTo(ox, 0); c.stroke();
-      c.beginPath(); c.moveTo(w - 9, oy - 4); c.lineTo(w - 1, oy); c.lineTo(w - 9, oy + 4); c.fill();
-      c.beginPath(); c.moveTo(ox - 4, 9); c.lineTo(ox, 1); c.lineTo(ox + 4, 9); c.fill();
-      c.font = '12px system-ui'; c.fillText('x', w - 20, Math.max(14, oy - 9)); c.fillText('y', Math.min(w - 16, ox + 8), 17);
+      const { w, h } = this.size;
+      const c = this.ctx;
+      const ox = w / 2 + this.offsetX;
+      const oy = h / 2 + this.offsetY;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
+      const axisColor = lightTheme ? '#1f2933' : '#eef6fb';
+
+      c.save();
+      c.strokeStyle = axisColor;
+      c.fillStyle = axisColor;
+      c.lineWidth = 2.2;
+      c.lineCap = 'round';
+
+      if (oy >= 0 && oy <= h) {
+        c.beginPath(); c.moveTo(0, oy); c.lineTo(Math.max(0, w - 12), oy); c.stroke();
+        c.beginPath();
+        c.moveTo(w - 15, oy - 6); c.lineTo(w - 2, oy); c.lineTo(w - 15, oy + 6);
+        c.closePath(); c.fill();
+      }
+      if (ox >= 0 && ox <= w) {
+        c.beginPath(); c.moveTo(ox, h); c.lineTo(ox, 12); c.stroke();
+        c.beginPath();
+        c.moveTo(ox - 6, 15); c.lineTo(ox, 2); c.lineTo(ox + 6, 15);
+        c.closePath(); c.fill();
+      }
+
+      c.font = '700 15px system-ui, sans-serif';
+      c.textAlign = 'left'; c.textBaseline = 'middle';
+      if (oy >= 12 && oy <= h - 12) c.fillText('x', Math.max(6, w - 28), oy - 12);
+      if (ox >= 12 && ox <= w - 12) { c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('y', ox + 10, 8); }
       c.restore();
     }
 
@@ -261,6 +370,7 @@
 
     render() {
       const { w, h } = this.size;
+      global.AppUI?.setBusy?.(false);
       this.ctx.clearRect(0, 0, w, h);
       this.ctx.fillStyle = '#0d131b';
       this.ctx.fillRect(0, 0, w, h);
@@ -287,18 +397,31 @@
         `<defs><marker id="graphArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#9aa8b8"/></marker><marker id="vectorArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,4.5 L0,9 Z" fill="context-stroke"/></marker></defs>`
       ];
       if (this.showGrid) {
-        const rawPixels = Math.max(18, this.scale);
-        const exponent = Math.floor(Math.log10(Math.max(rawPixels, 1)));
-        const mantissa = rawPixels / Math.pow(10, exponent);
-        const factor = mantissa >= 5 ? 5 : mantissa >= 2 ? 2 : 1;
+        const targetPixels = 90;
+        const rawWorldStep = targetPixels / Math.max(this.scale, 1e-9);
+        const exponent = Math.floor(Math.log10(Math.max(rawWorldStep, 1e-12)));
+        const normalized = rawWorldStep / Math.pow(10, exponent);
+        const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
         const worldStep = factor * Math.pow(10, exponent);
-        const step = Math.max(18, worldStep * this.scale);
-        parts.push(`<g stroke="#263240" stroke-width="1" opacity=".55">`);
-        for (let x = ((ox % step) + step) % step; x < w; x += step) parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`);
-        for (let y = ((oy % step) + step) % step; y < h; y += step) parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`);
+        const step = Math.max(28, worldStep * this.scale);
+        const majorEvery = worldStep >= 5 ? 2 : 5;
+        const majorStep = worldStep * majorEvery;
+        parts.push(`<g stroke="#568fb5" stroke-width="1" opacity=".42">`);
+        const firstX = Math.floor((0 - ox) / step), lastX = Math.ceil((w - ox) / step);
+        const firstY = Math.floor((0 - oy) / step), lastY = Math.ceil((h - oy) / step);
+        for (let i = firstX; i <= lastX; i += 1) { const x = ox + i * step; if (x >= -1 && x <= w + 1) parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`); }
+        for (let i = firstY; i <= lastY; i += 1) { const y = oy + i * step; if (y >= -1 && y <= h + 1) parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`); }
+        parts.push('</g>');
+        parts.push(`<g stroke="#69abd0" stroke-width="1.25" opacity=".56">`);
+        const firstMajorX = Math.floor((0 - ox) / (majorStep * this.scale)), lastMajorX = Math.ceil((w - ox) / (majorStep * this.scale));
+        const firstMajorY = Math.floor((0 - oy) / (majorStep * this.scale)), lastMajorY = Math.ceil((h - oy) / (majorStep * this.scale));
+        for (let i = firstMajorX; i <= lastMajorX; i += 1) { const x = ox + i * majorStep * this.scale; if (x >= -1 && x <= w + 1) parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`); }
+        for (let i = firstMajorY; i <= lastMajorY; i += 1) { const y = oy + i * majorStep * this.scale; if (y >= -1 && y <= h + 1) parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`); }
         parts.push('</g>');
       }
-      if (this.showAxes) parts.push(`<g stroke="#9aa8b8" stroke-width="1.5" fill="#9aa8b8"><line x1="0" y1="${oy}" x2="${w}" y2="${oy}" marker-end="url(#graphArrow)"/><line x1="${ox}" y1="${h}" x2="${ox}" y2="0" marker-end="url(#graphArrow)"/></g>`);
+      if (this.showAxes) {
+        parts.push(`<g stroke="#eef6fb" stroke-width="2.2" fill="#eef6fb" stroke-linecap="round"><line x1="0" y1="${oy}" x2="${Math.max(0, w-12)}" y2="${oy}"/><path d="M${w-15},${oy-6} L${w-2},${oy} L${w-15},${oy+6} Z"/><line x1="${ox}" y1="${h}" x2="${ox}" y2="12"/><path d="M${ox-6},15 L${ox},2 L${ox+6},15 Z"/><text x="${Math.max(6,w-28)}" y="${Math.max(12,oy-12)}" fill="#eef6fb" stroke="none" font-family="system-ui,sans-serif" font-size="15" font-weight="700">x</text><text x="${ox+10}" y="20" fill="#eef6fb" stroke="none" font-family="system-ui,sans-serif" font-size="15" font-weight="700">y</text></g>`);
+      }
       for (const obj of this.objects.items) {
         if (!obj.visible) continue;
         const svg = this.objectToSvg(obj);

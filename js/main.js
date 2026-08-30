@@ -4,5 +4,7 @@
   const engine = new GraphEngine(document.getElementById('graphCanvas'), objects);
   AppUI.init(objects, engine);
   engine.center();
-  setTimeout(() => { engine.resize(); engine.requestRender(); }, 100);
+  const recalibrate = () => { engine.resize(); engine.requestRender(); };
+  requestAnimationFrame(() => requestAnimationFrame(recalibrate));
+  setTimeout(recalibrate, 100);
 })();

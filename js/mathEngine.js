@@ -40,6 +40,8 @@
       .replace(/√\s*\(/g, 'sqrt(')
       .replace(/\^\{([0-9]+)\}/g, '^$1')
       .replace(/,/g, '.')
+      .replace(/(\d(?:\.\d+)?)(?=(?!e[+-]?\d)[A-Za-z_])/g, '$1*')
+      .replace(/\)\s*(?=[A-Za-z_(])/g, ')*')
       .trim();
   }
 
