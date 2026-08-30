@@ -6,7 +6,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
 
-const requiredSvgButtons = ['undoBtn','redoBtn','fullscreenBtn','exportBtn','exportSvgBtn','collapseControlsBtn'];
+const requiredSvgButtons = ['undoBtn','redoBtn','exportBtn','exportSvgBtn','collapseControlsBtn'];
 for (const id of requiredSvgButtons) {
   const m = html.match(new RegExp(`<button[^>]*id="${id}"[\\s\\S]*?</button>`));
   if (!m || !m[0].includes('<svg')) throw new Error(`SVG ausente em ${id}`);

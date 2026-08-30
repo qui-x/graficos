@@ -4,7 +4,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
 
-for (const id of ['undoBtn','redoBtn','collapseControlsBtn','fullscreenBtn','exportBtn','exportSvgBtn','showControlsBtn']) {
+for (const id of ['undoBtn','redoBtn','collapseControlsBtn','exportBtn','exportSvgBtn','showControlsBtn']) {
   if (!html.includes(`id="${id}"`)) throw new Error(`missing ${id}`);
 }
 for (const cls of ['.action-btn{','.icon-btn svg','.show-controls-btn{','.math-tools-btn{','.dropdown-btn{','.clear-field-btn{']) {

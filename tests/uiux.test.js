@@ -7,10 +7,10 @@ const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
 const engine = fs.readFileSync(path.join(root, 'js', 'graphEngine.js'), 'utf8');
 
-for (const id of ['undoBtn','redoBtn','collapseControlsBtn','fullscreenBtn','exportBtn','exportSvgBtn','showControlsBtn','graphCanvas','coordinateReadout']) {
+for (const id of ['undoBtn','redoBtn','collapseControlsBtn','exportBtn','exportSvgBtn','showControlsBtn','graphCanvas','coordinateReadout']) {
   if (!html.includes(`id="${id}"`)) throw new Error(`missing ${id}`);
 }
-for (const id of ['undoBtn','redoBtn','fullscreenBtn','exportBtn','exportSvgBtn','collapseControlsBtn','showControlsBtn']) {
+for (const id of ['undoBtn','redoBtn','exportBtn','exportSvgBtn','collapseControlsBtn','showControlsBtn']) {
   const m = html.match(new RegExp(`<button[^>]*id="${id}"[\\s\\S]*?</button>`));
   if (!m || !/<svg[\s>]/.test(m[0])) throw new Error(`${id} must contain inline SVG`);
 }
