@@ -18,6 +18,7 @@
       this.pointerActive = false;
       this.activePointers = new Map();
       this.pinchDistance = null;
+      this.boxZoom = null;
       this.cache = new Map();
       this.resizeObserver = new ResizeObserver(() => this.resize());
       this.resizeObserver.observe(canvas.parentElement);
@@ -82,7 +83,17 @@
 
     bindEvents() {
       this.canvas.addEventListener('pointerdown', (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
         this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (e.shiftKey && this.activePointers.size === 1) {
+          this.boxZoom = { startX: px, startY: py, currentX: px, currentY: py };
+          this.dragging = false;
+          this.pointerActive = true;
+          this.requestRender();
+          return;
+        }
         if (this.activePointers.size === 2) {
           const points = [...this.activePointers.values()];
           this.pinchDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
@@ -99,26 +110,28 @@
         const rect = this.canvas.getBoundingClientRect();
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
-        if (px < 0 || py < 0 || px > rect.width || py > rect.height || !Number.isFinite(rect.width) || !Number.isFinite(rect.height) || rect.width <= 0 || rect.height <= 0) {
+        if (!Number.isFinite(rect.width) || !Number.isFinite(rect.height) || rect.width <= 0 || rect.height <= 0 || px < 0 || py < 0 || px > rect.width || py > rect.height) {
           this.pointer = null;
           global.AppUI?.updateCoordinates(null);
           return;
         }
         this.pointer = this.screenToWorld(px, py);
         global.AppUI?.updateCoordinates(this.pointer);
+        this.updateGraphTooltip();
+        if (this.boxZoom) {
+          this.boxZoom.currentX = px;
+          this.boxZoom.currentY = py;
+          this.requestRender();
+          return;
+        }
         if (this.activePointers.size >= 2) {
           const points = [...this.activePointers.values()];
           const nextDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
           if (this.pinchDistance && nextDistance > 0) {
             const centerX = (points[0].x + points[1].x) / 2 - rect.left;
             const centerY = (points[0].y + points[1].y) / 2 - rect.top;
-            const before = this.screenToWorld(centerX, centerY);
-            this.scale = Math.max(5, Math.min(300, this.scale * (nextDistance / this.pinchDistance)));
-            const after = this.screenToWorld(centerX, centerY);
-            this.offsetX += (after.x - before.x) * this.scale;
-            this.offsetY -= (after.y - before.y) * this.scale;
+            this.zoomAt(centerX, centerY, nextDistance / this.pinchDistance);
             this.pinchDistance = nextDistance;
-            this.requestRender();
           }
           return;
         }
@@ -126,57 +139,146 @@
         this.offsetX += e.clientX - this.last.x;
         this.offsetY += e.clientY - this.last.y;
         this.last = { x: e.clientX, y: e.clientY };
+        this.invalidateCache('pan');
         this.requestRender();
       });
-      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null; this.dragging = false; this.pointerActive = false; };
+      const stop = (e) => {
+        if (this.boxZoom && this.activePointers.has(e.pointerId)) {
+          this.finishBoxZoom();
+        }
+        this.activePointers.delete(e.pointerId);
+        this.pinchDistance = null;
+        this.dragging = false;
+        this.pointerActive = false;
+      };
       this.canvas.addEventListener('pointerup', stop);
       this.canvas.addEventListener('pointercancel', stop);
       this.canvas.addEventListener('pointerleave', () => { this.pointerActive = false; this.pointer = null; global.AppUI?.updateCoordinates(null); });
+      this.canvas.addEventListener('dblclick', (e) => {
+        const r = this.canvas.getBoundingClientRect();
+        this.zoomAt(e.clientX - r.left, e.clientY - r.top, 1.6);
+      });
       this.canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const r = this.canvas.getBoundingClientRect();
-        const localX = e.clientX - r.left;
-        const localY = e.clientY - r.top;
-        const before = this.screenToWorld(localX, localY);
-        const factor = Math.exp(-e.deltaY * 0.0015);
-        this.scale = Math.max(5, Math.min(300, this.scale * factor));
-        const after = this.screenToWorld(localX, localY);
-        this.offsetX += (after.x - before.x) * this.scale;
-        this.offsetY -= (after.y - before.y) * this.scale;
-        this.invalidateCache('zoom');
-        this.requestRender();
+        this.zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0015));
       }, { passive: false });
+      this.canvas.addEventListener('keydown', (e) => {
+        if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+          e.preventDefault();
+          const amount = e.shiftKey ? 48 : 24;
+          if (e.key === 'ArrowLeft') this.offsetX += amount;
+          if (e.key === 'ArrowRight') this.offsetX -= amount;
+          if (e.key === 'ArrowUp') this.offsetY += amount;
+          if (e.key === 'ArrowDown') this.offsetY -= amount;
+          this.invalidateCache('pan');
+          this.requestRender();
+        } else if (e.key === '+' || e.key === '=') {
+          e.preventDefault(); this.zoomAt(this.size.w / 2, this.size.h / 2, 1.2);
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault(); this.zoomAt(this.size.w / 2, this.size.h / 2, 1 / 1.2);
+        }
+      });
+    }
+
+    zoomAt(px, py, factor) {
+      const before = this.screenToWorld(px, py);
+      this.scale = Math.max(5, Math.min(300, this.scale * factor));
+      const after = this.screenToWorld(px, py);
+      this.offsetX += (after.x - before.x) * this.scale;
+      this.offsetY -= (after.y - before.y) * this.scale;
+      this.invalidateCache('zoom');
+      this.requestRender();
+    }
+
+    finishBoxZoom() {
+      if (!this.boxZoom) return;
+      const { w, h } = this.size;
+      const x1 = Math.max(0, Math.min(w, this.boxZoom.startX));
+      const x2 = Math.max(0, Math.min(w, this.boxZoom.currentX));
+      const y1 = Math.max(0, Math.min(h, this.boxZoom.startY));
+      const y2 = Math.max(0, Math.min(h, this.boxZoom.currentY));
+      this.boxZoom = null;
+      if (Math.abs(x2 - x1) < 20 || Math.abs(y2 - y1) < 20) { this.requestRender(); return; }
+      const a = this.screenToWorld(x1, y2);
+      const b = this.screenToWorld(x2, y1);
+      const worldW = Math.abs(b.x - a.x), worldH = Math.abs(b.y - a.y);
+      if (!(worldW > 0 && worldH > 0)) return;
+      this.offsetX = (w / 2) - ((a.x + b.x) / 2) * this.scale;
+      this.offsetY = (h / 2) - ((a.y + b.y) / 2) * this.scale;
+      const scaleX = w / worldW;
+      const scaleY = h / worldH;
+      this.scale = Math.max(5, Math.min(300, Math.min(scaleX, scaleY)));
+      this.offsetX = 0;
+      this.offsetY = 0;
+      const centerWorldX = (a.x + b.x) / 2;
+      const centerWorldY = (a.y + b.y) / 2;
+      this.offsetX = w / 2 - w / 2 - centerWorldX * this.scale;
+      this.offsetY = h / 2 - h / 2 + centerWorldY * this.scale;
+      this.invalidateCache('zoom');
+      this.requestRender();
     }
 
     lineStyle(color, width = 2) { this.ctx.strokeStyle = color; this.ctx.lineWidth = width; this.ctx.lineCap = 'round'; this.ctx.lineJoin = 'round'; }
 
     drawGrid() {
       if (!this.showGrid) return;
-      const { w, h } = this.size, c = this.ctx;
-      const rawPixels = Math.max(18, this.scale);
-      const exponent = Math.floor(Math.log10(Math.max(rawPixels, 1)));
-      const mantissa = rawPixels / Math.pow(10, exponent);
+      const { w, h } = this.size;
+      const c = this.ctx;
+      const ox = w / 2 + this.offsetX;
+      const oy = h / 2 + this.offsetY;
+      const targetPx = 72;
+      const rawWorld = targetPx / Math.max(this.scale, 1e-6);
+      const exponent = Math.floor(Math.log10(Math.max(rawWorld, 1e-12)));
+      const base = Math.pow(10, exponent);
+      const mantissa = rawWorld / base;
       const factor = mantissa >= 5 ? 5 : mantissa >= 2 ? 2 : 1;
-      const worldStep = factor * Math.pow(10, exponent);
-      const step = Math.max(18, worldStep * this.scale);
-      const ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
+      const worldStep = factor * base;
+      const step = worldStep * this.scale;
+      const majorEvery = worldStep < 1 ? 5 : 5;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
+      const minorStroke = lightTheme ? 'rgba(70,130,180,.16)' : 'rgba(110,170,210,.24)';
+      const majorStroke = lightTheme ? 'rgba(45,95,145,.28)' : 'rgba(140,195,230,.34)';
       c.save();
-      c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1;
-      for (let x = ((ox % step) + step) % step; x < w; x += step) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
-      for (let y = ((oy % step) + step) % step; y < h; y += step) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
-
-      c.fillStyle = 'rgba(255,255,255,.48)'; c.font = '11px system-ui';
-      const firstX = Math.ceil((-ox) / step);
-      for (let i = firstX; ; i++) {
-        const sx = ox + i * step;
-        if (sx >= w) break;
-        if (sx >= 6 && sx <= w - 6 && oy >= 0 && oy <= h) c.fillText(this.formatGridLabel(i * worldStep), sx + 3, Math.min(h - 5, oy + 14));
+      c.lineWidth = 1;
+      const startI = Math.floor((-ox) / step) - 1;
+      const endI = Math.ceil((w - ox) / step) + 1;
+      for (let i = startI; i <= endI; i++) {
+        const x = ox + i * step;
+        if (x < 0 || x > w) continue;
+        const major = Math.abs(i) % majorEvery === 0;
+        c.strokeStyle = major ? majorStroke : minorStroke;
+        c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke();
       }
-      const firstY = Math.ceil((-oy) / step);
-      for (let i = firstY; ; i++) {
-        const sy = oy + i * step;
-        if (sy >= h) break;
-        if (sy >= 12 && sy <= h - 6 && ox >= 0 && ox <= w) c.fillText(this.formatGridLabel(-i * worldStep), Math.min(w - 28, ox + 6), sy - 4);
+      const startJ = Math.floor((-oy) / step) - 1;
+      const endJ = Math.ceil((h - oy) / step) + 1;
+      for (let j = startJ; j <= endJ; j++) {
+        const y = oy + j * step;
+        if (y < 0 || y > h) continue;
+        const major = Math.abs(j) % majorEvery === 0;
+        c.strokeStyle = major ? majorStroke : minorStroke;
+        c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke();
+      }
+      c.fillStyle = lightTheme ? 'rgba(35,45,55,.8)' : 'rgba(230,240,250,.76)';
+      c.font = '12px system-ui, sans-serif';
+      if (oy >= 0 && oy <= h) {
+        for (let i = startI; i <= endI; i++) {
+          const x = ox + i * step;
+          if (x < 4 || x > w - 28 || Math.abs(i * worldStep) < 1e-12) continue;
+          c.fillText(this.formatGridLabel(i * worldStep), x + 4, Math.min(h - 6, oy + 17));
+        }
+      }
+      if (ox >= 0 && ox <= w) {
+        for (let j = startJ; j <= endJ; j++) {
+          const y = oy + j * step;
+          if (y < 12 || y > h - 4 || Math.abs(j * worldStep) < 1e-12) continue;
+          const label = this.formatGridLabel(-j * worldStep);
+          c.fillText(label, Math.min(w - 34, ox + 7), y - 5);
+        }
+      }
+      if (ox >= -20 && ox <= w + 20 && oy >= -20 && oy <= h + 20) {
+        c.font = '700 12px system-ui, sans-serif';
+        c.fillText('0', Math.max(4, Math.min(w - 16, ox + 5)), Math.max(14, Math.min(h - 5, oy + 16)));
       }
       c.restore();
     }
@@ -185,13 +287,27 @@
 
     drawAxes() {
       if (!this.showAxes) return;
-      const { w, h } = this.size, c = this.ctx, ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
-      c.save(); c.strokeStyle = 'rgba(255,255,255,.52)'; c.fillStyle = 'rgba(255,255,255,.76)'; c.lineWidth = 1.5;
-      c.beginPath(); c.moveTo(0, oy); c.lineTo(w, oy); c.stroke();
-      c.beginPath(); c.moveTo(ox, h); c.lineTo(ox, 0); c.stroke();
-      c.beginPath(); c.moveTo(w - 9, oy - 4); c.lineTo(w - 1, oy); c.lineTo(w - 9, oy + 4); c.fill();
-      c.beginPath(); c.moveTo(ox - 4, 9); c.lineTo(ox, 1); c.lineTo(ox + 4, 9); c.fill();
-      c.font = '12px system-ui'; c.fillText('x', w - 20, Math.max(14, oy - 9)); c.fillText('y', Math.min(w - 16, ox + 8), 17);
+      const { w, h } = this.size;
+      const c = this.ctx;
+      const ox = w / 2 + this.offsetX;
+      const oy = h / 2 + this.offsetY;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
+      const axisColor = lightTheme ? '#1b2430' : '#e9f2f8';
+      c.save();
+      c.strokeStyle = axisColor;
+      c.fillStyle = axisColor;
+      c.lineWidth = 2.2;
+      if (oy >= 0 && oy <= h) {
+        c.beginPath(); c.moveTo(0, oy); c.lineTo(w - 12, oy); c.stroke();
+        c.beginPath(); c.moveTo(w - 2, oy); c.lineTo(w - 13, oy - 6); c.lineTo(w - 13, oy + 6); c.closePath(); c.fill();
+      }
+      if (ox >= 0 && ox <= w) {
+        c.beginPath(); c.moveTo(ox, h); c.lineTo(ox, 12); c.stroke();
+        c.beginPath(); c.moveTo(ox, 2); c.lineTo(ox - 6, 13); c.lineTo(ox + 6, 13); c.closePath(); c.fill();
+      }
+      c.font = '700 15px system-ui, sans-serif';
+      if (oy >= 0 && oy <= h) c.fillText('x', Math.max(8, w - 23), Math.max(17, oy - 10));
+      if (ox >= 0 && ox <= w) c.fillText('y', Math.min(w - 18, ox + 10), 18);
       c.restore();
     }
 
@@ -276,8 +392,59 @@
       this.ctx.fillRect(0, 0, w, h);
       this.drawGrid(); this.drawAxes();
       for (const obj of this.objects.items) if (obj.visible) this.drawObject(obj);
+      this.drawBoxZoomOverlay();
       if (global.AppUI) global.AppUI.renderPreview(this);
+      this.updateLegend();
+      this.updateGraphTooltip();
     }
+
+    drawBoxZoomOverlay() {
+      if (!this.boxZoom) return;
+      const c = this.ctx;
+      const x = Math.min(this.boxZoom.startX, this.boxZoom.currentX);
+      const y = Math.min(this.boxZoom.startY, this.boxZoom.currentY);
+      const w = Math.abs(this.boxZoom.currentX - this.boxZoom.startX);
+      const h = Math.abs(this.boxZoom.currentY - this.boxZoom.startY);
+      c.save();
+      c.fillStyle = 'rgba(90,200,250,.10)';
+      c.strokeStyle = '#5ac8fa';
+      c.setLineDash([6,4]);
+      c.lineWidth = 1.5;
+      c.fillRect(x,y,w,h); c.strokeRect(x,y,w,h);
+      c.restore();
+      const box=document.getElementById('zoomBox');
+      if(box){box.hidden=true;}
+    }
+
+    updateLegend() {
+      const el=document.getElementById('graphLegend');
+      if(!el) return;
+      el.innerHTML='';
+      const items=this.objects.items.filter(o=>o.visible);
+      if(!items.length){el.hidden=true;return;}
+      el.hidden=false;
+      for(const obj of items){
+        const btn=document.createElement('button');
+        btn.type='button'; btn.className='legend-item'; btn.dataset.id=String(obj.id);
+        btn.setAttribute('aria-label',`Ocultar ${global.AppUI?.objectLabel?.(obj) || obj.type}`);
+        btn.innerHTML=`<span class="legend-dot" style="background:${obj.color}" aria-hidden="true"></span><span>${this.escapeHtml(global.AppUI?.objectLabel?.(obj) || obj.type)}</span>`;
+        btn.addEventListener('click',()=>{this.objects.toggle(obj.id);});
+        el.appendChild(btn);
+      }
+    }
+
+    updateGraphTooltip() {
+      const el=document.getElementById('graphTooltip');
+      if(!el) return;
+      if(!this.pointerActive || !this.pointer){el.hidden=true;return;}
+      let text=`x = ${this.formatCoord(this.pointer.x)} · y = ${this.formatCoord(this.pointer.y)}`;
+      const fn=this.objects.items.find(o=>o.visible && o.type==='function');
+      if(fn){try{const solver=this.getCompiled(fn.id,fn.data.expression,{x:0});const y=solver({x:this.pointer.x});if(Number.isFinite(y))text+=` · f(x) = ${this.formatCoord(y)}`;}catch{}}
+      el.textContent=text; el.hidden=false;
+    }
+
+    formatCoord(v){return Number(v).toFixed(Math.abs(v)>=100 ? 1 : 3).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,'');}
+    escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
     exportPng() {
       this.render();

@@ -21,6 +21,11 @@ Aplicativo web estático para álgebra e geometria analítica, com foco em entra
 - Grade e eixos com escala adaptativa.
 - Interface responsiva e controles recolhíveis.
 - Acessibilidade por teclado, `aria-label`, `aria-describedby` e `aria-live`.
+- Grade cartesiana com linhas principais, numeração, origem destacada e setas nos eixos.
+- Legenda clicável, tooltip com coordenadas/valor de função e zoom por seleção com Shift.
+- Pan/zoom por teclado no canvas e duplo clique para zoom.
+- Layout mobile empilhado com controles recolhíveis e botão flutuante.
+- Salvar sessão manualmente, além do salvamento automático.
 
 ## Estrutura
 

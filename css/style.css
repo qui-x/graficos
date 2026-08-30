@@ -13,3 +13,41 @@
 .math-input,.numeric-input{transition:border-color .12s ease,box-shadow .12s ease}
 
 .global-math-tools{position:relative;margin:-4px 0 12px}.math-tools-btn{width:100%;min-height:36px;padding:7px 10px;border:1px solid var(--line);background:#111b26;color:var(--text);border-radius:8px;cursor:pointer;text-align:left;font-size:11px;font-weight:700}.math-tools-btn:hover{border-color:var(--accent);background:#162636}.global-math-menu{left:0;right:auto;top:42px;width:min(100%,320px)}
+
+/* Melhorias de UI/UX */
+.field-error{min-height:0;margin-top:5px;color:#ff9fbe;font-size:11px;line-height:1.35}
+.math-editor:has(.math-input.valid)::after{content:'✓';position:absolute;right:76px;top:11px;color:#63d391;font-weight:800;pointer-events:none}
+.math-editor:has(.math-input.invalid)::after{content:'!';position:absolute;right:76px;top:10px;width:16px;height:16px;display:grid;place-items:center;border:1px solid #ff6fae;border-radius:50%;color:#ff9dbd;font-size:10px;font-weight:800;pointer-events:none}
+.graph-legend{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px;max-width:min(38%,320px);padding:7px;border:1px solid rgba(150,180,210,.22);background:rgba(7,12,18,.82);backdrop-filter:blur(8px);border-radius:9px;z-index:5}
+.legend-item{display:flex;align-items:center;gap:7px;border:0;background:transparent;color:#e6eef5;text-align:left;padding:5px 7px;border-radius:6px;cursor:pointer;font-size:11px;min-width:0}
+.legend-item:hover{background:rgba(255,255,255,.07)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.graph-tooltip{position:absolute;right:10px;bottom:10px;padding:7px 10px;border:1px solid rgba(150,180,210,.24);background:rgba(7,12,18,.86);color:#e8f1f7;border-radius:8px;font:11px ui-monospace,SFMono-Regular,monospace;pointer-events:none;z-index:6;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.graph-tooltip[hidden],.graph-legend[hidden]{display:none}
+.mobile-controls-fab{display:none;border:1px solid rgba(90,200,250,.45);background:#153246;color:#eaf8ff;border-radius:999px;padding:10px 16px;font-weight:700;box-shadow:0 12px 28px rgba(0,0,0,.28);cursor:pointer;z-index:30}
+.canvas-wrap canvas:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.controls-panel{transition:transform .2s ease,opacity .2s ease,padding .2s ease}
+.workspace.controls-collapsed{grid-template-columns:0 minmax(0,1fr)}
+.workspace.controls-collapsed .controls-panel{min-width:0;width:0;padding-left:0;padding-right:0;opacity:0;transform:translateX(-14px);overflow:hidden;border-right:0;pointer-events:none}
+@media (max-width:900px){
+  .workspace.controls-collapsed{grid-template-columns:1fr;grid-template-rows:1fr}
+  .workspace.controls-collapsed .controls-panel{display:none}
+}
+@media (max-width:700px){
+  .app-shell{width:100vw;height:100dvh;margin:0;border-radius:0;border-left:0;border-right:0}
+  .workspace{grid-template-columns:1fr;grid-template-rows:minmax(60dvh,1fr) minmax(0,35dvh)}
+  .graph-panel{order:1;min-height:0}
+  .controls-panel{order:2;max-height:35dvh;overflow-y:auto;border-right:0;border-bottom:0;border-top:1px solid var(--line);padding:10px;transition:max-height .2s ease,padding .2s ease,opacity .2s ease}
+  .workspace.controls-collapsed{grid-template-columns:1fr;grid-template-rows:1fr}
+  .workspace.controls-collapsed .controls-panel{display:none}
+  .mobile-controls-fab{display:block;position:fixed;left:50%;bottom:12px;transform:translateX(-50%)}
+  .topbar{flex-wrap:wrap;gap:8px;padding:10px 12px}
+  .top-actions{width:100%;flex-wrap:wrap;justify-content:flex-start}
+  .icon-btn,.action-btn,.tool-btn,.primary-btn,.secondary-btn,.row-btn{min-height:44px}
+  .math-input,.numeric-input,.select-input{min-height:44px;font-size:16px}
+  .graph-toolbar{flex-wrap:wrap;gap:7px}
+  .coordinate-readout{width:100%;font-size:11px}
+  .graph-legend{max-width:72%;top:7px;right:7px}
+  .graph-tooltip{left:7px;right:7px;bottom:7px;text-align:center}
+  .math-menu{z-index:40}
+}
