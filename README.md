@@ -58,3 +58,11 @@ Os testes atuais cobrem o parser matemático, gerenciamento de objetos, persist�
 ## Observação sobre a entrada matemática
 
 A interface atual mantém o campo textual com preview KaTeX porque isso preserva compatibilidade com o parser seguro existente. Uma migração futura para MathQuill/MathLive pode ser feita como camada de edição, mantendo o mesmo `MathEngine` por trás.
+
+## Extensão 3D
+
+A aplicação suporta superfícies `z=f(x,y)`, curvas paramétricas 3D `(x(t),y(t),z(t))` e retas 3D entre dois pontos. A cena usa projeção ortográfica, rotação por arraste no canvas, zoom por roda/pinça e reset de orientação.
+
+
+### Variável independente da função
+Na aba Função, escolha `x` para `y=f(x)` ou `y` para `x=f(y)`. O mesmo contexto é usado para validação e desenho.

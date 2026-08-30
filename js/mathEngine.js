@@ -14,6 +14,10 @@
   });
 
   const CONSTANTS = Object.freeze({ pi: Math.PI, e: Math.E, tau: Math.PI * 2, phi: (1 + Math.sqrt(5)) / 2 });
+  // Variáveis reconhecidas por padrão em todos os contextos do aplicativo.
+  // Cada chamada de compile/evalExpr continua livre para fornecer um subconjunto maior/menor.
+  let defaultVariables = Object.freeze(['x', 'y', 'z', 't']);
+  const RESERVED_NAMES = new Set([...Object.keys(FUNCTIONS), ...Object.keys(CONSTANTS), 'mod']);
   const MAX_EXPRESSION_LENGTH = 400;
 
   const ERROR_MESSAGES = Object.freeze({
@@ -33,6 +37,10 @@
 
   function normalize(expression) {
     return String(expression ?? '')
+      .replace(/\barcsen\b/gi, 'asin')
+      .replace(/\barccos\b/gi, 'acos')
+      .replace(/\barctg\b/gi, 'atan')
+      .replace(/\bsen\b/gi, 'sin')
       .replace(/[−–—]/g, '-')
       .replace(/[×·]/g, '*').replace(/÷/g, '/')
       .replace(/π/g, 'pi').replace(/τ/g, 'tau').replace(/φ/g, 'phi')
@@ -195,10 +203,13 @@
   }
 
   function compile(expression, variables) {
-    const parser = new Parser(expression, variables);
+    const defaultScope = Object.fromEntries(defaultVariables.map((name) => [name, 0]));
+    const baseVariables = Object.assign(defaultScope, variables || {});
+    const parser = new Parser(expression, baseVariables);
     const ast = parser.parse();
     return (runtimeVariables) => {
-      const result = evaluate(ast, runtimeVariables || variables || {});
+      const scope = Object.assign({}, baseVariables, runtimeVariables || {});
+      const result = evaluate(ast, scope);
       return Number.isFinite(result) ? result : NaN;
     };
   }
@@ -207,12 +218,25 @@
     return compile(expression, variables)(variables || {});
   }
 
+  function setDefaultVariables(names) {
+    if (!Array.isArray(names)) throw new TypeError('As variáveis devem ser fornecidas em uma lista.');
+    const cleaned = [...new Set(names.map((name) => String(name).trim().toLowerCase()).filter(Boolean))];
+    for (const name of cleaned) {
+      if (!/^[a-z_][a-z0-9_]*$/i.test(name)) throw new Error(`Identificador inválido: ${name}.`);
+      if (RESERVED_NAMES.has(name)) throw new Error(`Identificador reservado: ${name}.`);
+    }
+    defaultVariables = Object.freeze(cleaned);
+    return defaultVariables;
+  }
+
   global.MathEngine = Object.freeze({
     normalize,
     compile,
     evalExpr,
+    setDefaultVariables,
     functions: Object.freeze(Object.keys(FUNCTIONS)),
     constants: Object.freeze(Object.keys(CONSTANTS)),
-    errors: ERROR_MESSAGES
+    errors: ERROR_MESSAGES,
+    get defaultVariables() { return defaultVariables; }
   });
 })(window);

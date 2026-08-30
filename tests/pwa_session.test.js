@@ -1,0 +1,18 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const main = fs.readFileSync(path.join(root,'js','main.js'),'utf8');
+const ui = fs.readFileSync(path.join(root,'js','ui.js'),'utf8');
+const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const manifest = JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
+const sw = fs.readFileSync(path.join(root,'sw.js'),'utf8');
+if (!main.includes("localStorage.removeItem('graphCalcSessionV2')")) throw new Error('Session storage is not cleared on startup');
+if (!main.includes("localStorage.removeItem('graphCalcHistoryV2')")) throw new Error('History storage is not cleared on startup');
+if (ui.includes('this.objects.load()')) throw new Error('Persisted graph objects are still loaded on startup');
+if (/this\.loadHistory\(\)/.test(ui)) throw new Error('Persisted history loader is still called on startup');
+if (!html.includes('rel="manifest"')) throw new Error('Manifest link missing');
+if (!html.includes('id="installBtn"')) throw new Error('Install button missing');
+if (!main.includes("navigator.serviceWorker.register('./sw.js')")) throw new Error('Service worker registration missing');
+if (manifest.display !== 'standalone') throw new Error('PWA display is not standalone');
+if (!sw.includes("self.addEventListener('fetch'")) throw new Error('Service worker fetch handler missing');
+console.log('pwa session OK');
