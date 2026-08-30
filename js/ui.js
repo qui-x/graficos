@@ -1,6 +1,5 @@
 (function (global) {
   'use strict';
-  const MathLive = global.mathlive || global.MathLive || null;
 
   const colors = ['#5ac8fa','#b28cff','#ff6fae','#63d391','#ffd166','#ff9f66','#78a7ff','#d29bff'];
   const symbols = [['π','pi'],['√','sqrt('],['x²','^2'],['x³','^3'],['×','*'],['÷','/'],['·','*'],['sin','sin('],['cos','cos('],['tan','tan('],['asin','asin('],['acos','acos('],['sqrt','sqrt('],['log','log('],['ln','ln('],['abs','abs('],['exp','exp('],['τ','tau'],['φ','phi'],['(', '('],[')', ')']];
@@ -22,7 +21,7 @@
     bindForms() {
       ['functionExpr','paramX','paramY'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{this.lastMathInputId=id;this.updatePreviews();this.validateExpressionField(el);});});
       ['tMin','tMax'].forEach(id=>document.getElementById(id).addEventListener('input',()=>this.validateNumericField(document.getElementById(id))));
-      document.querySelectorAll('input, math-field, select').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
+      document.querySelectorAll('input, select').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
       this.$.addFunction.addEventListener('click',()=>this.addFunction()); this.$.addParam.addEventListener('click',()=>this.addParametric()); this.$.addVector.addEventListener('click',()=>this.addVector());
@@ -54,37 +53,13 @@
     },
     moveTab(delta){const i=this.$.tabs.findIndex(t=>t.dataset.tab===this.activeTab);const next=(i+delta+this.$.tabs.length)%this.$.tabs.length;this.$.tabs[next].focus();this.setTab(this.$.tabs[next].dataset.tab);},
     addActiveTab(){if(this.activeTab==='function')this.addFunction();else if(this.activeTab==='parametric')this.addParametric();else if(this.activeTab==='vector')this.addVector();else this.addGeometry();},
-    isMathField(el){return !!el&&el.tagName==='MATH-FIELD';},
     getFieldValue(id){
       const el=document.getElementById(id);
-      if(!el)return '';
-      if(this.isMathField(el)){
-        try{
-          const ascii=el.getValue('ascii-math');
-          if(ascii)return String(ascii);
-        }catch(_){}
-        try{
-          const ascii=el.getExpression('ascii-math');
-          if(ascii)return String(ascii);
-        }catch(_){}
-        const latex=el.value||'';
-        if(latex){
-          try{
-            if(MathLive?.convertLatexToAsciiMath)return MathLive.convertLatexToAsciiMath(latex);
-          }catch(_){}
-          return latex;
-        }
-      }
-      return el.value||'';
+      return el ? (el.value || '') : '';
     },
     setFieldValue(id,value){
       const el=document.getElementById(id);
-      if(!el)return;
-      if(this.isMathField(el)){
-        const latex=this.toLatex(String(value||''));
-        if(typeof el.setValue==='function')el.setValue(latex);
-        else el.value=latex;
-      }else{el.value=this.display(String(value||''));}
+      if(el) el.value=this.display(String(value||''));
     },
     normalizeInput(id){return this.getFieldValue(id);},
     toMathEngine(expr){return MathEngine.normalize(expr);},
@@ -94,21 +69,17 @@
     updatePreviews(){this.renderKatex('functionPreview',this.getFieldValue('functionExpr'));this.renderKatex('paramPreview',`x(t) = ${this.getFieldValue('paramX')}, y(t) = ${this.getFieldValue('paramY')}`);this.updateGeometryPreview();},
     insertText(token,target){
       const input=document.getElementById(target);
-      if(!input)return;
-      if(this.isMathField(input)){
-        const latexMap={'pi':'\\pi','tau':'\\tau','phi':'\\phi','sqrt(':'\\sqrt{#0}','^2':'^{2}','^3':'^{3}','*':'\\cdot ','/':'/','-':'-','sin(':'\\sin(#0)','cos(':'\\cos(#0)','tan(':'\\tan(#0)','asin(':'\\arcsin(#0)','acos(':'\\arccos(#0)','sqrt(':'\\sqrt{#0}'};
-        const latex=latexMap[token]??token;
-        input.focus();
-        try{ input.executeCommand(['insert',latex]); }
-        catch{ input.insert(latex,{selectionMode:'placeholder'}); }
-        this.lastMathInputId=target;
-      }else{
-        const startPos=input.selectionStart??input.value.length,endPos=input.selectionEnd??input.value.length;
-        const pretty=token==='pi'?'π':token==='tau'?'τ':token==='phi'?'φ':token==='sqrt('?'√(':token==='*'?'×':token==='/'?'÷':token==='-'?'−':token;
-        input.value=input.value.slice(0,startPos)+pretty+input.value.slice(endPos);
-        const pos=startPos+pretty.length;input.focus();input.setSelectionRange(pos,pos);
-      }
-      this.updatePreviews();this.validateExpressionField(input);this.engine.requestRender();
+      if(!input) return;
+      const startPos=input.selectionStart??input.value.length,endPos=input.selectionEnd??input.value.length;
+      const pretty=token==='pi'?'π':token==='tau'?'τ':token==='phi'?'φ':token==='sqrt('?'√(':token==='*'?'×':token==='/'?'÷':token==='-'?'−':token;
+      input.value=input.value.slice(0,startPos)+pretty+input.value.slice(endPos);
+      const pos=startPos+pretty.length;
+      input.focus();
+      if(typeof input.setSelectionRange==='function') input.setSelectionRange(pos,pos);
+      this.lastMathInputId=target;
+      this.updatePreviews();
+      this.validateExpressionField(input);
+      this.engine.requestRender();
     },
     insertAtActive(token){const target=(document.activeElement?.id&&['functionExpr','paramX','paramY'].includes(document.activeElement.id))?document.activeElement.id:this.lastMathInputId;this.insertText(token,target||'functionExpr');},
     clearField(id){const input=document.getElementById(id);if(!input)return;this.setFieldValue(id,'');this.lastMathInputId=id;input.focus();this.updatePreviews();this.validateExpressionField(input);this.showToast('Campo limpo.');},

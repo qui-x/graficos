@@ -15,10 +15,6 @@
 .global-math-tools{position:relative;margin:-4px 0 12px}.math-tools-btn{width:100%;min-height:36px;padding:7px 10px;border:1px solid var(--line);background:#111b26;color:var(--text);border-radius:8px;cursor:pointer;text-align:left;font-size:11px;font-weight:700}.math-tools-btn:hover{border-color:var(--accent);background:#162636}.global-math-menu{left:0;right:auto;top:42px;width:min(100%,320px)}
 
 /* Professional UX pass */
-math-field.math-field{display:block;width:100%;min-height:52px;padding:6px 48px 6px 10px;border:1px solid var(--line);border-radius:8px;background:#091018;color:var(--text);--selection-background-color:rgba(90,200,250,.22);--contains-highlight-background-color:rgba(90,200,250,.14);--primary-color:var(--accent);transition:border-color .12s ease,box-shadow .12s ease}
-math-field.math-field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(90,200,250,.1)}
-math-field.math-field.valid{border-color:rgba(99,211,145,.65);box-shadow:0 0 0 2px rgba(99,211,145,.08)}
-math-field.math-field.invalid{border-color:rgba(255,111,174,.75);box-shadow:0 0 0 2px rgba(255,111,174,.08)}
 .field-error{min-height:17px;margin-top:5px;color:#ff9dbd;font-size:11px}
 .field-error::first-letter{font-weight:700}
 .workspace{transition:grid-template-columns .2s ease}
@@ -31,18 +27,16 @@ math-field.math-field.invalid{border-color:rgba(255,111,174,.75);box-shadow:0 0 
 .graph-tooltip{position:absolute;left:auto!important;right:12px;top:auto!important;bottom:12px;padding:8px 10px;pointer-events:none;z-index:5;max-width:min(280px,calc(100% - 24px));border:1px solid var(--line);border-radius:8px;background:rgba(8,13,19,.9);color:#e9f4ff;font:11px ui-monospace,SFMono-Regular,monospace;box-shadow:0 10px 24px rgba(0,0,0,.28);backdrop-filter:blur(5px)}.graph-tooltip.hidden{display:none}
 .zoom-box{position:absolute;z-index:3;border:1px dashed var(--accent);background:rgba(90,200,250,.08);pointer-events:none}.zoom-box.hidden{display:none}
 .canvas-wrap{cursor:grab}.canvas-wrap:active{cursor:grabbing}
-.theme-light{--bg:#eef4f8;--panel:#f7fbfd;--panel2:#ffffff;--line:#ccd8e2;--text:#21313e;--muted:#5f7280;--accent:#0077b6}.theme-light body{background:linear-gradient(135deg,#dfeaf1,#f5f9fb)}.theme-light .app-shell{background:rgba(250,252,253,.96);box-shadow:0 18px 55px rgba(30,70,90,.16)}.theme-light .controls-panel{background:linear-gradient(180deg,#f3f8fb,#eaf2f7)}.theme-light .math-menu,.theme-light .global-math-menu{background:#ffffff}.theme-light .math-input,.theme-light .numeric-input,.theme-light .select-input, .theme-light math-field.math-field{background:#ffffff;color:#21313e}.theme-light .graph-toolbar,.theme-light .statusbar{background:#f5f9fb}.theme-light .canvas-wrap{background:#edf4f8}
+.theme-light{--bg:#eef4f8;--panel:#f7fbfd;--panel2:#ffffff;--line:#ccd8e2;--text:#21313e;--muted:#5f7280;--accent:#0077b6}.theme-light body{background:linear-gradient(135deg,#dfeaf1,#f5f9fb)}.theme-light .app-shell{background:rgba(250,252,253,.96);box-shadow:0 18px 55px rgba(30,70,90,.16)}.theme-light .controls-panel{background:linear-gradient(180deg,#f3f8fb,#eaf2f7)}.theme-light .math-menu,.theme-light .global-math-menu{background:#ffffff}.theme-light .math-input,.theme-light .numeric-input,.theme-light .select-input, .theme-light .theme-light .graph-toolbar,.theme-light .statusbar{background:#f5f9fb}.theme-light .canvas-wrap{background:#edf4f8}
 @media(max-width:900px){.controls-panel.collapsed{transform:translateY(-12px)}.workspace.controls-collapsed{grid-template-columns:1fr}.graph-legend{max-width:55%}}
 
-/* MathLive / interaction polish */
-math-field.math-field::part(container){border-radius:8px}
-math-field.math-field{font-size:1.15rem;line-height:1.4}
+/* Interaction polish */
 .controls-panel.collapsed{display:block;min-width:0}
 .workspace.controls-collapsed .controls-panel{padding:0;border-right:0}
 .graph-panel{position:relative}
 .canvas-wrap{contain:layout paint}
-button,input,select,math-field{font:inherit}
-button:focus-visible,input:focus-visible,select:focus-visible,math-field:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button,input,select{font:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion: reduce){.workspace,.controls-panel,.toast{transition:none!important}.status-spinner{animation:none}}
 
 /* Mobile-first graph workspace */
@@ -56,7 +50,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,math-field:focus-v
   .topbar{flex-wrap:wrap;gap:8px;padding:10px 12px}
   .top-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
   .icon-btn,.action-btn,.tool-btn,.primary-btn,.secondary-btn,.row-btn{min-height:44px}
-  .math-input,.numeric-input,.select-input,math-field.math-field{min-height:44px;font-size:16px}
+  .math-input,.numeric-input,.select-input,
   .math-editor .dropdown-btn,.clear-field-btn{min-height:40px}
   .objects-list,.history-list{max-height:150px}
   .graph-toolbar{gap:8px;padding:8px}
@@ -78,7 +72,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,math-field:focus-v
   .topbar{flex-wrap:wrap;gap:8px;padding:10px 12px}
   .top-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
   .icon-btn,.action-btn,.tool-btn,.primary-btn,.secondary-btn,.row-btn{min-height:44px}
-  .math-input,.numeric-input,.select-input,math-field.math-field{min-height:44px;font-size:16px}
+  .math-input,.numeric-input,.select-input,
   .graph-toolbar{flex-wrap:wrap;gap:8px;padding:8px}
   .coordinate-readout{width:100%;font-size:11px}
   .graph-legend{max-width:62%;top:8px;right:8px}
@@ -88,3 +82,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,math-field:focus-v
 
 .mobile-controls-toggle{display:none;position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:30;min-height:44px;padding:10px 18px;border:1px solid var(--accent);border-radius:999px;background:var(--accent);color:#001018;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.28)}.mobile-controls-toggle.hidden{display:none}
 @media(max-width:700px){.mobile-controls-toggle:not(.hidden){display:block}.mobile-controls-toggle[aria-hidden="true"]{display:none}}
+
+.math-input,.numeric-input,.select-input{min-height:44px;font-size:16px}

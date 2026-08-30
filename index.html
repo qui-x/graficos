@@ -41,7 +41,7 @@
           <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
             <label class="field-label" for="functionExpr">y = f(x)</label>
             <div class="math-editor">
-              <math-field id="functionExpr" class="math-input math-field" aria-label="Expressão da função y igual a f de x" aria-describedby="functionPreview functionError" virtual-keyboard-mode="auto" smart-fence>\sin(x)</math-field>
+              <input id="functionExpr" class="math-input" type="text" value="sin(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false" aria-label="Expressão da função y igual a f de x" aria-describedby="functionPreview functionError">
               <button class="clear-field-btn" type="button" data-clear="functionExpr" aria-label="Limpar expressão da função" title="Limpar">C</button>
               <button class="dropdown-btn" type="button" data-menu="math-menu-function" aria-label="Abrir símbolos matemáticos">▼</button>
               <div class="math-menu hidden" id="math-menu-function"></div>
@@ -57,8 +57,8 @@
 
           <section class="tab-panel" id="panel-parametric" data-panel="parametric" role="tabpanel" hidden>
             <div class="two-col">
-              <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><math-field id="paramX" class="math-input math-field" aria-label="Expressão x de t" aria-describedby="paramPreview paramError" virtual-keyboard-mode="auto" smart-fence>\cos(t)</math-field><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
-              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><math-field id="paramY" class="math-input math-field" aria-label="Expressão y de t" aria-describedby="paramPreview paramError" virtual-keyboard-mode="auto" smart-fence>\sin(t)</math-field><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
+              <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><input id="paramX" class="math-input" type="text" value="cos(t)" placeholder="Ex.: cos(t)" autocomplete="off" spellcheck="false" aria-label="Expressão x de t" aria-describedby="paramPreview paramError"><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
+              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" value="sin(t)" placeholder="Ex.: sin(t)" autocomplete="off" spellcheck="false" aria-label="Expressão y de t" aria-describedby="paramPreview paramError"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
             </div>
             <div class="two-col">
               <div><label class="field-label" for="tMin">t mín.</label><input id="tMin" class="numeric-input" type="text" value="0"></div>
@@ -136,7 +136,6 @@
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/mathlive@0.110.0"></script>
   <script src="js/mathEngine.js"></script>
   <script src="js/graphObjects.js"></script>
   <script src="js/graphEngine.js"></script>

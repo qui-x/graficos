@@ -38,7 +38,7 @@
       .replace(/π/g,'pi').replace(/τ/g,'tau').replace(/φ/g,'phi')
       .replace(/[²]/g,'^2').replace(/[³]/g,'^3').replace(/[⁴]/g,'^4').replace(/[⁵]/g,'^5')
       .replace(/√\s*\(/g,'sqrt(')
-      // LaTeX/MathLive fallback: normalize common commands before tokenization.
+      // Fallback para notação LaTeX comum antes da tokenização.
       .replace(/\\left|\\right/g,'')
       .replace(/\\(?:sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|log2|log1p|log|ln|sqrt|cbrt|abs|exp|ceil|floor|round|sign|cot|sec|csc)\s*/gi,(m)=>m.replace('\\','').trim())
       .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/gi,'($1)/($2)')
