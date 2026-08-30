@@ -97,7 +97,17 @@
 
         <div class="tab-content">
           <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
-            <label class="field-label" for="functionExpr">y = f(x)</label>
+            <div class="function-context-row">
+              <div>
+                <label class="field-label" for="functionVariable">Variável independente</label>
+                <select id="functionVariable" class="select-input" aria-label="Variável independente da função">
+                  <option value="x">x — desenhar y = f(x)</option>
+                  <option value="y">y — desenhar x = f(y)</option>
+                </select>
+              </div>
+              <div class="function-equation-hint" id="functionEquationHint" aria-live="polite">y = f(x)</div>
+            </div>
+            <label class="field-label" for="functionExpr">Expressão da função</label>
             <div class="math-editor">
               <input id="functionExpr" class="math-input" type="text" aria-describedby="functionPreview" value="sen(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false">
               <button class="clear-field-btn" type="button" data-clear="functionExpr" aria-label="Limpar expressão da função" title="Limpar">C</button>
@@ -127,6 +137,18 @@
           </section>
 
           <section class="tab-panel" id="panel-vector" data-panel="vector" role="tabpanel" hidden>
+            <section class="vector-variable-box" aria-labelledby="vectorVariablesTitle">
+              <div class="section-kicker">VARIÁVEIS NOS CAMPOS DO VETOR</div>
+              <h2 id="vectorVariablesTitle">Use variáveis e parâmetros</h2>
+              <p class="section-help">Os campos aceitam números ou expressões. Ex.: <strong>a</strong>, <strong>a+3</strong>, <strong>2·b</strong>.</p>
+              <div class="parameter-create">
+                <input id="parameterName" class="numeric-input" type="text" maxlength="24" placeholder="Nome (ex.: a)" autocomplete="off" spellcheck="false" aria-label="Nome do parâmetro">
+                <input id="parameterValue" class="numeric-input" type="text" maxlength="80" placeholder="Valor (ex.: 2 ou π/2)" autocomplete="off" spellcheck="false" aria-label="Valor do parâmetro">
+                <button class="secondary-btn" id="addParameterBtn" type="button">Adicionar parâmetro</button>
+              </div>
+              <div id="parameterList" class="parameter-list" aria-live="polite"></div>
+              <div id="vectorVariableHelp" class="variables-summary">Variáveis disponíveis: x, y, z, t</div>
+            </section>
             <div class="vector-mode-row">
               <label class="field-label" for="vectorType">Representação</label>
               <select id="vectorType" class="select-input" aria-label="Tipo de representação vetorial">
@@ -137,17 +159,17 @@
             <div class="vector-endpoint">
               <div class="field-label endpoint-title">Ponto inicial P₁</div>
               <div class="three-col vector-coords">
-                <label>x₁<input id="vx1" class="numeric-input" type="text" value="0"></label>
-                <label>y₁<input id="vy1" class="numeric-input" type="text" value="0"></label>
-                <label>z₁<input id="vz1" class="numeric-input" type="text" value="0"></label>
+                <label>x₁<input id="vx1" class="numeric-input expression-input" type="text" value="0"></label>
+                <label>y₁<input id="vy1" class="numeric-input expression-input" type="text" value="0"></label>
+                <label>z₁<input id="vz1" class="numeric-input expression-input" type="text" value="0"></label>
               </div>
             </div>
             <div class="vector-endpoint">
               <div class="field-label endpoint-title">Ponto final P₂</div>
               <div class="three-col vector-coords">
-                <label>x₂<input id="vx2" class="numeric-input" type="text" value="3"></label>
-                <label>y₂<input id="vy2" class="numeric-input" type="text" value="4"></label>
-                <label>z₂<input id="vz2" class="numeric-input" type="text" value="0"></label>
+                <label>x₂<input id="vx2" class="numeric-input expression-input" type="text" value="3"></label>
+                <label>y₂<input id="vy2" class="numeric-input expression-input" type="text" value="4"></label>
+                <label>z₂<input id="vz2" class="numeric-input expression-input" type="text" value="0"></label>
               </div>
             </div>
             <div class="vector-result" id="vectorResult" aria-live="polite">v = (3, 4, 0) · ‖v‖ = 5</div>
@@ -155,9 +177,9 @@
             <div class="vector-ops">
               <div class="field-label">Segundo vetor (para produto)</div>
               <div class="three-col vector-coords">
-                <label>x<input id="v2x" class="numeric-input" type="text" value="1" aria-label="Segundo vetor x"></label>
-                <label>y<input id="v2y" class="numeric-input" type="text" value="0" aria-label="Segundo vetor y"></label>
-                <label>z<input id="v2z" class="numeric-input" type="text" value="0" aria-label="Segundo vetor z"></label>
+                <label>x<input id="v2x" class="numeric-input expression-input" type="text" value="1" aria-label="Segundo vetor x"></label>
+                <label>y<input id="v2y" class="numeric-input expression-input" type="text" value="0" aria-label="Segundo vetor y"></label>
+                <label>z<input id="v2z" class="numeric-input expression-input" type="text" value="0" aria-label="Segundo vetor z"></label>
               </div>
               <div class="inline-actions"><button class="secondary-btn" id="dotBtn" type="button">Produto escalar</button><button class="secondary-btn" id="crossBtn" type="button">Produto vetorial</button></div>
               <div class="vector-result" id="vectorOpsResult"></div>

@@ -62,3 +62,7 @@ A interface atual mantém o campo textual com preview KaTeX porque isso preserva
 ## Extensão 3D
 
 A aplicação suporta superfícies `z=f(x,y)`, curvas paramétricas 3D `(x(t),y(t),z(t))` e retas 3D entre dois pontos. A cena usa projeção ortográfica, rotação por arraste no canvas, zoom por roda/pinça e reset de orientação.
+
+
+### Variável independente da função
+Na aba Função, escolha `x` para `y=f(x)` ou `y` para `x=f(y)`. O mesmo contexto é usado para validação e desenho.

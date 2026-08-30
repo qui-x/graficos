@@ -1,0 +1,17 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'js/ui.js'), 'utf8');
+const engine = fs.readFileSync(path.join(root, 'js/graphEngine.js'), 'utf8');
+const math = fs.readFileSync(path.join(root, 'js/mathEngine.js'), 'utf8');
+const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+if (!html.includes('id="functionVariable"')) throw new Error('function variable selector missing');
+if (!html.includes('<option value="x">') || !html.includes('<option value="y">')) throw new Error('x/y function variable options missing');
+if (!ui.includes('getFunctionVariable')) throw new Error('getFunctionVariable missing');
+if (!ui.includes('const variable=this.getFunctionVariable()')) throw new Error('function variable is not captured');
+if (!ui.includes("{expression:expr,variable}")) throw new Error('function variable is not stored in object');
+if (!engine.includes("obj.data.variable === 'y'")) throw new Error('graph variable context missing');
+if (!math.includes("let defaultVariables = Object.freeze(['x', 'y', 'z', 't'])")) throw new Error('default xyz/t variables missing');
+if (!sw.includes('calc-grafica-v26')) throw new Error('service worker cache version not bumped');
+console.log('function-variable OK');

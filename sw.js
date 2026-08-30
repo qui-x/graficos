@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-grafica-v1';
+const CACHE_NAME = 'calc-grafica-v26';
 const APP_SHELL = [
   './',
   './index.html',

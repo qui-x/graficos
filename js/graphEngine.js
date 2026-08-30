@@ -318,19 +318,20 @@
 
     drawFunction(obj) {
       let solver;
+      const variable = obj.data.variable === 'y' ? 'y' : 'x';
       try { solver = this.getCompiled(obj.id, obj.data.expression, this.getDefaultVariables()); } catch { return; }
       const { w, h } = this.size;
       this.lineStyle(obj.color, 2.2); this.ctx.beginPath();
       let started = false; let prev = null;
-      const steps = Math.min(1800, Math.max(500, Math.floor(w * 1.15)));
+      const steps = Math.min(1800, Math.max(500, Math.floor((variable==='x'?w:h) * 1.15)));
       for (let i = 0; i <= steps; i++) {
-        const px = (i / steps) * w;
-        const x = this.screenToWorld(px, 0).x;
-        const y = solver({ x });
-        if (!Number.isFinite(y) || Math.abs(y) > 1e7) { started = false; prev = null; continue; }
-        const p = this.worldToScreen(x, y);
-        if (!started || (prev !== null && Math.abs(p.y - prev) > h * 1.25)) this.ctx.moveTo(p.x, p.y); else this.ctx.lineTo(p.x, p.y);
-        started = true; prev = p.y;
+        const p0 = this.screenToWorld(variable==='x' ? (i / steps) * w : 0, variable==='y' ? (i / steps) * h : 0);
+        const independent = variable==='x' ? p0.x : p0.y;
+        const value = solver({ ...this.getDefaultVariables(), [variable]: independent });
+        if (!Number.isFinite(value) || Math.abs(value) > 1e7) { started = false; prev = null; continue; }
+        const point = variable==='x' ? this.worldToScreen(independent, value) : this.worldToScreen(value, independent);
+        if (!started || (prev !== null && Math.abs((variable==='x'?point.y:point.x) - prev) > (variable==='x'?h:w) * 1.25)) this.ctx.moveTo(point.x, point.y); else this.ctx.lineTo(point.x, point.y);
+        started = true; prev = variable==='x' ? point.y : point.x;
       }
       this.ctx.stroke();
     }
