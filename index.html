@@ -35,16 +35,6 @@
 <svg class="panel-controls-icon" aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h10M18 17h2"></path><circle cx="16" cy="7" r="2" fill="currentColor" stroke="none"></circle><circle cx="9" cy="12" r="2" fill="currentColor" stroke="none"></circle><circle cx="16" cy="17" r="2" fill="currentColor" stroke="none"></circle></svg>
 </button>
 </div>
-<button aria-expanded="true" aria-label="Abrir modos" class="menu-toggle" id="sidebarToggle" title="Abrir modos" type="button">
-<svg aria-hidden="true" class="menu-icon" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
-<svg aria-hidden="true" class="close-menu-icon hidden" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-</button>
-<button aria-label="Desfazer" class="icon-btn" disabled="" id="undoBtn" title="Desfazer (Ctrl+Z)" type="button">
-<svg aria-hidden="true" height="18" viewbox="0 0 24 24" width="18"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"></path></svg>
-</button>
-<button aria-label="Refazer" class="icon-btn" disabled="" id="redoBtn" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" type="button">
-<svg aria-hidden="true" height="18" viewbox="0 0 24 24" width="18"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"></path></svg>
-</button>
 <button aria-label="Instalar aplicativo" class="action-btn install-btn hidden" id="installBtn" title="Instalar aplicativo" type="button">
 <svg aria-hidden="true" height="17" viewbox="0 0 24 24" width="17"><path d="M11 3h2v10.2l3.5-3.5 1.4 1.4L12 17l-5.9-5.9 1.4-1.4 3.5 3.5V3zM5 19h14v2H5z" fill="currentColor"></path></svg><span>Instalar</span>
 </button>
@@ -76,7 +66,10 @@
     </button>
   </div>
   <div class="mode-manage">
-<section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row"><h2>Objetos</h2><button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section>
+<section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row object-toolbar"><h2>Objetos</h2><div class="object-actions" aria-label="Ações dos objetos">
+<button aria-label="Desfazer" class="icon-btn compact-icon-btn" disabled id="undoBtn" title="Desfazer (Ctrl+Z)" type="button"><svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"></path></svg></button>
+<button aria-label="Refazer" class="icon-btn compact-icon-btn" disabled id="redoBtn" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" type="button"><svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"></path></svg></button>
+<button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section>
   </div>
 </section>
 <aside aria-label="Controles de entrada" class="panel controls-panel"><div class="controls-header">

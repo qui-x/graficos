@@ -26,3 +26,6 @@ if (!ui.includes('requestAnimationFrame(()=>requestAnimationFrame')) throw new E
 if (!engine.includes("const lightTheme=document.documentElement.classList.contains('theme-light');")) throw new Error('theme guard missing');
 if (!engine.includes('targetPixels = 60')) throw new Error('adaptive grid target missing');
 console.log('uiux OK');
+
+const objectsSection = html.match(/<section[^>]+manage-zone[\s\S]*?<\/section>/i)?.[0] || '';
+if (!objectsSection.includes('id=\"undoBtn\"') || !objectsSection.includes('id=\"redoBtn\"')) throw new Error('Undo/redo must live inside the Objects section');

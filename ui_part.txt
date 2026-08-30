@@ -22,7 +22,6 @@
           this.$.backdrop?.classList.add('hidden');
           this.$.mobileMenuBtn?.classList.add('hidden');
           this.$.showControls?.classList.toggle('hidden', true);
-          this.$.showControls?.setAttribute('aria-hidden', String(!this.$.workspace?.classList.contains('sidebar-collapsed')));
           this.updateSidebarButtons(false);
           return;
         }
@@ -98,7 +97,6 @@
         this.$.workspace?.classList.add('controls-collapsed');
         this.$.controls?.classList.add('collapsed');
         this.$.showControls?.classList.remove('hidden');
-        this.$.showControls?.setAttribute('aria-hidden','false');
         this.$.sidebarToggle?.setAttribute('aria-expanded','false');
         this.$.sidebarToggle?.setAttribute('aria-label','Abrir controles');
         this.$.sidebarToggle?.setAttribute('title','Abrir controles');

@@ -381,9 +381,46 @@
     drawPolar(color, fn) { this.lineStyle(color, 2.2); this.ctx.beginPath(); for (let i = 0; i <= 240; i++) { const t = i / 240 * Math.PI * 2; const [x, y] = fn(t); const p = this.worldToScreen(x, y); if (i === 0) this.ctx.moveTo(p.x, p.y); else this.ctx.lineTo(p.x, p.y); } this.ctx.stroke(); }
 
     drawLine(obj) {
-      const { a, b, c } = obj.data;
-      if (Math.abs(b) > 1e-12) { const xmin = this.screenToWorld(0, 0).x - 2; const xmax = this.screenToWorld(this.size.w, 0).x + 2; const y1 = (-a * xmin - c) / b; const y2 = (-a * xmax - c) / b; this.strokeSegment(obj.color, xmin, y1, xmax, y2); }
-      else if (Math.abs(a) > 1e-12) { const ymin = this.screenToWorld(0, this.size.h).y - 2; const ymax = this.screenToWorld(0, 0).y + 2; const x = -c / a; this.strokeSegment(obj.color, x, ymin, x, ymax); }
+      const { a = 0, b = 0, c = 0 } = obj.data || {};
+      const eps = 1e-12;
+      if (Math.abs(a) < eps && Math.abs(b) < eps) return;
+
+      const left = this.screenToWorld(0, 0).x;
+      const right = this.screenToWorld(this.size.w, 0).x;
+      const top = this.screenToWorld(0, 0).y;
+      const bottom = this.screenToWorld(0, this.size.h).y;
+      const points = [];
+
+      const add = (x, y) => {
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+        if (x < Math.min(left, right) - 1e-9 || x > Math.max(left, right) + 1e-9) return;
+        if (y < Math.min(bottom, top) - 1e-9 || y > Math.max(bottom, top) + 1e-9) return;
+        if (!points.some((p) => Math.abs(p[0] - x) < 1e-10 && Math.abs(p[1] - y) < 1e-10)) points.push([x, y]);
+      };
+
+      // Interseções com as bordas verticais.
+      if (Math.abs(b) > eps) {
+        add(left, (-a * left - c) / b);
+        add(right, (-a * right - c) / b);
+      }
+      // Interseções com as bordas horizontais.
+      if (Math.abs(a) > eps) {
+        add((-b * top - c) / a, top);
+        add((-b * bottom - c) / a, bottom);
+      }
+
+      if (points.length < 2) return;
+      // Escolhe as duas interseções mais afastadas para garantir a reta atravessando o viewport.
+      let p1 = points[0], p2 = points[1], maxDist = -1;
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          const dx = points[i][0] - points[j][0];
+          const dy = points[i][1] - points[j][1];
+          const d = dx * dx + dy * dy;
+          if (d > maxDist) { maxDist = d; p1 = points[i]; p2 = points[j]; }
+        }
+      }
+      this.strokeSegment(obj.color, p1[0], p1[1], p2[0], p2[1]);
     }
 
     strokeSegment(color, x1, y1, x2, y2) { const p1 = this.worldToScreen(x1, y1), p2 = this.worldToScreen(x2, y2); this.lineStyle(color, 2.2); this.ctx.beginPath(); this.ctx.moveTo(p1.x, p1.y); this.ctx.lineTo(p2.x, p2.y); this.ctx.stroke(); }

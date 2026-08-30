@@ -14,3 +14,6 @@ if (/<button[^>]*>(?:↶|↷|□|‹|›)<\/button>/u.test(html)) throw new Erro
 if (!html.match(/id="exportBtn"[^>]*>[\s\S]*?<svg[\s\S]*?<span>PNG<\/span>/)) throw new Error('PNG icon markup invalid');
 if (!html.match(/id="exportSvgBtn"[^>]*>[\s\S]*?<svg[\s\S]*?<span>SVG<\/span>/)) throw new Error('SVG icon markup invalid');
 console.log('button style regression OK');
+
+const objectsSection = html.match(/<section[^>]+manage-zone[\s\S]*?<\/section>/i)?.[0] || '';
+if (!objectsSection.includes('id=\"undoBtn\"') || !objectsSection.includes('id=\"redoBtn\"')) throw new Error('Undo/redo must live inside the Objects section');

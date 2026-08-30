@@ -14,3 +14,6 @@ if (!css.includes('.show-controls-btn')) throw new Error('show-controls-btn styl
 if (!ui.includes('.controls-arrow-left') || !ui.includes('.controls-arrow-right')) throw new Error('collapse SVG toggle missing');
 if (/[↶↷□]/.test(html)) throw new Error('legacy unicode header icons remain');
 console.log('header icons final OK');
+
+const objectsSection = html.match(/<section[^>]+manage-zone[\s\S]*?<\/section>/i)?.[0] || '';
+if (!objectsSection.includes('id=\"undoBtn\"') || !objectsSection.includes('id=\"redoBtn\"')) throw new Error('Undo/redo must live inside the Objects section');

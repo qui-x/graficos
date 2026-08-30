@@ -1,0 +1,10 @@
+const fs=require('fs'); const assert=require('assert');
+const ge=fs.readFileSync('js/graphEngine.js','utf8'); const ui=fs.readFileSync('js/ui.js','utf8');
+assert(ge.includes('const points = []'),'drawLine must clip using viewport intersections');
+assert(ge.includes('Interseções com as bordas verticais'),'vertical border clipping missing');
+assert(ge.includes('Interseções com as bordas horizontais'),'horizontal border clipping missing');
+assert(ui.includes('id="gaRange"') && ui.includes('id="gbRange"') && ui.includes('id="gcRange"'),'line coefficient sliders missing');
+assert(ui.includes('updateLinePreview()'),'line preview missing');
+assert(ui.includes('liveUpdateEditingLine()'),'live line editing missing');
+assert(ui.includes('resetLineBtn'),'line reset button missing');
+console.log('line controls OK');

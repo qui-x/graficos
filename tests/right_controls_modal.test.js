@@ -8,5 +8,5 @@ if(!ui.includes("left?.classList.toggle('hidden', !collapsed)")) throw new Error
 if(!ui.includes("right?.classList.toggle('hidden', collapsed)")) throw new Error('open arrow direction not wired');
 if(!html.includes('id=\"extrasModal\"') || !html.includes('aria-modal=\"true\"')) throw new Error('central settings modal missing');
 if(!css.includes('.settings-modal') || !css.includes('place-items:center')) throw new Error('central modal styling missing');
-if (!fs.readFileSync('sw.js','utf8').includes("calc-grafica-v42")) throw new Error('PWA cache version not bumped');
+if (!fs.readFileSync('sw.js','utf8').includes("calc-grafica-v48")) throw new Error('PWA cache version not bumped');
 console.log('right controls/modal OK');

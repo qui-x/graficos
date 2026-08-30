@@ -1,0 +1,10 @@
+const fs=require('fs');
+const path=require('path');
+const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+const ui=fs.readFileSync(path.join(__dirname,'..','js','ui.js'),'utf8');
+const m=html.match(/<button[^>]*id="showControlsBtn"[^>]*>/);
+if(!m) throw new Error('showControlsBtn missing');
+if(/aria-hidden=/.test(m[0])) throw new Error('showControlsBtn must not use aria-hidden');
+for(const needle of ["document.activeElement === btn", "btn.blur()", "btn.inert = true", "btn.inert = false"]) if(!ui.includes(needle)) throw new Error('focus-safe show controls logic missing: '+needle);
+if(ui.includes("showControls?.setAttribute('aria-hidden'")) throw new Error('showControls aria-hidden mutation remains');
+console.log('aria focus regression OK');

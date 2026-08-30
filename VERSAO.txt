@@ -1,1 +1,1 @@
-Calculadora Gráfica UI/UX v43 - modal global + controles independentes
+v48 - menu de símbolos matemáticos com abrir/fechar por clique e estado visual ativo

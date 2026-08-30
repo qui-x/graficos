@@ -71,6 +71,7 @@ button{appearance:none;-webkit-appearance:none;font:inherit}
 .collapse-icon-left,.collapse-icon-right{transition:opacity .18s ease,transform .18s ease}
 .collapse-icon-left.hidden,.collapse-icon-right.hidden{display:none!important}
 .math-tools-btn{min-height:34px;padding:0 10px;font-size:11px;font-weight:650}
+.math-tools-btn.is-active{border-color:var(--accent);background:#162636;color:var(--text);box-shadow:0 0 0 2px rgba(90,200,250,.08)}
 .clear-field-btn{position:absolute;right:38px;top:5px;width:32px;height:32px;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer}
 .clear-field-btn:hover{color:var(--text);background:#121d28;border-color:var(--line)}
 .dropdown-btn{position:absolute;right:5px;top:5px;width:28px;height:32px;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer}
@@ -1404,3 +1405,29 @@ body.modal-open { overflow:hidden; }
 .settings-modal.hidden{display:none!important;}
 .settings-modal-backdrop{position:absolute!important;inset:0!important;}
 .settings-dialog{position:relative;z-index:1;max-width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;}
+
+/* v44 — undo/redo integrados à seção Objetos */
+.object-toolbar{gap:8px}
+.object-actions{display:flex;align-items:center;gap:6px}
+.compact-icon-btn{width:32px;min-width:32px;height:32px;padding:0}
+.compact-icon-btn svg{width:16px;height:16px}
+.compact-icon-btn:disabled{opacity:.35}
+@media(max-width:900px){.compact-icon-btn{width:40px;min-width:40px;height:40px}.compact-icon-btn svg{width:17px;height:17px}}
+
+/* v46 — controles interativos da reta */
+.line-controls{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.line-coef{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:center}
+.line-coef>label{font-family:"Cambria Math","STIX Two Math",serif;font-weight:700;color:var(--text);text-align:center}
+.line-value{display:grid;grid-template-columns:72px minmax(0,1fr);gap:9px;align-items:center}
+.line-number{width:100%;min-width:0;text-align:center}
+.line-range{width:100%;accent-color:var(--accent);cursor:pointer}
+.line-range:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.line-preview{min-height:44px;display:flex;align-items:center;justify-content:center;padding:9px 12px;background:#0a1016;border:1px solid var(--line);border-radius:9px;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:16px;text-align:center;line-height:1.35}
+.line-preview.invalid{border-color:#ff6f91;color:#ffb4c4}
+.line-actions{display:flex;justify-content:flex-end}
+.line-actions .secondary-btn{min-height:38px}
+@media(max-width:899px){
+  .line-coef{grid-template-columns:22px minmax(0,1fr)}
+  .line-value{grid-template-columns:64px minmax(0,1fr)}
+  .line-preview{font-size:15px}
+}
