@@ -17,7 +17,7 @@
         <h1>Calculadora Gráfica</h1>
         <p>Funções, curvas paramétricas, vetores e geometria analítica em um único espaço.</p>
       </div>
-      <div class="top-actions"><button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar tema" title="Alternar tema">◐</button><button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>↶</button><button class="icon-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" aria-label="Refazer" disabled>↷</button><button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false"><span class="collapse-icon" aria-hidden="true">‹</span><span class="sr-only">Ocultar controles</span></button>
+      <div class="top-actions"><button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>↶</button><button class="icon-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" aria-label="Refazer" disabled>↷</button><button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false"><span class="collapse-icon" aria-hidden="true">‹</span><span class="sr-only">Ocultar controles</span></button>
         <button class="icon-btn" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Ativar tela cheia">□</button>
         <button class="action-btn" id="exportBtn" type="button" title="Exportar PNG" aria-label="Exportar PNG">PNG</button><button class="action-btn" id="exportSvgBtn" type="button" title="Exportar SVG" aria-label="Exportar SVG">SVG</button>
       </div>
@@ -41,12 +41,12 @@
           <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
             <label class="field-label" for="functionExpr">y = f(x)</label>
             <div class="math-editor">
-              <input id="functionExpr" class="math-input" type="text" value="sin(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false" aria-label="Expressão da função y igual a f de x" aria-describedby="functionPreview functionError">
+              <input id="functionExpr" class="math-input" type="text" aria-describedby="functionPreview" value="sin(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false">
               <button class="clear-field-btn" type="button" data-clear="functionExpr" aria-label="Limpar expressão da função" title="Limpar">C</button>
               <button class="dropdown-btn" type="button" data-menu="math-menu-function" aria-label="Abrir símbolos matemáticos">▼</button>
               <div class="math-menu hidden" id="math-menu-function"></div>
             </div>
-            <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div><div class="field-error" id="functionError" role="alert" aria-live="polite"></div>
+            <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div>
             <div class="quick-grid" data-target="functionExpr">
               <button type="button" data-token="sin(">sin</button><button type="button" data-token="cos(">cos</button><button type="button" data-token="tan(">tan</button>
               <button type="button" data-token="sqrt(">√</button><button type="button" data-token="^2">x²</button><button type="button" data-token="^3">x³</button>
@@ -57,14 +57,14 @@
 
           <section class="tab-panel" id="panel-parametric" data-panel="parametric" role="tabpanel" hidden>
             <div class="two-col">
-              <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><input id="paramX" class="math-input" type="text" value="cos(t)" placeholder="Ex.: cos(t)" autocomplete="off" spellcheck="false" aria-label="Expressão x de t" aria-describedby="paramPreview paramError"><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
-              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" value="sin(t)" placeholder="Ex.: sin(t)" autocomplete="off" spellcheck="false" aria-label="Expressão y de t" aria-describedby="paramPreview paramError"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
+              <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><input id="paramX" class="math-input" type="text" aria-describedby="paramPreview" value="cos(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
+              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" aria-describedby="paramPreview" value="sin(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
             </div>
             <div class="two-col">
               <div><label class="field-label" for="tMin">t mín.</label><input id="tMin" class="numeric-input" type="text" value="0"></div>
               <div><label class="field-label" for="tMax">t máx.</label><input id="tMax" class="numeric-input" type="text" value="2*pi"></div>
             </div>
-            <div class="math-preview" id="paramPreview" aria-live="polite" aria-label="Pré-visualização matemática da curva paramétrica"></div><div class="field-error" id="paramError" role="alert" aria-live="polite"></div>
+            <div class="math-preview" id="paramPreview" aria-live="polite" aria-label="Pré-visualização matemática da curva paramétrica"></div>
             <button class="primary-btn" id="addParamBtn" type="button">Adicionar curva paramétrica</button>
           </section>
 
@@ -123,13 +123,9 @@
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="graphCanvas" aria-label="Plano cartesiano interativo" aria-describedby="graphHelp"></canvas>
           <div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
-          <div class="graph-legend" id="graphLegend" aria-label="Legenda do gráfico"></div>
-          <div class="graph-tooltip hidden" id="graphTooltip" role="status"></div>
-          <div class="zoom-box hidden" id="zoomBox" aria-hidden="true"></div>
         </div>
-        <div id="graphHelp" class="sr-only">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><button id="mobileControlsToggle" class="mobile-controls-toggle" type="button" aria-label="Mostrar controles" title="Mostrar controles">▲ Controles</button>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div><div class="statusbar">
-          <span class="status-main"><span id="statusSpinner" class="status-spinner hidden" aria-hidden="true"></span><span id="statusText">Pronto</span></span>
+        <div id="graphHelp" class="sr-only">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div id="toast" class="toast" role="status" aria-live="polite"></div><div class="statusbar">
+          <span id="statusText">Pronto</span>
           <span>Arraste para mover · roda para zoom · passe o cursor para coordenadas</span>
         </div>
       </section>

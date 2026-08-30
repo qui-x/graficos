@@ -57,6 +57,4 @@ Os testes atuais cobrem o parser matemático, gerenciamento de objetos, persist�
 
 ## Observação sobre a entrada matemática
 
-A interface usa campos de texto nativos com formatação simbólica e preview KaTeX, preservando compatibilidade direta com o parser seguro existente.
-
-## Entrada matemática visual
+A interface atual mantém o campo textual com preview KaTeX porque isso preserva compatibilidade com o parser seguro existente. Uma migração futura para MathQuill/MathLive pode ser feita como camada de edição, mantendo o mesmo `MathEngine` por trás.

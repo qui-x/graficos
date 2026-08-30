@@ -32,27 +32,15 @@
   });
 
   function normalize(expression) {
-    let s=String(expression ?? '');
-    s=s.replace(/[−–—]/g,'-')
-      .replace(/[×·]/g,'*').replace(/÷/g,'/')
-      .replace(/π/g,'pi').replace(/τ/g,'tau').replace(/φ/g,'phi')
-      .replace(/[²]/g,'^2').replace(/[³]/g,'^3').replace(/[⁴]/g,'^4').replace(/[⁵]/g,'^5')
-      .replace(/√\s*\(/g,'sqrt(')
-      // Fallback para notação LaTeX comum antes da tokenização.
-      .replace(/\\left|\\right/g,'')
-      .replace(/\\(?:sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|log2|log1p|log|ln|sqrt|cbrt|abs|exp|ceil|floor|round|sign|cot|sec|csc)\s*/gi,(m)=>m.replace('\\','').trim())
-      .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/gi,'($1)/($2)')
-      .replace(/\\(?:pi|tau|phi)\b/gi,(m)=>m.slice(1))
-      .replace(/\\cdot\s*/gi,'*')
-      .replace(/\\times\s*/gi,'*')
-      .replace(/\\div\s*/gi,'/')
-      .replace(/\^\{([0-9]+)\}/g,'^$1')
-      .replace(/\{([^{}]+)\}/g,'($1)')
-      .replace(/,/g,'.')
-      .replace(/(\d(?:\.\d+)?)(?=(?!e[+-]?\d)[A-Za-z_])/g,'$1*')
-      .replace(/\)\s*(?=[A-Za-z_(])/g,')*')
+    return String(expression ?? '')
+      .replace(/[−–—]/g, '-')
+      .replace(/[×·]/g, '*').replace(/÷/g, '/')
+      .replace(/π/g, 'pi').replace(/τ/g, 'tau').replace(/φ/g, 'phi')
+      .replace(/[²]/g, '^2').replace(/[³]/g, '^3').replace(/[⁴]/g, '^4').replace(/[⁵]/g, '^5')
+      .replace(/√\s*\(/g, 'sqrt(')
+      .replace(/\^\{([0-9]+)\}/g, '^$1')
+      .replace(/,/g, '.')
       .trim();
-    return s;
   }
 
   class Parser {
