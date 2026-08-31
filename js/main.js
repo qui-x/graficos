@@ -11,9 +11,16 @@
   const engine = new GraphEngine(document.getElementById('graphCanvas'), objects);
   AppUI.init(objects, engine);
   engine.center();
-  const recalibrate = () => { engine.resize(); engine.requestRender(); };
+  const updateViewportUnit = () => {
+    const height = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
+    document.documentElement.style.setProperty('--app-vh', `${height}px`);
+  };
+  const recalibrate = () => { updateViewportUnit(); engine.resize(); engine.requestRender(); };
   requestAnimationFrame(() => requestAnimationFrame(recalibrate));
   setTimeout(recalibrate, 100);
+  window.addEventListener('resize', recalibrate, { passive: true });
+  window.addEventListener('orientationchange', recalibrate, { passive: true });
+  window.visualViewport?.addEventListener('resize', recalibrate, { passive: true });
 
   // PWA: manifest e Service Worker só podem ser usados em contexto HTTP(S).
   // Ao abrir index.html diretamente como file://, o app continua funcionando sem
