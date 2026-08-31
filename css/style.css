@@ -1447,3 +1447,27 @@ body.modal-open { overflow:hidden; }
   box-shadow:0 0 0 2px rgba(90,200,250,.10);
 }
 #globalMathMenu.hidden { display:none !important; }
+
+/* Cálculo II — sólidos de revolução */
+.section-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;margin:0 0 10px;}
+.field-hint{font-size:11px;color:var(--muted);font-weight:400;}
+.preview-box{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(12,20,29,.72);text-align:center;min-height:44px;}
+.solid-options{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(90,200,250,.05);margin-bottom:10px;}
+@media(max-width:700px){.point-grid,.three-col{gap:6px}.preview-box{font-size:13px;padding:10px}.section-kicker{font-size:10px;}}
+
+/* v59 — entrada de Cálculo II em notação matemática */
+.math-entry-card,.math-interval-card{border:1px solid var(--line);border-radius:11px;background:rgba(12,20,29,.62);padding:12px;margin:0 0 10px;}
+.math-entry-label{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.math-entry-line{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;}
+.math-prefix,.math-value-field span,.math-interval-symbol{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:16px;color:var(--text);white-space:nowrap;}
+.math-entry-editor{margin:0;min-width:0;}
+.math-entry-editor .math-input{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:18px;font-style:italic;}
+.math-interval-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.math-value-field{display:inline-flex;align-items:center;gap:5px;}
+.math-value-field .numeric-input{width:76px;text-align:center;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:16px;}
+.axis-field{margin-left:auto;}
+.formula-card{border:1px solid var(--line);border-radius:11px;background:rgba(90,200,250,.045);padding:11px 12px;margin:10px 0;}
+.formula-title{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;margin-bottom:6px;}
+.formula-display{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:18px;color:var(--text);text-align:center;line-height:1.35;}
+.calculus-preview{font-size:17px;min-height:54px;}
+@media(max-width:700px){.math-entry-card,.math-interval-card{padding:10px}.math-entry-line{grid-template-columns:1fr}.math-prefix{font-size:15px}.axis-field{margin-left:0}.math-interval-row{gap:6px}.math-interval-symbol{font-size:14px}.math-value-field .numeric-input{width:68px}.formula-display{font-size:16px}}

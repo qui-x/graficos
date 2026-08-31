@@ -100,6 +100,8 @@
 
     addSurface(expression, color) { return this.add('surface', { expression }, color); }
 
+    addSolidOfRevolution(data, color) { return this.add('solid', { ...clone(data) }, color); }
+
     addCurve3D(xExpr, yExpr, zExpr, tMin, tMax, color) {
       return this.add('curve3d', { xExpr, yExpr, zExpr, tMin, tMax }, color);
     }

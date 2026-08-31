@@ -55,7 +55,7 @@
     <button class="mode-btn" data-mode="parametric" type="button" title="Paramétrica"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c3-8 13-8 16 0M4 8c3 8 13 8 16 0" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Paramétrica</span></button>
     <button class="mode-btn" data-mode="vector" type="button" title="Vetor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5M13 5h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Vetor</span></button>
     <button class="mode-btn" data-mode="geometry" type="button" title="Geometria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18L9 6l10 4-4 10z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Geometria</span></button>
-    <button class="mode-btn" data-mode="surface" type="button" title="Superfície 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l6-8 10 4-6 8zM10 8v8M4 16l10 4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span>Superfície</span></button>
+    <button class="mode-btn" data-mode="surface" type="button" title="Discos e anéis — Cálculo II"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l6-8 10 4-6 8zM10 8v8M4 16l10 4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span>Discos / Anéis</span></button>
     <button class="mode-btn" data-mode="curve3d" type="button" title="Curva 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2-9 6 9 8 0s6-9 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Curva 3D</span></button>
     <button class="mode-btn" data-mode="line3d" type="button" title="Reta 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20L20 4M7 20h-3v-3M17 4h3v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Reta 3D</span></button>
   </nav>
@@ -86,7 +86,7 @@
 <button aria-controls="panel-parametric" aria-selected="false" class="tab" data-tab="parametric" role="tab" title="Curva paramétrica"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Paramétrica</span></button>
 <button aria-controls="panel-vector" aria-selected="false" class="tab" data-tab="vector" role="tab" title="Vetor"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Vetor</span></button>
 <button aria-controls="panel-geometry" aria-selected="false" class="tab" data-tab="geometry" role="tab" title="Geometria"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Geometria</span></button>
-<button aria-controls="panel-surface" aria-selected="false" class="tab" data-tab="surface" role="tab" title="Superfície 3D"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Superfície</span></button>
+<button aria-controls="panel-surface" aria-selected="false" class="tab" data-tab="surface" role="tab" title="Discos e anéis — Cálculo II"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Discos / Anéis</span></button>
 <button aria-controls="panel-curve3d" aria-selected="false" class="tab" data-tab="curve3d" role="tab" title="Curva 3D"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Curva 3D</span></button>
 <button aria-controls="panel-line3d" aria-selected="false" class="tab" data-tab="line3d" role="tab" title="Reta 3D"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Reta 3D</span></button>
 </div><div aria-label="Ferramentas matemáticas" class="global-math-tools">
@@ -202,16 +202,50 @@
 <button class="primary-btn" data-panel-action="true" id="addGeometryBtn" type="button">Adicionar objeto geométrico</button>
 </section>
 <section class="tab-panel" data-panel="surface" hidden="" id="panel-surface" role="tabpanel">
-<label class="field-label" for="surfaceExpr">z = f(x, y)</label>
-<div class="math-editor">
-<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceExpr" placeholder="Ex.: x² + y²" spellcheck="false" type="text" value="x² + y²"/>
-<button aria-label="Limpar superfície" class="clear-field-btn" data-clear="surfaceExpr" title="Limpar" type="button">C</button>
-</div>
-<div aria-label="Pré-visualização da superfície" aria-live="polite" class="math-preview" id="surfacePreview"></div>
-<div class="two-col">
-<label class="field-label" for="surfaceRange">Faixa</label><input class="numeric-input" id="surfaceRange" type="text" value="5"/>
-</div>
-<button class="primary-btn" data-panel-action="true" id="addSurfaceBtn" type="button">Adicionar superfície</button>
+  <div class="section-kicker">Cálculo II · Sólido de revolução</div>
+
+  <div class="math-entry-card">
+    <div class="math-entry-label">Função externa</div>
+    <div class="math-entry-line">
+      <span class="math-prefix">f(x) =</span>
+      <div class="math-editor math-entry-editor">
+        <input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceOuterExpr" placeholder="x²" spellcheck="false" type="text" value="x²"/>
+        <button aria-label="Limpar função externa" class="clear-field-btn" data-clear="surfaceOuterExpr" title="Limpar" type="button">C</button>
+      </div>
+    </div>
+    <div class="field-hint">Raio externo: <strong>R(x) = |f(x) − k|</strong></div>
+  </div>
+
+  <div class="math-entry-card">
+    <div class="math-entry-label">Função interna</div>
+    <div class="math-entry-line">
+      <span class="math-prefix">g(x) =</span>
+      <div class="math-editor math-entry-editor">
+        <input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceInnerExpr" placeholder="0" spellcheck="false" type="text" value="0"/>
+        <button aria-label="Limpar função interna" class="clear-field-btn" data-clear="surfaceInnerExpr" title="Limpar" type="button">C</button>
+      </div>
+    </div>
+    <div class="field-hint">Para discos, use <strong>g(x) = 0</strong>. Para anéis, defina o raio interno.</div>
+  </div>
+
+  <div class="math-interval-card">
+    <div class="math-entry-label">Intervalo e eixo de rotação</div>
+    <div class="math-interval-row">
+      <div class="math-value-field"><span>a =</span><input class="numeric-input" id="surfaceAMin" type="text" value="0" aria-label="Limite inferior a"/></div>
+      <span class="math-interval-symbol">≤ x ≤</span>
+      <div class="math-value-field"><span>b =</span><input class="numeric-input" id="surfaceBMax" type="text" value="3" aria-label="Limite superior b"/></div>
+      <div class="math-value-field axis-field"><span>y =</span><input class="numeric-input" id="surfaceAxisY" type="text" value="0" aria-label="Eixo de rotação y igual a"/></div>
+    </div>
+  </div>
+
+  <div class="preview-box math-preview calculus-preview" id="surfacePreview" aria-label="Pré-visualização matemática do sólido e integral de volume" aria-live="polite"></div>
+
+  <div class="formula-card" aria-label="Fórmula do método dos discos e anéis">
+    <div class="formula-title">Volume por discos / anéis</div>
+    <div class="formula-display">V = π∫<sub>a</sub><sup>b</sup>[R(x)<sup>2</sup> − r(x)<sup>2</sup>] dx</div>
+  </div>
+
+  <button class="primary-btn" data-panel-action="true" id="addSurfaceBtn" type="button">Adicionar sólido de revolução</button>
 </section>
 <section class="tab-panel" data-panel="curve3d" hidden="" id="panel-curve3d" role="tabpanel">
 <div class="two-col">

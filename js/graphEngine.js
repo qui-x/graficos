@@ -220,7 +220,7 @@
     }
 
     has3DObjects() {
-      return this.objects.items.some((o) => ['surface', 'curve3d', 'line3d'].includes(o.type) || (o.type === 'vector' && this.vectorIs3D(o)));
+      return this.objects.items.some((o) => ['surface', 'solid', 'curve3d', 'line3d'].includes(o.type) || (o.type === 'vector' && this.vectorIs3D(o)));
     }
 
     vectorIs3D(obj) {
@@ -273,6 +273,148 @@
         const a=this.project3D(i,0,-range), b=this.project3D(i,0,range); c.strokeStyle='rgba(90,200,250,.09)'; c.lineWidth=1; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
         const aa=this.project3D(-range,0,i), bb=this.project3D(range,0,i); c.beginPath(); c.moveTo(aa.x,aa.y); c.lineTo(bb.x,bb.y); c.stroke();
       }
+      c.restore();
+    }
+
+    drawSolid(obj) {
+      const d = obj.data || {};
+      let sf, sg;
+      try {
+        sf = this.getCompiled(`${obj.id}:outer`, d.outerExpression, this.getDefaultVariables());
+        sg = this.getCompiled(`${obj.id}:inner`, d.innerExpression || '0', this.getDefaultVariables());
+      } catch { return; }
+
+      const a = Number(d.a), b = Number(d.b), k = Number(d.axisY) || 0;
+      if (!Number.isFinite(a) || !Number.isFinite(b) || b <= a) return;
+
+      const c = this.ctx;
+      const slices = Math.max(26, Math.min(64, Math.round((this.size.w / 900) * 36)));
+      const rings = 28;
+      const vars = this.getDefaultVariables();
+      const profile = [];
+
+      for (let i = 0; i <= slices; i++) {
+        const x = a + (b - a) * i / slices;
+        const f = sf({ ...vars, x });
+        const g = sg({ ...vars, x });
+        if (!Number.isFinite(f) || !Number.isFinite(g) || Math.max(Math.abs(f), Math.abs(g)) > 1e5) {
+          profile.push(null);
+          continue;
+        }
+        const rf = Math.abs(f - k);
+        const rg = Math.abs(g - k);
+        const R = Math.max(rf, rg);
+        const r = Math.min(rf, rg);
+        profile.push({ x, R, r });
+      }
+
+      const outer = [];
+      const inner = [];
+      const frontCaps = [];
+
+      for (let i = 0; i < profile.length - 1; i++) {
+        const p0 = profile[i], p1 = profile[i + 1];
+        if (!p0 || !p1) continue;
+        for (let j = 0; j < rings; j++) {
+          const j2 = (j + 1) % rings;
+          const t0 = 2 * Math.PI * j / rings;
+          const t1 = 2 * Math.PI * j2 / rings;
+          const q0 = this.project3D(p0.x, p0.R * Math.cos(t0), p0.R * Math.sin(t0));
+          const q1 = this.project3D(p1.x, p1.R * Math.cos(t0), p1.R * Math.sin(t0));
+          const q2 = this.project3D(p1.x, p1.R * Math.cos(t1), p1.R * Math.sin(t1));
+          const q3 = this.project3D(p0.x, p0.R * Math.cos(t1), p0.R * Math.sin(t1));
+          outer.push({ pts: [q0,q1,q2,q3], depth: (q0.depth+q1.depth+q2.depth+q3.depth)/4 });
+          if (p0.r > 1e-8 || p1.r > 1e-8) {
+            const r0 = this.project3D(p0.x, p0.r * Math.cos(t0), p0.r * Math.sin(t0));
+            const r1 = this.project3D(p1.x, p1.r * Math.cos(t0), p1.r * Math.sin(t0));
+            const r2 = this.project3D(p1.x, p1.r * Math.cos(t1), p1.r * Math.sin(t1));
+            const r3 = this.project3D(p0.x, p0.r * Math.cos(t1), p0.r * Math.sin(t1));
+            inner.push({ pts: [r0,r1,r2,r3], depth: (r0.depth+r1.depth+r2.depth+r3.depth)/4 });
+          }
+        }
+      }
+
+      const drawFaces = (faces, fillAlpha, strokeAlpha) => {
+        faces.sort((u,v) => v.depth - u.depth);
+        for (const face of faces) {
+          const pts = face.pts;
+          c.beginPath();
+          c.moveTo(pts[0].x, pts[0].y);
+          for (let q = 1; q < pts.length; q++) c.lineTo(pts[q].x, pts[q].y);
+          c.closePath();
+          c.fillStyle = `${obj.color}${fillAlpha}`;
+          c.fill();
+          c.strokeStyle = `${obj.color}${strokeAlpha}`;
+          c.lineWidth = 0.8;
+          c.stroke();
+        }
+      };
+
+      c.save();
+      drawFaces(outer, '28', '8a');
+      drawFaces(inner, '12', '58');
+
+      // Bordas externas e internas: deixam a geometria do sólido claramente definida.
+      const drawRim = (radiusKey, alpha) => {
+        for (let j = 0; j < rings; j++) {
+          const th = 2 * Math.PI * j / rings;
+          let started = false;
+          c.beginPath();
+          for (let i = 0; i <= slices; i++) {
+            const p = profile[i];
+            if (!p) { started = false; continue; }
+            const radius = p[radiusKey];
+            const q = this.project3D(p.x, radius * Math.cos(th), radius * Math.sin(th));
+            if (!started) { c.moveTo(q.x,q.y); started = true; } else c.lineTo(q.x,q.y);
+          }
+          c.strokeStyle = `${obj.color}${alpha}`;
+          c.lineWidth = 1.1;
+          c.stroke();
+        }
+      };
+      drawRim('R','c8');
+      drawRim('r','72');
+
+      // Anéis/discos de referência em algumas seções, para deixar explícito o método de Cálculo II.
+      const sliceIndices = [0.2, 0.42, 0.66, 0.84].map(t => Math.round(t * slices));
+      c.strokeStyle = `${obj.color}b0`;
+      c.lineWidth = 1.15;
+      for (const idx of sliceIndices) {
+        const p = profile[Math.max(0, Math.min(slices, idx))];
+        if (!p) continue;
+        const ptsOuter = [];
+        const ptsInner = [];
+        for (let j = 0; j <= rings; j++) {
+          const th = 2*Math.PI*j/rings;
+          ptsOuter.push(this.project3D(p.x, p.R*Math.cos(th), p.R*Math.sin(th)));
+          ptsInner.push(this.project3D(p.x, p.r*Math.cos(th), p.r*Math.sin(th)));
+        }
+        c.beginPath();
+        ptsOuter.forEach((q,j)=>{ if(!j)c.moveTo(q.x,q.y); else c.lineTo(q.x,q.y); });
+        c.stroke();
+        if (p.r > 1e-8) {
+          c.beginPath();
+          ptsInner.forEach((q,j)=>{ if(!j)c.moveTo(q.x,q.y); else c.lineTo(q.x,q.y); });
+          c.strokeStyle = `${obj.color}70`;
+          c.stroke();
+        }
+      }
+
+      // Capas nas extremidades a e b: disco quando r=0, arruela quando r>0.
+      for (const idx of [0, slices]) {
+        const p = profile[idx];
+        if (!p) continue;
+        const drawCap = (radius, fillAlpha, strokeAlpha) => {
+          const pts=[];
+          for(let j=0;j<=rings;j++){const th=2*Math.PI*j/rings;pts.push(this.project3D(p.x,radius*Math.cos(th),radius*Math.sin(th)));}
+          c.beginPath(); pts.forEach((q,j)=>{if(!j)c.moveTo(q.x,q.y);else c.lineTo(q.x,q.y);}); c.closePath();
+          c.fillStyle=`${obj.color}${fillAlpha}`; c.fill();
+          c.strokeStyle=`${obj.color}${strokeAlpha}`; c.stroke();
+        };
+        drawCap(p.R,'20','70');
+        if(p.r>1e-8) drawCap(p.r,'10','55');
+      }
+
       c.restore();
     }
 
@@ -450,6 +592,7 @@
       else if (obj.type === 'ellipse') this.drawEllipse(obj);
       else if (obj.type === 'line') this.drawLine(obj);
       else if (obj.type === 'surface') this.drawSurface(obj);
+      else if (obj.type === 'solid') this.drawSolid(obj);
       else if (obj.type === 'curve3d') this.drawCurve3D(obj);
       else if (obj.type === 'line3d') this.drawLine3D(obj);
     }
@@ -547,6 +690,7 @@
       }
       if (obj.type === 'line3d') { const a=this.project3D(...obj.data.p1), b=this.project3D(...obj.data.p2); return `<line x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke="${color}" stroke-width="2.5" marker-end="url(#vectorArrow)"/>`; }
       if (obj.type === 'curve3d') { try { const sx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,this.getDefaultVariables()), sy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,this.getDefaultVariables()), sz=this.getCompiled(`${obj.id}:z`,obj.data.zExpr,this.getDefaultVariables()); let d='',started=false; for(let i=0;i<=700;i++){ const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/700,x=sx({t}),y=sy({t}),z=sz({t}); if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(z)){started=false;continue;} const q=this.project3D(x,y,z); d+=`${started?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `; started=true;} return `<path d="${d.trim()}" fill="none" stroke="${color}" stroke-width="2.2"/>`; } catch(e){console.warn('[GraphEngine] Falha ao exportar curva 3D:',e);return '';}}
+      if (obj.type === 'solid') { try { const d=obj.data||{}, sf=this.getCompiled(`${obj.id}:outer`,d.outerExpression,this.getDefaultVariables()), sg=this.getCompiled(`${obj.id}:inner`,d.innerExpression||'0',this.getDefaultVariables()), a=Number(d.a),b=Number(d.b),k=Number(d.axisY)||0; let out='<g fill="none" stroke="'+color+'" stroke-opacity=".55" stroke-width="1">', paths=''; const slices=24,rings=18; for(let j=0;j<rings;j++){let dd='';const th=2*Math.PI*j/rings;for(let i=0;i<=slices;i++){const x=a+(b-a)*i/slices,f=sf({...this.getDefaultVariables(),x}),g=sg({...this.getDefaultVariables(),x});if(!Number.isFinite(f)||!Number.isFinite(g))continue;const R=Math.max(Math.abs(f-k),Math.abs(g-k)),q=this.project3D(x,R*Math.cos(th),R*Math.sin(th));dd+=`${dd?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(dd)paths+=`<path d="${dd.trim()}"/>`;}for(let i=0;i<=slices;i++){const x=a+(b-a)*i/slices,f=sf({...this.getDefaultVariables(),x}),g=sg({...this.getDefaultVariables(),x});if(!Number.isFinite(f)||!Number.isFinite(g))continue;const R=Math.max(Math.abs(f-k),Math.abs(g-k));for(let j=0;j<rings;j+=2){const th=2*Math.PI*j/rings,q=this.project3D(x,R*Math.cos(th),R*Math.sin(th)),u=this.project3D(x,0,0);paths+=`<line x1="${u.x.toFixed(2)}" y1="${u.y.toFixed(2)}" x2="${q.x.toFixed(2)}" y2="${q.y.toFixed(2)}"/>`;}}return out+paths+'</g>'; } catch(e){console.warn('[GraphEngine] Falha ao exportar sólido de revolução:',e);return ''; } }
       if (obj.type === 'surface') { try { const solver=this.getCompiled(obj.id,obj.data.expression,this.getDefaultVariables()), steps=20, range=Math.max(1,Number(obj.data.range)||5); let out='<g fill="none" stroke="'+color+'" stroke-opacity=".45" stroke-width="1">'; for(let i=0;i<=steps;i++){let d='';for(let j=0;j<=steps;j++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}for(let j=0;j<=steps;j++){let d='';for(let i=0;i<=steps;i++){const x=-range+2*range*i/steps,y=-range+2*range*j/steps,z=solver({x,y});if(!Number.isFinite(z)){if(d){out+=`<path d="${d}"/>`;d='';}continue;}const q=this.project3D(x,y,z);d+=`${d?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;}if(d)out+=`<path d="${d.trim()}"/>`;}return out+'</g>'; } catch(e){console.warn('[GraphEngine] Falha ao exportar superfície 3D:',e);return '';}}
       console.warn('[GraphEngine] Tipo de objeto não reconhecido para SVG:', obj.type, obj);
       return '';
