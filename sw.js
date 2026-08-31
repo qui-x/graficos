@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-grafica-v60';
+const CACHE_NAME = 'calc-grafica-v87.1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -29,6 +29,16 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+  if (url.origin !== self.location.origin && url.hostname === 'cdn.jsdelivr.net') {
+    event.respondWith(caches.open(CACHE_NAME).then(async (cache) => {
+      try {
+        const cached = await cache.match(request);
+        const network = fetch(request).then((response) => { cache.put(request, response.clone()); return response; }).catch(() => cached);
+        return cached || network;
+      } catch (_) { return fetch(request); }
+    }));
+    return;
+  }
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((response) => {
