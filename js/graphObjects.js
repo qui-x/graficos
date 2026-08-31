@@ -71,6 +71,15 @@
       this.commit(previous, 'limpar objetos');
     }
 
+
+    clearForMode() {
+      if (!this.items.length) return false;
+      this.items = [];
+      this.undoStack = [];
+      this.redoStack = [];
+      this.onChange();
+      return true;
+    }
     undo() {
       const entry = this.undoStack.pop();
       if (!entry) return false;
