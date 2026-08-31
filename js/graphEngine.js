@@ -18,6 +18,8 @@
       this.pointerActive = false;
       this.activePointers = new Map();
       this.pinchDistance = null;
+      this.hoveredVector = null;
+      this.hoveredObject = null;
       this.rotationX = 0.62;
       this.rotationY = 0.78;
       this.projectionScale = 1;
@@ -86,20 +88,66 @@
     worldToScreen(x, y) { const { w, h } = this.size; return { x: w / 2 + this.offsetX + x * this.scale, y: h / 2 + this.offsetY - y * this.scale }; }
     screenToWorld(px, py) { const { w, h } = this.size; return { x: (px - w / 2 - this.offsetX) / this.scale, y: (h / 2 + this.offsetY - py) / this.scale }; }
 
+    getVectorScreenPoints(obj) {
+      if (obj?.type !== 'vector') return null;
+      const is3D = this.vectorIs3D(obj);
+      if (is3D) {
+        const [p1, p2] = this.getVector3DPoints(obj);
+        return { p1, p2, a: this.project3D(...p1), b: this.project3D(...p2), is3D: true };
+      }
+      const d = obj.data || {};
+      const p1 = [Number.isFinite(Number(d.x1)) ? Number(d.x1) : Number(d.p1?.[0] ?? 0), Number.isFinite(Number(d.y1)) ? Number(d.y1) : Number(d.p1?.[1] ?? 0)];
+      const p2 = [Number.isFinite(Number(d.x2)) ? Number(d.x2) : Number(d.p2?.[0] ?? 0), Number.isFinite(Number(d.y2)) ? Number(d.y2) : Number(d.p2?.[1] ?? 0)];
+      return { p1, p2, a: this.worldToScreen(p1[0], p1[1]), b: this.worldToScreen(p2[0], p2[1]), is3D: false };
+    }
+
+    distancePointToSegment(px, py, a, b) {
+      const dx=b.x-a.x, dy=b.y-a.y, len2=dx*dx+dy*dy;
+      let t=len2>1e-9?((px-a.x)*dx+(py-a.y)*dy)/len2:0; t=Math.max(0,Math.min(1,t));
+      const q={x:a.x+t*dx,y:a.y+t*dy}; return {distance:Math.hypot(px-q.x,py-q.y),t,q};
+    }
+
+    findHoveredObject(px, py) {
+      let best=null,bestDistance=Infinity;
+      const tolerance=Math.max(8,Math.min(18,9+this.scale*0.05));
+      const consider=(obj,point,screen,distance,extra={})=>{if(!screen||!Number.isFinite(distance)||distance>tolerance+(extra.is3D?5:3))return;if(distance<bestDistance){bestDistance=distance;best={obj,point,screen,distance,...extra};}};
+      for(const obj of this.objects.items){
+        if(!obj.visible)continue; const d=obj.data||{};
+        if(obj.type==='vector'){const pts=this.getVectorScreenPoints(obj);if(!pts)continue;const h=this.distancePointToSegment(px,py,pts.a,pts.b);const point=pts.p1.map((v,i)=>v+(pts.p2[i]-v)*h.t);consider(obj,point,h.q,h.distance,{is3D:pts.is3D,endpoints:[pts.p1,pts.p2]});continue;}
+        if(obj.type==='point'){const point=[Number(d.x)||0,Number(d.y)||0],screen=this.worldToScreen(...point);consider(obj,point,screen,Math.hypot(px-screen.x,py-screen.y));continue;}
+        if(obj.type==='line'){const a=Number(d.a)||0,b=Number(d.b)||0,c=Number(d.c)||0;if(Math.abs(a)<1e-12&&Math.abs(b)<1e-12)continue;const w=this.screenToWorld(px,py);let x=w.x,y=w.y;if(Math.abs(b)>=Math.abs(a))y=(-a*x-c)/b;else x=(-b*y-c)/a;const screen=this.worldToScreen(x,y);consider(obj,[x,y],screen,Math.hypot(px-screen.x,py-screen.y));continue;}
+        if(obj.type==='circle'||obj.type==='ellipse'){const cx=Number(d.cx)||0,cy=Number(d.cy)||0,rx=obj.type==='circle'?(Number(d.r)||0):(Number(d.a)||0),ry=obj.type==='circle'?rx:(Number(d.b)||0);if(rx<=0||ry<=0)continue;const w=this.screenToWorld(px,py),ang=Math.atan2((w.y-cy)/ry,(w.x-cx)/rx),point=[cx+rx*Math.cos(ang),cy+ry*Math.sin(ang)],screen=this.worldToScreen(...point);consider(obj,point,screen,Math.hypot(px-screen.x,py-screen.y));continue;}
+        if(obj.type==='function'){try{const solver=this.getCompiled(obj.id,d.expression,this.getDefaultVariables()),w=this.screenToWorld(px,py),value=solver({x:w.x});if(Number.isFinite(value)&&Math.abs(value)<1e7){const point=[w.x,value],screen=this.worldToScreen(...point);consider(obj,point,screen,Math.hypot(px-screen.x,py-screen.y));}}catch(_){}continue;}
+        if(obj.type==='parametric'){try{const sx=this.getCompiled(`${obj.id}:x`,d.xExpr,this.getDefaultVariables()),sy=this.getCompiled(`${obj.id}:y`,d.yExpr,this.getDefaultVariables());let local=null;for(let i=0;i<=260;i++){const t=d.tMin+(d.tMax-d.tMin)*i/260,x=sx({t}),y=sy({t});if(!Number.isFinite(x)||!Number.isFinite(y))continue;const screen=this.worldToScreen(x,y),dist=Math.hypot(px-screen.x,py-screen.y);if(!local||dist<local.distance)local={distance:dist,point:[x,y],screen};}if(local)consider(obj,local.point,local.screen,local.distance);}catch(_){}continue;}
+        if(obj.type==='curve3d'||obj.type==='line3d'){let samples=[];if(obj.type==='line3d'){const p1=d.p1||[0,0,0],p2=d.p2||[0,0,0];for(let i=0;i<=80;i++){const t=i/80;samples.push([p1[0]+(p2[0]-p1[0])*t,p1[1]+(p2[1]-p1[1])*t,p1[2]+(p2[2]-p1[2])*t]);}}else{try{const sx=this.getCompiled(`${obj.id}:x`,d.xExpr,this.getDefaultVariables()),sy=this.getCompiled(`${obj.id}:y`,d.yExpr,this.getDefaultVariables()),sz=this.getCompiled(`${obj.id}:z`,d.zExpr,this.getDefaultVariables());for(let i=0;i<=280;i++){const t=d.tMin+(d.tMax-d.tMin)*i/280,q=[sx({t}),sy({t}),sz({t})];if(q.every(Number.isFinite))samples.push(q);}}catch(_){}}let local=null;for(const q of samples){const screen=this.project3D(...q),dist=Math.hypot(px-screen.x,py-screen.y);if(!local||dist<local.distance)local={distance:dist,point:q,screen};}if(local)consider(obj,local.point,local.screen,local.distance,{is3D:true});continue;}
+        if(obj.type==='surface'){const samples=[];try{const solver=this.getCompiled(obj.id,d.expression,this.getDefaultVariables()),range=Math.max(1,Number(d.range)||5);for(let i=0;i<=28;i++)for(let j=0;j<=28;j++){const x=-range+2*range*i/28,y=-range+2*range*j/28,z=solver({x,y});if(Number.isFinite(z)&&Math.abs(z)<1e5)samples.push([x,y,z]);}}catch(_){}let local=null;for(const q of samples){const screen=this.project3D(...q),dist=Math.hypot(px-screen.x,py-screen.y);if(!local||dist<local.distance)local={distance:dist,point:q,screen};}if(local)consider(obj,local.point,local.screen,local.distance,{is3D:true});}
+      } return best;
+    }
+
+    updateObjectHover(px,py){const hit=this.findHoveredObject(px,py);this.hoveredObject=hit?.obj?.id??null;global.AppUI?.showGraphTooltip?.(hit);return hit;}
+
     bindEvents() {
+      let dragButton = 0;
+      let lastTouchAngle = null;
+
+      this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
       this.canvas.addEventListener('pointerdown', (e) => {
         this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         if (this.activePointers.size === 2) {
-          const points = [...this.activePointers.values()];
-          this.pinchDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+          const [p0, p1] = [...this.activePointers.values()];
+          this.pinchDistance = Math.hypot(p0.x - p1.x, p0.y - p1.y);
+          lastTouchAngle = Math.atan2(p1.y - p0.y, p1.x - p0.x);
           this.dragging = false;
           return;
         }
         this.dragging = true;
         this.pointerActive = true;
         this.last = { x: e.clientX, y: e.clientY };
-        this.canvas.setPointerCapture(e.pointerId);
+        dragButton = e.button;
+        this.canvas.setPointerCapture?.(e.pointerId);
       });
+
       this.canvas.addEventListener('pointermove', (e) => {
         if (this.activePointers.has(e.pointerId)) this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         const rect = this.canvas.getBoundingClientRect();
@@ -112,39 +160,61 @@
         }
         this.pointer = this.screenToWorld(px, py);
         global.AppUI?.updateCoordinates(this.pointer);
+        this.updateObjectHover(px, py);
+
         if (this.activePointers.size >= 2) {
-          const points = [...this.activePointers.values()];
-          const nextDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+          const [p0, p1] = [...this.activePointers.values()];
+          const centerX = (p0.x + p1.x) / 2 - rect.left;
+          const centerY = (p0.y + p1.y) / 2 - rect.top;
+          const nextDistance = Math.hypot(p0.x - p1.x, p0.y - p1.y);
           if (this.pinchDistance && nextDistance > 0) {
-            const centerX = (points[0].x + points[1].x) / 2 - rect.left;
-            const centerY = (points[0].y + points[1].y) / 2 - rect.top;
             const before = this.screenToWorld(centerX, centerY);
             this.scale = Math.max(5, Math.min(300, this.scale * (nextDistance / this.pinchDistance)));
             const after = this.screenToWorld(centerX, centerY);
             this.offsetX += (after.x - before.x) * this.scale;
             this.offsetY -= (after.y - before.y) * this.scale;
             this.pinchDistance = nextDistance;
-            this.requestRender();
           }
+          if (this.has3DObjects()) {
+            const angle = Math.atan2(p1.y - p0.y, p1.x - p0.x);
+            if (lastTouchAngle !== null) {
+              this.rotationY += angle - lastTouchAngle;
+            }
+            lastTouchAngle = angle;
+          }
+          this.invalidateCache('zoom');
+          this.requestRender();
           return;
         }
+
         if (!this.dragging) return;
-        const has3D = this.has3DObjects();
-        if (has3D && !e.shiftKey) {
-          this.rotationY += (e.clientX - this.last.x) * 0.008;
-          this.rotationX += (e.clientY - this.last.y) * 0.008;
+
+        const dx = e.clientX - this.last.x;
+        const dy = e.clientY - this.last.y;
+        // Movimento do gráfico: arrastar com botão esquerdo em qualquer modo.
+        // No 3D, botão direito pode ser usado para girar a cena sem perder o pan.
+        if (this.has3DObjects() && dragButton === 2) {
+          this.rotationY += dx * 0.008;
+          this.rotationX += dy * 0.008;
           this.rotationX = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, this.rotationX));
         } else {
-          this.offsetX += e.clientX - this.last.x;
-          this.offsetY += e.clientY - this.last.y;
+          this.offsetX += dx;
+          this.offsetY += dy;
         }
         this.last = { x: e.clientX, y: e.clientY };
         this.requestRender();
       });
-      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null; this.dragging = false; this.pointerActive = false; };
+
+      const stop = (e) => {
+        this.activePointers.delete(e.pointerId);
+        this.pinchDistance = null;
+        if (this.activePointers.size < 2) lastTouchAngle = null;
+        this.dragging = false;
+        this.pointerActive = false;
+      };
       this.canvas.addEventListener('pointerup', stop);
       this.canvas.addEventListener('pointercancel', stop);
-      this.canvas.addEventListener('pointerleave', () => { this.pointerActive = false; this.pointer = null; global.AppUI?.updateCoordinates(null); });
+      this.canvas.addEventListener('pointerleave', () => { this.pointerActive = false; this.pointer = null; this.hoveredVector = null; this.hoveredObject = null; global.AppUI?.updateCoordinates(null); global.AppUI?.showGraphTooltip?.(null); });
       this.canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const r = this.canvas.getBoundingClientRect();
@@ -250,31 +320,89 @@
       return { x: w / 2 + this.offsetX + rx * scale, y: h / 2 + this.offsetY - ry * scale, depth: rz };
     }
 
-    draw3DAxes() {
+    get3DCoordinateRange() {
+      const { w, h } = this.size;
+      const projectedWorldX = Math.max(1, Math.abs(this.screenToWorld(0, h / 2).x), Math.abs(this.screenToWorld(w, h / 2).x));
+      const projectedWorldY = Math.max(1, Math.abs(this.screenToWorld(w / 2, 0).y), Math.abs(this.screenToWorld(w / 2, h).y));
+      let objectMax = 0;
+      for (const obj of this.objects.items) {
+        const d = obj.data || {};
+        const absorb = (v) => { const n = Number(v); if (Number.isFinite(n)) objectMax = Math.max(objectMax, Math.abs(n)); };
+        if (obj.type === 'vector') {
+          const [a,b] = this.getVector3DPoints(obj);
+          for (const q of [...a, ...b]) absorb(q);
+        } else if (['line3d','curve3d'].includes(obj.type)) {
+          if (obj.type === 'line3d') {
+            for (const q of [...(d.p1 || []), ...(d.p2 || [])]) absorb(q);
+          }
+        }
+      }
+      return Math.max(8, Math.ceil(Math.max(projectedWorldX, projectedWorldY, objectMax) + 1));
+    }
+
+    draw3DGridAndAxes() {
       const c = this.ctx;
-      const axisLen = 4.5;
+      const { w, h } = this.size;
+      const range = this.get3DCoordinateRange();
+      const minor = 1;
+      const lightTheme = document.documentElement.classList.contains('theme-light');
+      const gridColor = lightTheme ? 'rgba(36,72,96,.16)' : 'rgba(90,200,250,.14)';
+      const majorColor = lightTheme ? 'rgba(36,72,96,.28)' : 'rgba(90,200,250,.24)';
+      const axisColors = { x:'#ff6b6b', y:'#63d391', z:'#5ac8fa' };
       const O = this.project3D(0,0,0);
-      const X = this.project3D(axisLen,0,0);
-      const Y = this.project3D(0,axisLen,0);
-      const Z = this.project3D(0,0,axisLen);
-      c.save(); c.lineCap='round'; c.lineWidth=2;
-      const axes=[[X,'#ff6b6b','x'],[Y,'#63d391','y'],[Z,'#5ac8fa','z']];
-      for (const [p,color,label] of axes) {
-        c.strokeStyle=color; c.fillStyle=color; c.beginPath(); c.moveTo(O.x,O.y); c.lineTo(p.x,p.y); c.stroke();
-        const ang=Math.atan2(p.y-O.y,p.x-O.x), len=8;
-        c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-len*Math.cos(ang-Math.PI/6),p.y-len*Math.sin(ang-Math.PI/6)); c.lineTo(p.x-len*Math.cos(ang+Math.PI/6),p.y-len*Math.sin(ang+Math.PI/6)); c.closePath(); c.fill();
-        c.font='bold 13px system-ui'; c.fillText(label,p.x+6,p.y-6);
+      const axisEnds = { x:this.project3D(range,0,0), y:this.project3D(0,range,0), z:this.project3D(0,0,range) };
+
+      c.save();
+      c.lineWidth = 1;
+      // XY reference plane (z = 0)
+      for (let i = -range; i <= range; i += minor) {
+        const a = this.project3D(i,-range,0), b = this.project3D(i,range,0);
+        c.strokeStyle = (Math.abs(i)%5===0) ? majorColor : gridColor;
+        c.lineWidth = (Math.abs(i)%5===0) ? 1.5 : 1;
+        c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
+        const aa = this.project3D(-range,i,0), bb = this.project3D(range,i,0);
+        c.beginPath(); c.moveTo(aa.x,aa.y); c.lineTo(bb.x,bb.y); c.stroke();
       }
-      c.fillStyle='rgba(255,255,255,.16)';
-      // Malha no plano XY para dar referência espacial mesmo quando o vetor
-      // está predominantemente orientado no eixo Z.
-      const range=4, step=1;
-      for(let i=-range;i<=range;i+=step){
-        const a=this.project3D(i,0,-range), b=this.project3D(i,0,range); c.strokeStyle='rgba(90,200,250,.09)'; c.lineWidth=1; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
-        const aa=this.project3D(-range,0,i), bb=this.project3D(range,0,i); c.beginPath(); c.moveTo(aa.x,aa.y); c.lineTo(bb.x,bb.y); c.stroke();
+
+      // XZ reference plane (y = 0), lighter to preserve depth cues
+      c.strokeStyle = lightTheme ? 'rgba(36,72,96,.09)' : 'rgba(90,200,250,.085)';
+      c.lineWidth = 1;
+      for (let i=-range;i<=range;i+=2) {
+        let a=this.project3D(i,0,-range), b=this.project3D(i,0,range);
+        c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
+        a=this.project3D(-range,0,i); b=this.project3D(range,0,i);
+        c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke();
       }
+
+      // Axes with arrows and tick labels in the same 3D projection.
+      for (const [axis, p] of Object.entries(axisEnds)) {
+        const color = axisColors[axis];
+        c.strokeStyle = color; c.fillStyle = color; c.lineWidth = 2.4;
+        c.beginPath(); c.moveTo(O.x,O.y); c.lineTo(p.x,p.y); c.stroke();
+        const angle = Math.atan2(p.y-O.y,p.x-O.x), len = 9;
+        c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-len*Math.cos(angle-Math.PI/6), p.y-len*Math.sin(angle-Math.PI/6)); c.lineTo(p.x-len*Math.cos(angle+Math.PI/6), p.y-len*Math.sin(angle+Math.PI/6)); c.closePath(); c.fill();
+        c.font = 'bold 14px system-ui'; c.textAlign='left'; c.textBaseline='middle'; c.fillText(axis, p.x+8, p.y-8);
+
+        for (let i=-range;i<=range;i++) {
+          if (i===0) continue;
+          let q;
+          if (axis==='x') q=this.project3D(i,0,0);
+          else if (axis==='y') q=this.project3D(0,i,0);
+          else q=this.project3D(0,0,i);
+          const tick=4;
+          const perp={x:-Math.sin(angle)*tick,y:Math.cos(angle)*tick};
+          c.lineWidth=1.2; c.beginPath(); c.moveTo(q.x-perp.x,q.y-perp.y); c.lineTo(q.x+perp.x,q.y+perp.y); c.stroke();
+          c.fillStyle=lightTheme?'rgba(20,32,43,.78)':'rgba(241,245,249,.84)';
+          c.font='11px system-ui';
+          const offset = 7;
+          c.fillText(String(i), q.x + perp.x + offset*Math.cos(angle), q.y + perp.y + offset*Math.sin(angle));
+        }
+      }
+      c.fillStyle = lightTheme?'rgba(20,32,43,.9)':'rgba(241,245,249,.9)'; c.font='bold 11px system-ui'; c.fillText('0',O.x+6,O.y+12);
       c.restore();
     }
+
+    draw3DAxes() { this.draw3DGridAndAxes(); }
 
     drawSolid(obj) {
       const d = obj.data || {};
@@ -602,8 +730,8 @@
       this.ctx.clearRect(0, 0, w, h);
       this.ctx.fillStyle = '#0d131b';
       this.ctx.fillRect(0, 0, w, h);
-      this.drawGrid(); this.drawAxes();
-      if (this.has3DObjects()) this.draw3DAxes();
+      const is3DScene = this.has3DObjects();
+      if (is3DScene) { this.draw3DGridAndAxes(); } else { this.drawGrid(); this.drawAxes(); }
       for (const obj of this.objects.items) if (obj.visible) this.drawObject(obj);
       if (global.AppUI) global.AppUI.renderPreview(this);
     }
