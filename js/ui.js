@@ -7,15 +7,24 @@
   const ICON = Object.freeze({ hide: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>', show: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M3 12s3-5.5 9-5.5 9 5.5 9 5.5-3 5.5-9 5.5S3 12 3 12z" fill="none" stroke="currentColor" stroke-width="2"/></svg>' });
 
   const AppUI = {
+    _initialized: false,
     objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, lineLiveCommitted: false,
     init(objects, engine) {
+      if (this._initialized) return;
+      this._initialized = true;
       this.objects = objects; this.engine = engine; this.cache();
       // Configurações extras é um modal global e não depende da barra de controles.
       if (this.$?.extrasModal && this.$.extrasModal.parentElement !== document.body) {
         document.body.appendChild(this.$.extrasModal);
       }
-      this.buildMenus(); this.bindTabs(); this.bindForms(); this.initGeometryFields(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall(); this.syncVariableConfig(false); this.initMobileLayout();
+      if (this.$?.extrasModal) this.$.extrasModal.inert=true;
+      this.buildMenus(); this.bindForms(); this.initGeometryFields(); this.normalizeInitialInputs(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall?.(); this.loadPreferences(); this.syncVariableConfig(false); this.initMobileLayout(); this.bindPreferencePersistence();
     },
+    getActiveTabLabel() {
+      const labels={function:'Função',parametric:'Paramétrica',vector:'Vetor',geometry:'Geometria',surface:'Discos / Anéis',curve3d:'Curva 3D',line3d:'Reta 3D'};
+      return labels[this.activeTab]||'Controles';
+    },
+    updateMobileControlsBar() { this.updateMobileControlsButton(this.$?.controls?.classList.contains('open')); },
     initMobileLayout() {
       const apply = () => {
         const mobile = global.innerWidth < 900;
@@ -25,22 +34,18 @@
           this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
           this.$.backdrop?.classList.remove('show');
           this.$.backdrop?.classList.add('hidden');
-          this.$.mobileMenuBtn?.classList.add('hidden');
-          this.$.mobileModesBtn?.classList.add('hidden');
           this.$.mobileControlsBtn?.classList.add('hidden');
           this.hideShowControlsButton();
-                    this.updateSidebarButtons(false);
-          const modesCollapsed = this.$.workspace?.classList.contains('sidebar-modes-collapsed');
+          this.updateSidebarButtons(false);
           return;
         }
         this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
         this.$.modeSidebar?.classList.remove('mobile-open');
-        this.$.mobileModesBtn?.classList.remove('hidden');
         this.$.mobileControlsBtn?.classList.remove('hidden');
         this.updateModeMobileButton(false);
         this.updateMobileControlsButton(false);
-        this.closeSidebar(false);
+        this.setInitialPanelState(false);
       };
       apply();
       const recalibrate = () => { this.engine?.resize?.(); this.engine?.requestRender?.(); };
@@ -48,6 +53,29 @@
       const onViewportChange = () => { apply(); requestAnimationFrame(() => requestAnimationFrame(recalibrate)); };
       global.addEventListener('resize', onViewportChange, { passive: true });
       global.addEventListener('orientationchange', onViewportChange, { passive: true });
+    },
+    setInitialPanelState(redraw=true) {
+      const mobile = global.innerWidth < 900;
+      if (mobile) {
+        this.$.controls?.classList.remove('open','collapsed');
+        this.$.modeSidebar?.classList.remove('mobile-open');
+        this.$.backdrop?.classList.remove('show');
+        this.$.backdrop?.classList.add('hidden');
+        this.$.mobileControlsBtn?.classList.remove('hidden');
+        this.updateModeMobileButton(false);
+        this.updateMobileControlsButton(false);
+      } else {
+        this.$.controls?.classList.remove('open','collapsed');
+        this.$.modeSidebar?.classList.remove('mobile-open');
+        this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
+        this.$.backdrop?.classList.remove('show');
+        this.$.backdrop?.classList.add('hidden');
+        this.$.mobileControlsBtn?.classList.add('hidden');
+        this.hideShowControlsButton();
+        this.updateSidebarButtons(false);
+      }
+      this.savePreferences();
+      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine?.resize?.(); this.engine?.requestRender?.(); }));
     },
     hideShowControlsButton() {
       const btn = this.$?.showControls;
@@ -89,20 +117,17 @@
       } else {
         const collapsed = this.$.workspace?.classList.toggle('sidebar-modes-collapsed');
       }
+      this.savePreferences();
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
     closeModesMobile(redraw=true) {
       this.$.modeSidebar?.classList.remove('mobile-open');
       if (!this.$.controls?.classList.contains('open')) { this.$.backdrop?.classList.remove('show'); this.$.backdrop?.classList.add('hidden'); }
       this.updateModeMobileButton(false);
+      this.savePreferences();
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
     updateModeMobileButton(open) {
-      this.$.mobileModesBtn?.setAttribute('aria-expanded', String(open));
-      this.$.mobileModesBtn?.setAttribute('aria-label', open ? 'Fechar modos' : 'Abrir modos');
-      this.$.mobileModesBtn?.setAttribute('title', open ? 'Fechar modos' : 'Modos');
-      this.$.mobileModesBtn?.querySelector('.panel-menu-icon')?.classList.toggle('hidden', open);
-      this.$.mobileModesBtn?.querySelector('.panel-close-icon')?.classList.toggle('hidden', !open);
     },
     updateMobileControlsButton(open) {
       this.$.mobileControlsBtn?.setAttribute('aria-expanded', String(open));
@@ -117,7 +142,6 @@
         this.$.controls?.classList.add('open');
         this.$.backdrop?.classList.remove('hidden');
         this.$.backdrop?.classList.add('show');
-        this.$.mobileMenuBtn?.classList.add('hidden');
         this.hideShowControlsButton();
         this.updateMobileControlsButton(true);
         this.updateSidebarButtons(false);
@@ -136,7 +160,6 @@
         this.$.controls?.classList.remove('open');
         this.$.backdrop?.classList.remove('show');
         this.$.backdrop?.classList.add('hidden');
-        this.$.mobileMenuBtn?.classList.remove('hidden');
         this.updateMobileControlsButton(false);
         this.updateSidebarButtons(true);
       } else {
@@ -145,6 +168,7 @@
         this.showShowControlsButton();
                 this.updateSidebarButtons(true);
       }
+      this.savePreferences();
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
 
@@ -170,6 +194,7 @@
       if(!modal) return;
       this._extrasReturnFocus=document.activeElement;
       modal.classList.remove('hidden');
+      modal.inert=false;
       modal.setAttribute('aria-hidden','false');
       document.body.classList.add('modal-open');
       requestAnimationFrame(()=>this.$?.closeExtrasModalBtn?.focus());
@@ -177,7 +202,9 @@
     closeExtrasModal() {
       const modal=this.$?.extrasModal;
       if(!modal) return;
+      if (modal.contains(document.activeElement)) modal.blur?.();
       modal.classList.add('hidden');
+      modal.inert=true;
       modal.setAttribute('aria-hidden','true');
       document.body.classList.remove('modal-open');
       this._extrasReturnFocus?.focus?.();
@@ -205,7 +232,7 @@
       if(event.key!=='Escape') return;
       const mobile=global.innerWidth<900;
       const open=mobile ? this.$?.controls?.classList.contains('open') : !this.$?.workspace?.classList.contains('controls-collapsed');
-      if(open) { event.preventDefault(); this.closeSidebar(); this.$?.mobileModesBtn?.focus(); }
+      if(open) { event.preventDefault(); this.closeSidebar(); this.$?.mobileControlsBtn?.focus?.(); }
     },
     getConfiguredVariableNames() {
       const selected = this.$?.variableOptions?.filter((el) => el.checked).map((el) => el.value) || [];
@@ -248,8 +275,52 @@
     },
     escapeHtml(value) { return String(value).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); },
     cache() {
+      const byId = (id) => document.getElementById(id);
+      this.$ = {
+        workspace: document.querySelector('.workspace'),
+        modeSidebar: document.querySelector('.mode-sidebar'),
+        modeButtons: [...document.querySelectorAll('.mode-btn')],
+        panels: [...document.querySelectorAll('.tab-panel')],
+        controls: byId('controlsPanel'),
+        controlsCollapse: byId('controlsCollapseBtn'),
+        closeControls: byId('closeControlsBtn'),
+        mobileControlsBtn: byId('mobileControlsBtn'),
+        mobileExportBtn: byId('mobileExportBtn'),
+        mobileMore: byId('mobileMoreBtn'),
+        backdrop: byId('backdrop'),
+        showControls: byId('showControlsBtn'),
+        modeCollapse: byId('modeCollapseBtn'),
+        panelAdd: byId('panelAddBtn'),
+        functionExpr: byId('functionExpr'),
+        functionVariable: byId('functionVariable'),
+        functionEquationHint: byId('functionEquationHint'),
+        functionPreview: byId('functionPreview'),
+        paramX: byId('paramX'), paramY: byId('paramY'),
+        tMin: byId('tMin'), tMax: byId('tMax'), paramPreview: byId('paramPreview'),
+        vx1: byId('vx1'), vy1: byId('vy1'), vz1: byId('vz1'),
+        vx2: byId('vx2'), vy2: byId('vy2'), vz2: byId('vz2'),
+        v2x: byId('v2x'), v2y: byId('v2y'), v2z: byId('v2z'),
+        vectorType: byId('vectorType'), vectorResult: byId('vectorResult'), vectorOpsResult: byId('vectorOpsResult'),
+        dotBtn: byId('dotBtn'), crossBtn: byId('crossBtn'),
+        geometryType: byId('geometryType'), geometryFields: byId('geometryFields'), geometryPreview: byId('geometryPreview'),
+        surfaceExpr: byId('surfaceOuterExpr'), surfaceOuterExpr: byId('surfaceOuterExpr'), surfaceInnerExpr: byId('surfaceInnerExpr'),
+        surfaceAMin: byId('surfaceAMin'), surfaceBMax: byId('surfaceBMax'), surfaceAxisY: byId('surfaceAxisY'), surfacePreview: byId('surfacePreview'),
+        curve3dX: byId('curve3dX'), curve3dY: byId('curve3dY'), curve3dZ: byId('curve3dZ'),
+        curve3dTMin: byId('curve3dTMin'), curve3dTMax: byId('curve3dTMax'), curve3dPreview: byId('curve3dPreview'),
+        line3dX1: byId('line3dX1'), line3dY1: byId('line3dY1'), line3dZ1: byId('line3dZ1'),
+        line3dX2: byId('line3dX2'), line3dY2: byId('line3dY2'), line3dZ2: byId('line3dZ2'), line3dPreview: byId('line3dPreview'),
+        variableOptions: [...document.querySelectorAll('.variable-option')],
+        customVariables: byId('customVariables'), variablesSummary: byId('variablesSummary'),
+        resetVariables: byId('resetVariablesBtn'),
+        clearObjects: byId('clearObjectsBtn'), clearHistory: byId('clearHistoryBtn'),
+        undo: byId('undoBtn'), redo: byId('redoBtn'), objectsList: byId('objectsList'), historyList: byId('historyList'),
+        resetViewBtn: byId('resetViewBtn'), reset3DBtn: byId('reset3DBtn'), gridBtn: byId('gridBtn'), axesBtn: byId('axesBtn'), saveSessionBtn: byId('saveSessionBtn'),
+        exportBtn: byId('exportBtn'), exportSvgBtn: byId('exportSvgBtn'), exportJsonBtn: byId('exportJsonBtn'), importJsonBtn: byId('importJsonBtn'), importJsonFile: byId('importJsonFile'),
+        extrasBtn: byId('extrasBtn'), extrasModal: byId('extrasModal'), closeExtrasModalBtn: byId('closeExtrasModalBtn'),
+               install: byId('installBtn'), status: byId('statusText'), statusText: byId('statusText'), toast: byId('toast'), emptyState: byId('emptyState'),
+        coordinate: byId('coordinateReadout'), coordinateReadout: byId('coordinateReadout'), vectorTooltip: byId('vectorTooltip')
+      };
       this.lastMathInputId='functionExpr';
-      this.$ = { variableOptions:[...document.querySelectorAll('.variable-option')], customVariables:document.getElementById('customVariables'), variablesSummary:document.getElementById('variablesSummary'), resetVariables:document.getElementById('resetVariablesBtn'), tabs:[...document.querySelectorAll('.tab')], panels:[...document.querySelectorAll('.tab-panel')], functionExpr:document.getElementById('functionExpr'), functionVariable:document.getElementById('functionVariable'), functionEquationHint:document.getElementById('functionEquationHint'), paramX:document.getElementById('paramX'), paramY:document.getElementById('paramY'), tMin:document.getElementById('tMin'), tMax:document.getElementById('tMax'), surfaceExpr:document.getElementById('surfaceOuterExpr'), surfaceInnerExpr:document.getElementById('surfaceInnerExpr'), surfaceAMin:document.getElementById('surfaceAMin'), surfaceBMax:document.getElementById('surfaceBMax'), surfaceAxisY:document.getElementById('surfaceAxisY'), surfacePreview:document.getElementById('surfacePreview'), curve3dX:document.getElementById('curve3dX'), curve3dY:document.getElementById('curve3dY'), curve3dZ:document.getElementById('curve3dZ'), curve3dTMin:document.getElementById('curve3dTMin'), curve3dTMax:document.getElementById('curve3dTMax'), line3dX1:document.getElementById('line3dX1'), line3dY1:document.getElementById('line3dY1'), line3dZ1:document.getElementById('line3dZ1'), line3dX2:document.getElementById('line3dX2'), line3dY2:document.getElementById('line3dY2'), line3dZ2:document.getElementById('line3dZ2'), vx1:document.getElementById('vx1'), vy1:document.getElementById('vy1'), vz1:document.getElementById('vz1'), vx2:document.getElementById('vx2'), vy2:document.getElementById('vy2'), vz2:document.getElementById('vz2'), vectorType:document.getElementById('vectorType'), v2x:document.getElementById('v2x'), v2y:document.getElementById('v2y'), v2z:document.getElementById('v2z'), objectsList:document.getElementById('objectsList'), historyList:document.getElementById('historyList'), geometryType:document.getElementById('geometryType'), geometryFields:document.getElementById('geometryFields'), status:document.getElementById('statusText'), emptyState:document.getElementById('emptyState'), coordinate:document.getElementById('coordinateReadout'), toast:document.getElementById('toast'), addFunction:document.getElementById('addFunctionBtn'), addParam:document.getElementById('addParamBtn'), addSurface:document.getElementById('addSurfaceBtn'), addCurve3D:document.getElementById('addCurve3DBtn'), addLine3D:document.getElementById('addLine3DBtn'), addVector:document.getElementById('addVectorBtn'), addGeometry:document.getElementById('addGeometryBtn'), clearObjects:document.getElementById('clearObjectsBtn'), clearHistory:document.getElementById('clearHistoryBtn'), undo:document.getElementById('undoBtn'), redo:document.getElementById('redoBtn'), showControls:document.getElementById('showControlsBtn'), backdrop:document.getElementById('backdrop'), mobileMenuBtn:document.getElementById('mobileMenuBtn'), closeControls:document.getElementById('closeControlsBtn'), saveSessionBtn:document.getElementById('saveSessionBtn'), panelAdd:document.getElementById('panelAddBtn'), install:document.getElementById('installBtn'), exportBtn:document.getElementById('exportBtn'), exportSvgBtn:document.getElementById('exportSvgBtn'), extrasBtn:document.getElementById('extrasBtn'), extrasModal:document.getElementById('extrasModal'), closeExtrasModalBtn:document.getElementById('closeExtrasModalBtn'), extraGridBtn:document.getElementById('extraGridBtn'), extraAxesBtn:document.getElementById('extraAxesBtn'), extraResetViewBtn:document.getElementById('extraResetViewBtn'), extraSaveBtn:document.getElementById('extraSaveBtn'), extraClearBtn:document.getElementById('extraClearBtn'), modeButtons:[...document.querySelectorAll('.mode-btn')], modeSidebar:document.querySelector('.mode-sidebar'), modeCollapse:document.getElementById('modeCollapseBtn'), controlsCollapse:document.getElementById('controlsCollapseBtn'), mobileMore:document.getElementById('mobileMoreBtn'), mobileModesBtn:document.getElementById('mobileModesBtn'), mobileControlsBtn:document.getElementById('mobileControlsBtn'), controls:document.querySelector('.controls-panel'), workspace:document.querySelector('.workspace'), shell:document.querySelector('.app-shell') };
     },
     buildMenus() {
       const menus = [...document.querySelectorAll('.math-menu')];
@@ -347,54 +418,164 @@
       window.addEventListener('resize', closeGlobalMenu, { passive: true });
       window.addEventListener('scroll', closeGlobalMenu, { passive: true });
     },
-    setTab(tabName) { this.cancelEdit(); this.activeTab=tabName; this.$.tabs.forEach((t)=>{const active=t.dataset.tab===tabName;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));}); this.$.modeButtons?.forEach((t)=>{const active=t.dataset.mode===tabName;t.classList.toggle('active',active);t.setAttribute('aria-current',active?'true':'false');}); this.$.panels.forEach((p)=>{const active=p.dataset.panel===tabName;p.classList.toggle('active',active);p.hidden=!active;}); this.updatePreviews(); this.updateActionBar(); },
-    bindTabs() {
-      const tabs = this.$?.tabs || [];
-      tabs.forEach((tab) => {
-        tab.addEventListener('click', () => this.setTab(tab.dataset.tab));
-        tab.addEventListener('keydown', (event) => {
-          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); this.moveTab(1); }
-          else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); this.moveTab(-1); }
-          else if (event.key === 'Home') { event.preventDefault(); tabs[0]?.focus(); this.setTab(tabs[0]?.dataset.tab); }
-          else if (event.key === 'End') { event.preventDefault(); tabs[tabs.length - 1]?.focus(); this.setTab(tabs[tabs.length - 1]?.dataset.tab); }
-        });
+    setTab(tabName) {
+      this.cancelEdit();
+      // Cada modo inicia uma área de desenho independente: ao trocar de modo,
+      // remove os objetos exibidos anteriormente sem registrar isso como uma ação
+      // de undo, mantendo o histórico de expressões separado.
+      if (this.activeTab !== tabName) this.objects.clearForMode?.();
+      this.activeTab = tabName;
+      this.$.modeButtons?.forEach((button) => {
+        const active = button.dataset.mode === tabName;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-current', active ? 'true' : 'false');
       });
-      this.$?.modeButtons?.forEach((button) => {
-        button.addEventListener('click', () => this.setTab(button.dataset.mode));
+      this.$.panels?.forEach((panel) => {
+        const active = panel.dataset.panel === tabName;
+        panel.classList.toggle('active', active);
+        panel.hidden = !active;
+        panel.setAttribute('aria-hidden', String(!active));
+      });
+      this.updatePreviews();
+      this.updateActionBar();
+      this.savePreferences();
+    },
+    loadPreferences() {
+      try {
+        const raw = localStorage.getItem('graphCalcPreferencesV1');
+        const pref = raw ? JSON.parse(raw) : {};
+        if (pref.theme === 'light') document.documentElement.classList.add('theme-light');
+        if (pref.theme === 'dark') document.documentElement.classList.remove('theme-light');
+        if (typeof pref.density === 'string') document.documentElement.dataset.density = pref.density;
+        if (typeof pref.lastTab === 'string' && this.$?.panels?.some((p)=>p.dataset.panel===pref.lastTab)) this.activeTab = pref.lastTab;
+        if (Number.isFinite(pref.rotationX)) this.engine.rotationX = pref.rotationX;
+        if (Number.isFinite(pref.rotationY)) this.engine.rotationY = pref.rotationY;
+        if (Number.isFinite(pref.projectionScale)) this.engine.projectionScale = pref.projectionScale;
+        if (global.innerWidth >= 900) {
+          if (pref.modesCollapsed) this.$.workspace?.classList.add('sidebar-modes-collapsed');
+          if (pref.controlsCollapsed) this.$.workspace?.classList.add('controls-collapsed');
+        }
+      } catch (_) {}
+    },
+    savePreferences() {
+      try {
+        const pref = {
+          theme: document.documentElement.classList.contains('theme-light') ? 'light' : 'dark',
+          density: document.documentElement.dataset.density || 'comfortable',
+          lastTab: this.activeTab,
+          modesCollapsed: !!this.$?.workspace?.classList.contains('sidebar-modes-collapsed'),
+          controlsCollapsed: !!this.$?.workspace?.classList.contains('controls-collapsed'),
+          rotationX: Number.isFinite(this.engine?.rotationX) ? this.engine.rotationX : undefined,
+          rotationY: Number.isFinite(this.engine?.rotationY) ? this.engine.rotationY : undefined,
+          projectionScale: Number.isFinite(this.engine?.projectionScale) ? this.engine.projectionScale : undefined
+        };
+        localStorage.setItem('graphCalcPreferencesV1', JSON.stringify(pref));
+      } catch (_) {}
+    },
+    bindPreferencePersistence() {
+      window.addEventListener('beforeunload', () => this.savePreferences(), { once:false });
+    },
+    initPWAInstall() {
+      const installBtn = this.$?.install;
+      if (!installBtn) return;
+      const show = () => { installBtn.classList.remove('hidden'); installBtn.inert = false; };
+      const hide = () => { if (document.activeElement === installBtn) installBtn.blur(); installBtn.classList.add('hidden'); installBtn.inert = true; };
+      hide();
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        this.deferredInstallPrompt = event;
+        show();
+      });
+      window.addEventListener('appinstalled', () => { this.deferredInstallPrompt = null; hide(); this.showToast?.('Aplicativo instalado.'); });
+      installBtn.addEventListener('click', async () => {
+        if (!this.deferredInstallPrompt) return;
+        const prompt = this.deferredInstallPrompt;
+        this.deferredInstallPrompt = null;
+        hide();
+        try { await prompt.prompt(); await prompt.userChoice; } catch (_) {}
       });
     },
-
+    exportJson() {
+      const payload = {
+        format: 'calculadora-grafica',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        objects: this.objects?.snapshot?.() || [],
+        view: {
+          scale: this.engine?.scale, offsetX: this.engine?.offsetX, offsetY: this.engine?.offsetY,
+          rotationX: this.engine?.rotationX, rotationY: this.engine?.rotationY, projectionScale: this.engine?.projectionScale,
+          showGrid: this.engine?.showGrid, showAxes: this.engine?.showAxes
+        }
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='calculadora-grafica.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      this.showToast('Arquivo JSON exportado.');
+    },
+    importJson() {
+      this.$.importJsonFile?.click();
+    },
+    async handleJsonFile(file) {
+      if(!file) return;
+      try {
+        const text = await file.text();
+        const payload = JSON.parse(text);
+        if(payload?.format !== 'calculadora-grafica' || !Array.isArray(payload.objects)) throw new Error('Arquivo JSON de gráfico inválido.');
+        if(payload.objects.length > (this.objects?.maxItems || 50)) throw new Error('O arquivo contém objetos demais.');
+        this.objects.restore(payload.objects);
+        const v = payload.view || {};
+        for(const key of ['scale','offsetX','offsetY','rotationX','rotationY','projectionScale']) if(Number.isFinite(v[key]) && key in this.engine) this.engine[key]=v[key];
+        if(typeof v.showGrid==='boolean') this.engine.showGrid=v.showGrid;
+        if(typeof v.showAxes==='boolean') this.engine.showAxes=v.showAxes;
+        this.engine.invalidateCache?.('json-import'); this.engine.requestRender?.(); this.showToast('Arquivo JSON aberto.');
+      } catch(error) { this.showError(error); }
+      finally { if(this.$.importJsonFile) this.$.importJsonFile.value=''; }
+    },
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
       this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);});
-      this.$.addFunction.addEventListener('click',()=>this.addFunction()); this.$.functionVariable?.addEventListener('change',()=>{this.updateFunctionEquationHint(); this.updatePreviews(); this.validateExpressionField(this.$.functionExpr); this.engine?.invalidateCache?.('function-variable'); this.engine?.requestRender?.();}); this.$.addParam.addEventListener('click',()=>this.addParametric()); this.$.addSurface?.addEventListener('click',()=>this.addSurface()); this.$.addCurve3D?.addEventListener('click',()=>this.addCurve3D()); this.$.addLine3D?.addEventListener('click',()=>this.addLine3D()); this.$.addVector.addEventListener('click',()=>this.addVector());
+      this.$.functionVariable?.addEventListener('change',()=>{this.updateFunctionEquationHint(); this.updatePreviews(); this.validateExpressionField(this.$.functionExpr); this.engine?.invalidateCache?.('function-variable'); this.engine?.requestRender?.();});
       ['vx1','vy1','vz1','vx2','vy2','vz2','v2x','v2y','v2z'].forEach(id=>document.getElementById(id).addEventListener('input',(e)=>{this.updateVectorResult();this.validateExpressionField(e.currentTarget);}));
       document.getElementById('dotBtn').addEventListener('click',()=>this.vectorOperation('dot')); document.getElementById('crossBtn').addEventListener('click',()=>this.vectorOperation('cross'));
-      document.getElementById('geometryType').addEventListener('change',()=>{this.cancelEdit();this.initGeometryFields();this.updateGeometryPreview();}); this.$.addGeometry.addEventListener('click',()=>this.addGeometry());
+      document.getElementById('geometryType').addEventListener('change',()=>{this.cancelEdit();this.initGeometryFields();this.updateGeometryPreview();});
       this.$.clearObjects.addEventListener('click',()=>{this.objects.clear();this.persistSession();}); this.$.clearHistory.addEventListener('click',()=>this.clearHistory()); this.$.undo.addEventListener('click',()=>this.undo()); this.$.redo.addEventListener('click',()=>this.redo());
       document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('reset3DBtn')?.addEventListener('click',()=>{this.engine.rotationX=0.62;this.engine.rotationY=0.78;this.engine.projectionScale=1;this.engine.requestRender();this.showToast('Orientação 3D restaurada.');}); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
       this.$.exportBtn?.addEventListener('click',()=>this.engine.exportPng()); this.$.exportSvgBtn?.addEventListener('click',()=>this.engine.exportSvg());
+      this.$.exportJsonBtn?.addEventListener('click',()=>this.exportJson());
+      this.$.importJsonBtn?.addEventListener('click',()=>this.importJson());
+      this.$.importJsonFile?.addEventListener('change',(event)=>this.handleJsonFile(event.target.files?.[0]));
       this.$.extrasBtn?.addEventListener('click',()=>this.openExtrasModal());
       this.$.closeExtrasModalBtn?.addEventListener('click',()=>this.closeExtrasModal());
       this.$.extrasModal?.addEventListener('click',(event)=>{ if(event.target.matches('[data-close-extras=\"true\"]')) this.closeExtrasModal(); });
-      this.$.extraGridBtn?.addEventListener('click',()=>{ this.engine.showGrid=!this.engine.showGrid; this.engine.requestRender(); });
-      this.$.extraAxesBtn?.addEventListener('click',()=>{ this.engine.showAxes=!this.engine.showAxes; this.engine.requestRender(); });
-      this.$.extraResetViewBtn?.addEventListener('click',()=>this.engine.center());
-      this.$.extraSaveBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');});
-      this.$.extraClearBtn?.addEventListener('click',()=>this.$.clearObjects?.click());
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
       this.$.mobileMore?.addEventListener('click',()=>{const open=this.$.modeSidebar.classList.toggle('mobile-expanded');this.$.mobileMore.setAttribute('aria-expanded',String(open));requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
-      this.$.mobileModesBtn?.addEventListener('click',()=>{ const open=this.$.modeSidebar?.classList.contains('mobile-open'); open?this.closeModesMobile():this.openModesMobile(); });
       this.$.mobileControlsBtn?.addEventListener('click',()=>this.toggleControlsSidebar());
+      this.$.mobileExportBtn?.addEventListener('click',()=>this.openExtrasModal());
+      const sheetHandle = document.querySelector('.sheet-handle');
+      if (sheetHandle) {
+        let startY = null;
+        sheetHandle.addEventListener('pointerdown', (event) => {
+          if (global.innerWidth >= 900) return;
+          startY = event.clientY;
+          sheetHandle.setPointerCapture?.(event.pointerId);
+        });
+        sheetHandle.addEventListener('pointerup', (event) => {
+          if (startY === null || global.innerWidth >= 900) { startY = null; return; }
+          const delta = event.clientY - startY;
+          if (delta > 40) this.closeSidebar();
+          startY = null;
+        });
+        sheetHandle.addEventListener('pointercancel', () => { startY = null; });
+      }
       this.$.controlsCollapse?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
       this.$.backdrop?.addEventListener('click',()=>{this.closeSidebar(false);this.closeModesMobile(false);this.engine.resize();this.engine.requestRender();});
-      this.$.mobileMenuBtn?.addEventListener('click',()=>this.openSidebar());
       this.$.saveSessionBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');}); this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
+      this.$.modeButtons?.forEach((button)=>button.addEventListener('click',()=>this.setTab(button.dataset.mode)));
       global.addEventListener('keydown',(event)=>this.handleSidebarKeydown?.(event));
       this.$.showControls?.addEventListener('click',()=>this.toggleControlsSidebar());
       document.querySelectorAll('[data-tooltip]').forEach((el)=>el.setAttribute('title',el.dataset.tooltip));
@@ -407,27 +588,95 @@
         if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?this.redo():this.undo();return;}
         if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();this.redo();return;}
         if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='enter'){e.preventDefault();this.addActiveTab();return;}
-        if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&tag==='BUTTON'&&document.activeElement?.classList.contains('tab')){e.preventDefault();this.moveTab(e.key==='ArrowRight'?1:-1);return;}
+        if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&tag==='BUTTON'&&document.activeElement?.classList.contains('mode-btn')){e.preventDefault();this.moveMode(e.key==='ArrowRight'?1:-1);return;}
       });
     },
-    moveTab(delta){const i=this.$.tabs.findIndex(t=>t.dataset.tab===this.activeTab);const next=(i+delta+this.$.tabs.length)%this.$.tabs.length;this.$.tabs[next].focus();this.setTab(this.$.tabs[next].dataset.tab);},
-    updateActionBar(){if(!this.$.panelAdd)return;const labels={function:'Adicionar curva',parametric:'Adicionar curva paramétrica',vector:'Adicionar vetor',geometry:'Adicionar objeto geométrico',surface:'Adicionar sólido de revolução',curve3d:'Adicionar curva 3D',line3d:'Adicionar reta 3D'};const editing=Boolean(this.editingId);const label=editing?'Salvar alterações':(labels[this.activeTab]||'Adicionar');const s=this.$.panelAdd.querySelector('.action-label');if(s)s.textContent=label;this.$.panelAdd.setAttribute('aria-label',label);},addActiveTab(){if(this.activeTab==='function')this.addFunction();else if(this.activeTab==='parametric')this.addParametric();else if(this.activeTab==='vector')this.addVector();else if(this.activeTab==='surface')this.addSurface();else if(this.activeTab==='curve3d')this.addCurve3D();else if(this.activeTab==='line3d')this.addLine3D();else this.addGeometry();},
+    moveMode(delta){const modes=this.$?.modeButtons||[];if(!modes.length)return;const i=Math.max(0,modes.findIndex(b=>b.dataset.mode===this.activeTab));const next=(i+delta+modes.length)%modes.length;modes[next].focus();this.setTab(modes[next].dataset.mode);},
+    updateActionBar(){if(!this.$.panelAdd)return;const labels={function:'Adicionar curva',parametric:'Adicionar curva paramétrica',vector:'Adicionar vetor',geometry:'Adicionar objeto geométrico',surface:'Adicionar sólido de revolução',curve3d:'Adicionar curva 3D',line3d:'Adicionar reta 3D'};const editing=Boolean(this.editingId);const label=editing?'Salvar alterações':(labels[this.activeTab]||'Adicionar');const s=this.$.panelAdd.querySelector('.action-label');if(s)s.textContent=label;this.$.panelAdd.setAttribute('aria-label',label);},addActiveTab(){ this.setStatus('Calculando…'); if(global.navigator?.vibrate) global.navigator.vibrate(8); if(this.activeTab==='function')this.addFunction();else if(this.activeTab==='parametric')this.addParametric();else if(this.activeTab==='vector')this.addVector();else if(this.activeTab==='surface')this.addSurface();else if(this.activeTab==='curve3d')this.addCurve3D();else if(this.activeTab==='line3d')this.addLine3D();else this.addGeometry();},
+    normalizeInitialInputs(){['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>this.normalizeInput(id));},
     normalizeInput(id){const input=document.getElementById(id);if(!input)return;const start=input.selectionStart??input.value.length;const before=input.value;const after=before.replace(/pi\b/gi,'π').replace(/tau\b/gi,'τ').replace(/phi\b/gi,'φ').replace(/sqrt\s*\(/gi,'√(').replace(/\^2(?!\d)/g,'²').replace(/\^3(?!\d)/g,'³').replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−');if(after!==before){input.value=after;const delta=after.length-before.length;const pos=Math.max(0,Math.min(after.length,start+delta));input.setSelectionRange(pos,pos);}},
     toMathEngine(expr){return MathEngine.normalize(expr);},
-    toLatex(expr){let s=String(expr??'').trim().replace(/−/g,'-').replace(/π/g,'\\pi').replace(/τ/g,'\\tau').replace(/φ/g,'\\phi').replace(/²/g,'^{2}').replace(/³/g,'^{3}').replace(/×/g,'\\cdot ').replace(/÷/g,'\\div ').replace(/\b(sen|sin)\b/g,'\\operatorname{sen}').replace(/\b(arcsen|asin)\b/g,'\\operatorname{arcsen}').replace(/\b(arccos|acos)\b/g,'\\operatorname{arccos}').replace(/\b(arctg|atan)\b/g,'\\operatorname{arctg}').replace(/\b(cos|tan|sinh|cosh|tanh|log|log2|ln|sqrt|abs|exp|sign)\b/g,'\\$1'); s=this.convertFractionsToLatex(s); s=s.replace(/√\(([^()]*)\)/g,'\\sqrt{$1}'); return s||'\\;';},
+    toLatex(expr){
+      let s=String(expr??'').trim()
+        .replace(/−/g,'-').replace(/π/g,'\\pi').replace(/τ/g,'\\tau').replace(/φ/g,'\\phi')
+        .replace(/²/g,'^{2}').replace(/³/g,'^{3}').replace(/⁴/g,'^{4}').replace(/⁵/g,'^{5}')
+        .replace(/×/g,'\\cdot ').replace(/÷/g,'\\div ')
+        .replace(/\b(sen|sin)\b/gi,'\\operatorname{sen}')
+        .replace(/\b(arcsen|asin)\b/gi,'\\operatorname{arcsen}')
+        .replace(/\b(arccos|acos)\b/gi,'\\operatorname{arccos}')
+        .replace(/\b(arctg|atan)\b/gi,'\\operatorname{arctg}')
+        .replace(/\b(cos|tan|sinh|cosh|tanh|log|log2|ln|sqrt|abs|exp|sign)\b/gi,'\\$1');
+      s=this.convertFractionsToLatex(s);
+      s=s.replace(/√\\(([^()]*)\\)/g,'\\sqrt{$1}');
+      return s||'\\;';
+    },
     convertFractionsToLatex(s){let out=s;for(let i=0;i<3;i++){out=out.replace(/\(([^()]+)\)\s*\\div\s*\(([^()]+)\)/g,'\\frac{$1}{$2}').replace(/\b([0-9]+(?:\.[0-9]+)?)\s*\\div\s*([0-9]+(?:\.[0-9]+)?)/g,'\\frac{$1}{$2}');}return out;},
-    renderKatex(target,expr){const el=document.getElementById(target);if(!el)return;const safe=this.escapeHtml(this.display(String(expr??'')));el.innerHTML=`<span class="math-fallback">${safe}</span>`;el.classList.add('math-preview-fallback');},
+    renderKatex(target,expr){
+      const el=document.getElementById(target); if(!el)return;
+      const source=String(expr??'').trim();
+      el.classList.remove('math-preview-fallback');
+      if(global.katex && typeof global.katex.render==='function'){
+        try{ global.katex.render(this.toLatex(source),el,{throwOnError:false,displayMode:true,strict:'ignore',trust:false}); return; }
+        catch(err){ console.warn('[AppUI] Falha ao renderizar KaTeX:',err); }
+      }
+      // Fallback independente de CDN: nunca mostra LaTeX cru ao usuário.
+      const pretty=this.mathFallback(source);
+      el.innerHTML=`<span class="math-fallback">${this.escapeHtml(pretty).replace(/\n/g,'<br>')}</span>`;
+      el.classList.add('math-preview-fallback');
+    },
+    mathFallback(value){
+      let s=String(value??'').trim();
+      if(!s) return '';
+      // Estruturas e comandos de layout do LaTeX.
+      s=s.replace(/\\begin\{cases\}/g,'').replace(/\\end\{cases\}/g,'');
+      s=s.replace(/\\mathbf\s*\{([^{}]*)\}/g,'$1');
+      s=s.replace(/\\operatorname\s*\{([^{}]*)\}/g,'$1');
+      s=s.replace(/\\text\s*\{([^{}]*)\}/g,'$1');
+      s=s.replace(/\\mathrm\s*\{([^{}]*)\}/g,'$1');
+      s=s.replace(/\\left|\\right|\\displaystyle|\\!|\\,|\\;|\\quad|\\qquad/g,'');
+      s=s.replace(/\\\\/g,'\n');
+      // Símbolos matemáticos.
+      s=s.replace(/\\pi\b/g,'π').replace(/\\tau\b/g,'τ').replace(/\\phi\b/g,'φ');
+      s=s.replace(/\\infty/g,'∞').replace(/\\approx/g,'≈').replace(/\\neq/g,'≠').replace(/\\leq/g,'≤').replace(/\\geq/g,'≥');
+      s=s.replace(/\\times/g,'×').replace(/\\cdot/g,'·').replace(/\\div/g,'÷');
+      s=s.replace(/\\rightarrow/g,'→').replace(/\\to/g,'→').replace(/\\pm/g,'±').replace(/\\mp/g,'∓');
+      s=s.replace(/\\int/g,'∫').replace(/\\sum/g,'∑').replace(/\\prod/g,'∏');
+      s=s.replace(/\\sqrt\s*\{([^{}]*)\}/g,'√($1)');
+      // Frações ficam legíveis mesmo sem renderizador externo.
+      for(let i=0;i<4;i++) s=s.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,'($1)/($2)');
+      // Subscritos e expoentes comuns.
+      const sub={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+      const sup={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻'};
+      s=s.replace(/([A-Za-z])_\{(\d+)\}/g,(_,a,b)=>a+[...b].map(ch=>sub[ch]||ch).join(''));
+      s=s.replace(/([A-Za-z])_(\d)/g,(_,a,b)=>a+(sub[b]||b));
+      s=s.replace(/\^\{(\d+)\}/g,(_,b)=>[...b].map(ch=>sup[ch]||ch).join(''));
+      // Funções trigonométricas em português.
+      s=s.replace(/\\sin\b/gi,'sen').replace(/\\asin\b/gi,'arcsen').replace(/\\acos\b/gi,'arccos').replace(/\\atan\b/gi,'arctg');
+      s=s.replace(/\\cos\b/gi,'cos').replace(/\\tan\b/gi,'tan').replace(/\\ln\b/gi,'ln').replace(/\\log\b/gi,'log');
+      s=s.replace(/\\/g,'');
+      s=s.replace(/\s+/g,' ').replace(/\s*\n\s*/g,'\n');
+      return this.display(s);
+    },
     getFunctionVariable(){return this.$.functionVariable?.value==='y'?'y':'x'},
     updateFunctionEquationHint(){const v=this.getFunctionVariable(); const hint=v==='y'?'x = f(y)':'y = f(x)'; if(this.$.functionEquationHint)this.$.functionEquationHint.textContent=hint; this.$.functionExpr?.setAttribute('aria-label',`Expressão da função em ${v}`);},
-    updatePreviews(){const v=this.getFunctionVariable(); const lhs=v==='y'?'x':'y'; this.renderKatex('functionPreview',`${lhs} = f(${v}) = ${this.$.functionExpr.value}`);this.renderKatex('paramPreview',`x(t) = ${this.$.paramX.value}, y(t) = ${this.$.paramY.value}`);this.updateGeometryPreview();if(this.$.surfaceExpr) this.updateSolidPreview();if(this.$.curve3dX)this.renderKatex('curve3dPreview',`(x(t), y(t), z(t)) = (${this.$.curve3dX.value}, ${this.$.curve3dY.value}, ${this.$.curve3dZ.value})`);if(this.$.line3dX1)this.renderKatex('line3dPreview',`P_1=(${this.$.line3dX1.value},${this.$.line3dY1.value},${this.$.line3dZ1.value}), P_2=(${this.$.line3dX2.value},${this.$.line3dY2.value},${this.$.line3dZ2.value})`);},
+    updatePreviews(){
+      const v=this.getFunctionVariable(); const lhs=v==='y'?'x':'y';
+      this.renderKatex('functionPreview',`${lhs}=f(${v})=${this.$.functionExpr.value}`);
+      this.renderKatex('paramPreview',`\\begin{cases}x(t)=${this.$.paramX.value}\\\\y(t)=${this.$.paramY.value}\\end{cases}`);
+      this.updateGeometryPreview();
+      if(this.$.surfaceExpr) this.updateSolidPreview();
+      if(document.getElementById('solidFormulaDisplay')) this.renderKatex('solidFormulaDisplay', 'V=\\pi\\int_{a}^{b}\\left[R(x)^2-r(x)^2\right]\\,dx');
+      if(this.$.curve3dX) this.renderKatex('curve3dPreview',`\\mathbf r(t)=\\left(${this.$.curve3dX.value},${this.$.curve3dY.value},${this.$.curve3dZ.value}\\right)`);
+      if(this.$.line3dX1) this.renderKatex('line3dPreview',`P_1=\\left(${this.$.line3dX1.value},${this.$.line3dY1.value},${this.$.line3dZ1.value}\\right),\\quad P_2=\\left(${this.$.line3dX2.value},${this.$.line3dY2.value},${this.$.line3dZ2.value}\\right)`);
+    },
     insertText(token,target){const input=document.getElementById(target);if(!input)return;const start=input.selectionStart??input.value.length,end=input.selectionEnd??input.value.length;const pretty=token==='pi'?'π':token==='tau'?'τ':token==='phi'?'φ':token==='sqrt('?'√(':token==='*'?'×':token==='/'?'÷':token==='-'?'−':token;input.value=input.value.slice(0,start)+pretty+input.value.slice(end);const pos=start+pretty.length;input.focus();input.setSelectionRange(pos,pos);this.updatePreviews();this.validateExpressionField(input);},
     insertAtActive(token){const candidate=document.activeElement?.classList?.contains('math-input')?document.activeElement.id:this.lastMathInputId;const target=document.getElementById(candidate)||document.getElementById(this.activeTab==='parametric'?'paramX':'functionExpr');this.insertText(token,target.id);},
     clearField(id){const input=document.getElementById(id);if(!input)return;input.value='';this.lastMathInputId=id;input.focus();this.updatePreviews();this.validateExpressionField(input);this.showToast('Campo limpo.');},
     validateNumericField(input){if(!input?.value.trim()){input.classList.remove('valid','invalid');return;}try{this.parseNum(input.value,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2});input.classList.add('valid');input.classList.remove('invalid');}catch{input.classList.add('invalid');input.classList.remove('valid');}},
     validateExpressionField(input){if(!input?.value.trim()){input.classList.remove('valid','invalid');return;}try{MathEngine.compile(this.toMathEngine(input.value),this.getDefaultVariables());input.classList.add('valid');input.classList.remove('invalid');}catch{input.classList.add('invalid');input.classList.remove('valid');}},
     requireNonEmpty(value, message='Preencha o campo antes de adicionar.') {if(!String(value??'').trim()){this.showToast(message,true);return false;}return true;},
-    beginEdit(o){this.cancelEdit();this.setTab(o.type==='function'?'function':o.type==='parametric'?'parametric':o.type==='vector'?'vector':'geometry');this.editingId=o.id;this.lineLiveCommitted=false;if(o.type==='function'){this.$.functionVariable.value=o.data.variable||'x';this.updateFunctionEquationHint();this.$.functionExpr.value=this.display(o.data.expression);}else if(o.type==='parametric'){this.$.paramX.value=this.display(o.data.xExpr);this.$.paramY.value=this.display(o.data.yExpr);this.$.tMin.value=o.data.tMin;this.$.tMax.value=o.data.tMax;}else if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];[['vx1',pts[0][0]],['vy1',pts[0][1]],['vz1',pts[0][2]],['vx2',pts[1][0]],['vy2',pts[1][1]],['vz2',pts[1][2]]].forEach(([id,v])=>document.getElementById(id).value=v);if(this.$.vectorType)this.$.vectorType.value=o.data.arrow===false?'segment':'vector';}else{this.$.geometryType.value=o.type;this.initGeometryFields();this.fillGeometry(o);}this.$.addFunction.textContent=o.type==='function'?'Salvar alterações':'Adicionar curva';this.$.addParam.textContent=o.type==='parametric'?'Salvar alterações':'Adicionar curva paramétrica';this.$.addVector.textContent=o.type==='vector'?'Salvar alterações':'Adicionar vetor';this.$.addGeometry.textContent=['line','circle','ellipse','point'].includes(o.type)?'Salvar alterações':'Adicionar objeto geométrico';if(o.type==='solid'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.outerExpression||o.data.expression||'0');this.$.surfaceInnerExpr.value=this.display(o.data.innerExpression||'0');this.$.surfaceAMin.value=o.data.a??0;this.$.surfaceBMax.value=o.data.b??5;this.$.surfaceAxisY.value=o.data.axisY??0;this.editingId=o.id;this.$.addSurface.textContent='Salvar alterações';this.updateSolidPreview();}else if(o.type==='surface'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.expression);this.$.surfaceInnerExpr.value='0';this.$.surfaceAMin.value=0;this.$.surfaceBMax.value=o.data.range||5;this.$.surfaceAxisY.value=0;this.editingId=o.id;this.$.addSurface.textContent='Salvar alterações';}else if(o.type==='curve3d'){this.setTab('curve3d');this.$.curve3dX.value=this.display(o.data.xExpr);this.$.curve3dY.value=this.display(o.data.yExpr);this.$.curve3dZ.value=this.display(o.data.zExpr);this.$.curve3dTMin.value=o.data.tMin;this.$.curve3dTMax.value=o.data.tMax;this.editingId=o.id;this.$.addCurve3D.textContent='Salvar alterações';}else if(o.type==='line3d'){this.setTab('line3d');['line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach((id,i)=>document.getElementById(id).value=[...o.data.p1,...o.data.p2][i]);this.editingId=o.id;this.$.addLine3D.textContent='Salvar alterações';}this.updatePreviews();this.showToast('Objeto carregado para edição.');},
-    cancelEdit(){this.editingId=null;this.$.addFunction.textContent='Adicionar curva';this.$.addParam.textContent='Adicionar curva paramétrica';this.$.addVector.textContent='Adicionar vetor';this.$.addGeometry.textContent='Adicionar objeto geométrico';if(this.$.addSurface)this.$.addSurface.textContent='Adicionar superfície';if(this.$.addCurve3D)this.$.addCurve3D.textContent='Adicionar curva 3D';if(this.$.addLine3D)this.$.addLine3D.textContent='Adicionar reta 3D';this.updateActionBar?.();},
+    beginEdit(o){this.cancelEdit();this.setTab(o.type==='function'?'function':o.type==='parametric'?'parametric':o.type==='vector'?'vector':'geometry');this.editingId=o.id;this.lineLiveCommitted=false;if(o.type==='function'){this.$.functionVariable.value=o.data.variable||'x';this.updateFunctionEquationHint();this.$.functionExpr.value=this.display(o.data.expression);}else if(o.type==='parametric'){this.$.paramX.value=this.display(o.data.xExpr);this.$.paramY.value=this.display(o.data.yExpr);this.$.tMin.value=o.data.tMin;this.$.tMax.value=o.data.tMax;}else if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];[['vx1',pts[0][0]],['vy1',pts[0][1]],['vz1',pts[0][2]],['vx2',pts[1][0]],['vy2',pts[1][1]],['vz2',pts[1][2]]].forEach(([id,v])=>document.getElementById(id).value=v);if(this.$.vectorType)this.$.vectorType.value=o.data.arrow===false?'segment':'vector';}else{this.$.geometryType.value=o.type;this.initGeometryFields();this.fillGeometry(o);}if(o.type==='solid'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.outerExpression||o.data.expression||'0');this.$.surfaceInnerExpr.value=this.display(o.data.innerExpression||'0');this.$.surfaceAMin.value=o.data.a??0;this.$.surfaceBMax.value=o.data.b??5;this.$.surfaceAxisY.value=o.data.axisY??0;this.editingId=o.id;this.updateSolidPreview();}else if(o.type==='surface'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.expression);this.$.surfaceInnerExpr.value='0';this.$.surfaceAMin.value=0;this.$.surfaceBMax.value=o.data.range||5;this.$.surfaceAxisY.value=0;this.editingId=o.id;}else if(o.type==='curve3d'){this.setTab('curve3d');this.$.curve3dX.value=this.display(o.data.xExpr);this.$.curve3dY.value=this.display(o.data.yExpr);this.$.curve3dZ.value=this.display(o.data.zExpr);this.$.curve3dTMin.value=o.data.tMin;this.$.curve3dTMax.value=o.data.tMax;this.editingId=o.id;}else if(o.type==='line3d'){this.setTab('line3d');['line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach((id,i)=>document.getElementById(id).value=[...o.data.p1,...o.data.p2][i]);this.editingId=o.id;}this.updatePreviews();this.showToast('Objeto carregado para edição.');},
+    cancelEdit(){this.editingId=null;this.updateActionBar?.();},
     addFunction(){if(!this.requireNonEmpty(this.$.functionExpr.value,'Digite uma função, por exemplo x² + sen(x).'))return;const expr=this.toMathEngine(this.$.functionExpr.value);const variable=this.getFunctionVariable();try{MathEngine.compile(expr,{...this.getDefaultVariables(),[variable]:0});if(this.editingId){this.objects.update(this.editingId,{expression:expr,variable});this.showToast('Curva atualizada.');}else{const obj=this.objects.add('function',{expression:expr,variable},colors[this.objects.items.length%colors.length]);const lhs=variable==='y'?'x':'y';this.addHistory(`${lhs} = f(${variable}) = ${this.$.functionExpr.value}`,obj);this.showToast('Curva adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     addParametric(){if(!this.requireNonEmpty(this.$.paramX.value,'Preencha x(t).')||!this.requireNonEmpty(this.$.paramY.value,'Preencha y(t).'))return;const xExpr=this.toMathEngine(this.$.paramX.value),yExpr=this.toMathEngine(this.$.paramY.value);try{const tMin=this.parseNum(this.$.tMin.value,{pi:Math.PI}),tMax=this.parseNum(this.$.tMax.value,{pi:Math.PI});MathEngine.compile(xExpr,this.getDefaultVariables());MathEngine.compile(yExpr,this.getDefaultVariables());if(!(tMax>tMin))throw new Error('t máx. deve ser maior que t mín.');const data={xExpr,yExpr,tMin,tMax};if(this.editingId){this.objects.update(this.editingId,data);this.showToast('Curva paramétrica atualizada.');}else{const obj=this.objects.add('parametric',data,colors[this.objects.items.length%colors.length]);this.addHistory(`x(t) = ${this.$.paramX.value}, y(t) = ${this.$.paramY.value}`,obj);this.showToast('Curva paramétrica adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     parseNum(v,vars){const normalized=this.toMathEngine(String(v));if(!normalized.trim())throw new Error('Valor numérico vazio.');const n=Number(normalized);const value=Number.isFinite(n)?n:MathEngine.evalExpr(normalized,vars || this.getDefaultVariables());if(!Number.isFinite(value))throw new Error('Valor numérico inválido. Use, por exemplo, 1,5 ou 2·π.');return value;},
@@ -436,6 +685,7 @@
     vectorOperation(type){try{const ax=this.parseNum(this.$.vx2.value)-this.parseNum(this.$.vx1.value),ay=this.parseNum(this.$.vy2.value)-this.parseNum(this.$.vy1.value),az=this.parseNum(this.$.vz2.value)-this.parseNum(this.$.vz1.value),bx=this.parseNum(this.$.v2x.value),by=this.parseNum(this.$.v2y.value),bz=this.parseNum(this.$.v2z.value);if(type==='dot'){const r=ax*bx+ay*by+az*bz;document.getElementById('vectorOpsResult').textContent=`v · w = ${this.fmt(r)}`;}else{const cx=ay*bz-az*by,cy=az*bx-ax*bz,cz=ax*by-ay*bx;document.getElementById('vectorOpsResult').textContent=`v × w = (${this.fmt(cx)}, ${this.fmt(cy)}, ${this.fmt(cz)})`;}this.showToast(type==='dot'?'Produto escalar calculado.':'Produto vetorial calculado.');}catch(e){this.showError(e);}},
     fmt(n){return Number(n.toFixed(8)).toString();},
     initGeometryFields(){
+      if (this.$?.geometryFields) this.$.geometryFields.innerHTML='';
       const type=this.$.geometryType.value;
       let html='';
       if(type==='line') {
@@ -513,13 +763,24 @@
     },
     updateSolidPreview(){
       const out=this.$.surfaceExpr?.value||'', inn=this.$.surfaceInnerExpr?.value||'0';
-      const a=this.$.surfaceAMin?.value||'0', b=this.$.surfaceBMax?.value||'3', k=this.$.surfaceAxisY?.value||'0';
-      let extra='';
+      const aText=this.$.surfaceAMin?.value||'0', bText=this.$.surfaceBMax?.value||'3', kText=this.$.surfaceAxisY?.value||'0';
       try{
-        const data={outerExpression:this.toMathEngine(out),innerExpression:this.toMathEngine(inn),a:this.parseNum(a,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2}),b:this.parseNum(b,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2}),axisY:this.parseNum(k,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2})};
-        if(data.b>data.a) extra=`\\qquad V \approx ${this.fmt(this.computeSolidVolume(data))}`;
-      }catch{}
-      if(this.$.surfacePreview)this.renderKatex('surfacePreview',`V = \pi\int_{${a}}^{${b}} [R(x)^2-r(x)^2]\,dx${extra}\\\text{, eixo de rotação: }y=${k}`);
+        const data={
+          outerExpression:this.toMathEngine(out),
+          innerExpression:this.toMathEngine(inn),
+          a:this.parseNum(aText,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2}),
+          b:this.parseNum(bText,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2}),
+          axisY:this.parseNum(kText,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2})
+        };
+        const validInterval=data.b>data.a;
+        const volume=validInterval?this.computeSolidVolume(data):null;
+        const extraLatex=validInterval?`\\,\\quad V\\approx ${this.fmt(volume)}`:'';
+        if(this.$.surfacePreview){
+          this.renderKatex('surfacePreview',`V=\\pi\\int_{${aText}}^{${bText}}\\left[R(x)^2-r(x)^2\\right]\\,dx${extraLatex}\\quad \text{eixo de rotação: }y=${kText}`);
+        }
+      }catch(err){
+        if(this.$.surfacePreview) this.$.surfacePreview.textContent='Informe funções e limites válidos.';
+      }
     },
     addSurface(){
       if(!this.requireNonEmpty(this.$.surfaceExpr?.value,'Digite a função externa f(x).'))return;
@@ -555,6 +816,18 @@
     redo(){if(this.objects.redo()){this.showToast('Ação refeita.');}else this.showToast('Nada para refazer.');this.updateUndoButtons();},
     updateUndoButtons(){this.$.undo.disabled=!this.objects?.undoStack?.length;this.$.redo.disabled=!this.objects?.redoStack?.length;},
     updateEmptyState(){this.$.emptyState.classList.toggle('hidden',this.objects.items.length>0);},
+    showGraphTooltip(hit){
+      const el=this.$?.vectorTooltip;if(!el)return;
+      if(!hit?.obj){el.classList.add('hidden');el.setAttribute('aria-hidden','true');return;}
+      const snap=v=>Math.round(Number(v)*10)/10,fmt=p=>`(${p.map(snap).join(', ')})`;
+      const labels={function:'Função',parametric:'Curva paramétrica',vector:hit.obj.data?.arrow===false?'Segmento':'Vetor',point:'Ponto',line:'Reta',circle:'Círculo',ellipse:'Elipse',surface:'Superfície',solid:'Sólido de revolução',curve3d:'Curva 3D',line3d:'Reta 3D'};
+      let html=`<strong>${labels[hit.obj.type]||'Objeto'}</strong><br><span>Coordenada ≈ ${this.escape(fmt(hit.point||[]))}</span>`;
+      if(hit.obj.type==='vector'&&hit.endpoints)html+=`<br><span>P₁ = ${this.escape(fmt(hit.endpoints[0]))}</span><br><span>P₂ = ${this.escape(fmt(hit.endpoints[1]))}</span>`;
+      el.innerHTML=html;el.classList.remove('hidden');el.setAttribute('aria-hidden','false');
+      const sx=Number(hit.screen?.x)||20,sy=Number(hit.screen?.y)||20,ew=Math.min(280,Math.max(180,el.offsetWidth||220)),eh=Math.min(160,Math.max(70,el.offsetHeight||90));
+      el.style.left=`${Math.min(window.innerWidth-ew-10,Math.max(10,sx+14))}px`;el.style.top=`${Math.min(window.innerHeight-eh-10,Math.max(10,sy+14))}px`;
+    },
+    showVectorTooltip(hit){return this.showGraphTooltip(hit);},
     updateCoordinates(p){const x=Number(p?.x),y=Number(p?.y);this.$.coordinate.textContent=Number.isFinite(x)&&Number.isFinite(y)?`x: ${this.fmt(x)} · y: ${this.fmt(y)}`:'x: — · y: —';},
     setStatus(msg,error=false){this.$.status.textContent=msg;this.$.status.className=error?'error':'';clearTimeout(this.statusTimer);this.statusTimer=setTimeout(()=>{this.$.status.textContent='Pronto';this.$.status.className='';},3000);},
     showError(error){const message=error?.message||'Não foi possível concluir a operação.';this.setStatus(message,true);this.showToast(message,true);},
