@@ -3,9 +3,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#10151d" name="theme-color"/>
 <meta content="yes" name="mobile-web-app-capable"/>
@@ -26,70 +26,55 @@
 <p>Funções, curvas paramétricas, vetores e geometria analítica 2D/3D em um único espaço.</p>
 </div>
 <div class="top-actions">
-<div class="mobile-panel-actions" aria-label="Painéis">
-<button class="menu-toggle mobile-panel-btn" id="mobileModesBtn" type="button" aria-label="Abrir modos" aria-expanded="false" title="Modos">
-<svg class="panel-menu-icon" aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
-<svg class="panel-close-icon hidden" aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+<div aria-label="Painéis" class="mobile-panel-actions">
+<button aria-expanded="false" aria-label="Abrir controles" class="menu-toggle mobile-panel-btn" id="mobileControlsBtn" title="Controles" type="button">
+<svg aria-hidden="true" class="panel-controls-icon" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h10M18 17h2"></path><circle cx="16" cy="7" fill="currentColor" r="2" stroke="none"></circle><circle cx="9" cy="12" fill="currentColor" r="2" stroke="none"></circle><circle cx="16" cy="17" fill="currentColor" r="2" stroke="none"></circle></svg>
 </button>
-<button class="menu-toggle mobile-panel-btn" id="mobileControlsBtn" type="button" aria-label="Abrir controles" aria-expanded="false" title="Controles">
-<svg class="panel-controls-icon" aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h10M18 17h2"></path><circle cx="16" cy="7" r="2" fill="currentColor" stroke="none"></circle><circle cx="9" cy="12" r="2" fill="currentColor" stroke="none"></circle><circle cx="16" cy="17" r="2" fill="currentColor" stroke="none"></circle></svg>
+<button aria-label="Abrir exportação" class="menu-toggle mobile-panel-btn mobile-export-btn" id="mobileExportBtn" title="Exportar" type="button">
+<svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 20h14"></path></svg>
 </button>
 </div>
 <button aria-label="Instalar aplicativo" class="action-btn install-btn hidden" id="installBtn" title="Instalar aplicativo" type="button">
 <svg aria-hidden="true" height="17" viewbox="0 0 24 24" width="17"><path d="M11 3h2v10.2l3.5-3.5 1.4 1.4L12 17l-5.9-5.9 1.4-1.4 3.5 3.5V3zM5 19h14v2H5z" fill="currentColor"></path></svg><span>Instalar</span>
 </button>
-
 </div>
 </header>
 <div aria-hidden="true" class="backdrop hidden" id="backdrop"></div>
 <section class="workspace">
-<section class="mode-sidebar" aria-label="Modos de representação">
-  <div class="mode-sidebar-header">
-    <span class="mode-sidebar-title">Modos</span>
-    <button class="icon-btn mode-collapse-btn" id="modeCollapseBtn" type="button" aria-label="Recolher barra de modos" aria-pressed="false" title="Recolher barra de modos">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
-    </button>
-  </div>
-  <nav class="mode-nav" aria-label="Tipos de representação">
-    <button class="mode-btn active" data-mode="function" type="button" aria-current="true" title="Função"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17c4-1 5-9 9-10 3-.7 4.2 4.8 7 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Função</span></button>
-    <button class="mode-btn" data-mode="parametric" type="button" title="Paramétrica"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c3-8 13-8 16 0M4 8c3 8 13 8 16 0" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Paramétrica</span></button>
-    <button class="mode-btn" data-mode="vector" type="button" title="Vetor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5M13 5h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Vetor</span></button>
-    <button class="mode-btn" data-mode="geometry" type="button" title="Geometria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18L9 6l10 4-4 10z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Geometria</span></button>
-    <button class="mode-btn" data-mode="surface" type="button" title="Discos e anéis — Cálculo II"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l6-8 10 4-6 8zM10 8v8M4 16l10 4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><span>Discos / Anéis</span></button>
-    <button class="mode-btn" data-mode="curve3d" type="button" title="Curva 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c2-9 6 9 8 0s6-9 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Curva 3D</span></button>
-    <button class="mode-btn" data-mode="line3d" type="button" title="Reta 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20L20 4M7 20h-3v-3M17 4h3v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Reta 3D</span></button>
-  </nav>
-  <button class="mobile-more-btn" id="mobileMoreBtn" type="button" aria-expanded="false" aria-label="Mais opções" title="Mais opções"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><span>Mais</span></button>
-  <div class="mode-actions">
-    <button class="icon-btn" id="extrasBtn" type="button" aria-label="Abrir configurações extras" title="Configurações extras">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.04.32-.07.65-.07.98s.02.66.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"/></svg>
-    </button>
-  </div>
-  <div class="mode-manage">
-<section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row object-toolbar"><h2>Objetos</h2><div class="object-actions" aria-label="Ações dos objetos">
-<button aria-label="Desfazer" class="icon-btn compact-icon-btn" disabled id="undoBtn" title="Desfazer (Ctrl+Z)" type="button"><svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"></path></svg></button>
-<button aria-label="Refazer" class="icon-btn compact-icon-btn" disabled id="redoBtn" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" type="button"><svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"></path></svg></button>
-<button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section>
-  </div>
+<section aria-label="Modos de representação" class="mode-sidebar">
+<div class="mode-sidebar-header">
+<span class="mode-sidebar-title">Modos</span>
+<button aria-label="Recolher barra de modos" aria-pressed="false" class="icon-btn mode-collapse-btn" id="modeCollapseBtn" title="Recolher barra de modos" type="button">
+<svg aria-hidden="true" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg>
+</button>
+</div>
+<nav aria-label="Tipos de representação" class="mode-nav">
+<button aria-current="true" class="mode-btn active" data-mode="function" title="Função" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 17c4-1 5-9 9-10 3-.7 4.2 4.8 7 4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path></svg><span>Função</span></button>
+<button class="mode-btn" data-mode="parametric" title="Paramétrica" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 16c3-8 13-8 16 0M4 8c3 8 13 8 16 0" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Paramétrica</span></button>
+<button class="mode-btn" data-mode="vector" title="Vetor" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M5 19L19 5M13 5h6v6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Vetor</span></button>
+<button class="mode-btn" data-mode="geometry" title="Geometria" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M5 18L9 6l10 4-4 10z" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Geometria</span></button>
+<button class="mode-btn" data-mode="surface" title="Discos e anéis — Cálculo II" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 16l6-8 10 4-6 8zM10 8v8M4 16l10 4" fill="none" stroke="currentColor" stroke-width="1.7"></path></svg><span>Discos / Anéis</span></button>
+<button class="mode-btn" data-mode="curve3d" title="Curva 3D" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 15c2-9 6 9 8 0s6-9 8 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path></svg><span>Curva 3D</span></button>
+<button class="mode-btn" data-mode="line3d" title="Reta 3D" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 20L20 4M7 20h-3v-3M17 4h3v3" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Reta 3D</span></button>
+</nav>
+<button aria-expanded="false" aria-label="Mais opções" class="mobile-more-btn" id="mobileMoreBtn" title="Mais opções" type="button"><svg aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg><span>Mais</span></button>
+<div class="mode-actions">
+<button aria-label="Abrir exportação" class="icon-btn" id="extrasBtn" title="Exportar" type="button">
+<svg aria-hidden="true" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.04.32-.07.65-.07.98s.02.66.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"></path></svg>
+</button>
+</div>
+
 </section>
-<aside aria-label="Controles de entrada" class="panel controls-panel"><div class="controls-header">
+<aside aria-label="Controles de entrada" class="panel controls-panel" id="controlsPanel"><div aria-hidden="true" class="sheet-handle"></div><div class="controls-header">
 <span>Configurações</span>
 <button aria-label="Recolher controles" aria-pressed="false" class="icon-btn desktop-controls-collapse" id="controlsCollapseBtn" title="Recolher controles" type="button">
-  <svg class="controls-arrow-left hidden" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
-  <svg class="controls-arrow-right" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg>
+<svg aria-hidden="true" class="controls-arrow-left hidden" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg>
+<svg aria-hidden="true" class="controls-arrow-right" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"></path></svg>
 </button>
 <button aria-label="Fechar controles" class="icon-btn close-controls-btn" id="closeControlsBtn" title="Fechar controles" type="button">
 <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
-</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone"><div aria-label="Tipo de objeto gráfico" class="tabs" role="tablist">
-<button aria-controls="panel-function" aria-selected="true" class="tab active" data-tab="function" role="tab" title="Função"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Função</span></button>
-<button aria-controls="panel-parametric" aria-selected="false" class="tab" data-tab="parametric" role="tab" title="Curva paramétrica"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Paramétrica</span></button>
-<button aria-controls="panel-vector" aria-selected="false" class="tab" data-tab="vector" role="tab" title="Vetor"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Vetor</span></button>
-<button aria-controls="panel-geometry" aria-selected="false" class="tab" data-tab="geometry" role="tab" title="Geometria"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Geometria</span></button>
-<button aria-controls="panel-surface" aria-selected="false" class="tab" data-tab="surface" role="tab" title="Discos e anéis — Cálculo II"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Discos / Anéis</span></button>
-<button aria-controls="panel-curve3d" aria-selected="false" class="tab" data-tab="curve3d" role="tab" title="Curva 3D"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Curva 3D</span></button>
-<button aria-controls="panel-line3d" aria-selected="false" class="tab" data-tab="line3d" role="tab" title="Reta 3D"><span aria-hidden="true" class="tab-icon"></span><span class="tab-label">Reta 3D</span></button>
-</div><div aria-label="Ferramentas matemáticas" class="global-math-tools">
+</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone"><div aria-label="Ferramentas matemáticas" class="global-math-tools">
 <button aria-expanded="false" aria-haspopup="true" class="math-tools-btn" id="globalMathBtn" type="button">Σ Símbolos matemáticos</button>
 <div class="math-menu hidden global-math-menu" id="globalMathMenu"></div>
 </div><details class="advanced-section" id="advancedVariables"><summary><span class="advanced-summary-title">Variáveis e identificadores</span><span class="advanced-summary-desc">Defina o escopo permitido</span></summary><section aria-labelledby="variablesConfigTitle" class="variables-config">
@@ -138,7 +123,6 @@
 <button aria-label="Raiz quadrada" data-token="sqrt(" type="button">√</button><button aria-label="Quadrado" data-token="^2" type="button"><span class="math-power">x<sup>2</sup></span></button><button aria-label="Cubo" data-token="^3" type="button"><span class="math-power">x<sup>3</sup></span></button>
 <button aria-label="Pi" data-token="pi" type="button">π</button><button aria-label="Constante de Euler" data-token="e" type="button"><i>e</i></button><button aria-label="Divisão" data-token="/" type="button">÷</button>
 </div>
-<button class="primary-btn" data-panel-action="true" id="addFunctionBtn" type="button">Adicionar curva</button>
 </section>
 <section class="tab-panel" data-panel="parametric" hidden="" id="panel-parametric" role="tabpanel">
 <div class="two-col">
@@ -150,7 +134,6 @@
 <div><label class="field-label" for="tMax">t máx.</label><input class="numeric-input" id="tMax" type="text" value="2*pi"/></div>
 </div>
 <div aria-label="Pré-visualização matemática da curva paramétrica" aria-live="polite" class="math-preview" id="paramPreview"></div>
-<button class="primary-btn" data-panel-action="true" id="addParamBtn" type="button">Adicionar curva paramétrica</button>
 </section>
 <section class="tab-panel" data-panel="vector" hidden="" id="panel-vector" role="tabpanel">
 <div class="vector-mode-row">
@@ -177,7 +160,6 @@
 </div>
 </div>
 <div aria-live="polite" class="vector-result" id="vectorResult">v = (3, 4) · ‖v‖ = 5</div>
-<button class="primary-btn" data-panel-action="true" id="addVectorBtn" type="button">Adicionar vetor</button>
 <div class="vector-ops">
 <div class="field-label">Segundo vetor (para produto)</div>
 <div class="three-col vector-coords">
@@ -199,53 +181,45 @@
 </select>
 <div id="geometryFields"></div>
 <div aria-label="Pré-visualização matemática da geometria" aria-live="polite" class="math-preview" id="geometryPreview"></div>
-<button class="primary-btn" data-panel-action="true" id="addGeometryBtn" type="button">Adicionar objeto geométrico</button>
 </section>
 <section class="tab-panel" data-panel="surface" hidden="" id="panel-surface" role="tabpanel">
-  <div class="section-kicker">Cálculo II · Sólido de revolução</div>
-
-  <div class="math-entry-card">
-    <div class="math-entry-label">Função externa</div>
-    <div class="math-entry-line">
-      <span class="math-prefix">f(x) =</span>
-      <div class="math-editor math-entry-editor">
-        <input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceOuterExpr" placeholder="x²" spellcheck="false" type="text" value="x²"/>
-        <button aria-label="Limpar função externa" class="clear-field-btn" data-clear="surfaceOuterExpr" title="Limpar" type="button">C</button>
-      </div>
-    </div>
-    <div class="field-hint">Raio externo: <strong>R(x) = |f(x) − k|</strong></div>
-  </div>
-
-  <div class="math-entry-card">
-    <div class="math-entry-label">Função interna</div>
-    <div class="math-entry-line">
-      <span class="math-prefix">g(x) =</span>
-      <div class="math-editor math-entry-editor">
-        <input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceInnerExpr" placeholder="0" spellcheck="false" type="text" value="0"/>
-        <button aria-label="Limpar função interna" class="clear-field-btn" data-clear="surfaceInnerExpr" title="Limpar" type="button">C</button>
-      </div>
-    </div>
-    <div class="field-hint">Para discos, use <strong>g(x) = 0</strong>. Para anéis, defina o raio interno.</div>
-  </div>
-
-  <div class="math-interval-card">
-    <div class="math-entry-label">Intervalo e eixo de rotação</div>
-    <div class="math-interval-row">
-      <div class="math-value-field"><span>a =</span><input class="numeric-input" id="surfaceAMin" type="text" value="0" aria-label="Limite inferior a"/></div>
-      <span class="math-interval-symbol">≤ x ≤</span>
-      <div class="math-value-field"><span>b =</span><input class="numeric-input" id="surfaceBMax" type="text" value="3" aria-label="Limite superior b"/></div>
-      <div class="math-value-field axis-field"><span>y =</span><input class="numeric-input" id="surfaceAxisY" type="text" value="0" aria-label="Eixo de rotação y igual a"/></div>
-    </div>
-  </div>
-
-  <div class="preview-box math-preview calculus-preview" id="surfacePreview" aria-label="Pré-visualização matemática do sólido e integral de volume" aria-live="polite"></div>
-
-  <div class="formula-card" aria-label="Fórmula do método dos discos e anéis">
-    <div class="formula-title">Volume por discos / anéis</div>
-    <div class="formula-display">V = π∫<sub>a</sub><sup>b</sup>[R(x)<sup>2</sup> − r(x)<sup>2</sup>] dx</div>
-  </div>
-
-  <button class="primary-btn" data-panel-action="true" id="addSurfaceBtn" type="button">Adicionar sólido de revolução</button>
+<div class="section-kicker">Cálculo II · Sólido de revolução</div>
+<div class="math-entry-card">
+<div class="math-entry-label">Função externa</div>
+<div class="math-entry-line">
+<span class="math-prefix">f(x) =</span>
+<div class="math-editor math-entry-editor">
+<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceOuterExpr" placeholder="x²" spellcheck="false" type="text" value="x²"/>
+<button aria-label="Limpar função externa" class="clear-field-btn" data-clear="surfaceOuterExpr" title="Limpar" type="button">C</button>
+</div>
+</div>
+<div class="field-hint">Raio externo: <strong>R(x) = |f(x) − k|</strong></div>
+</div>
+<div class="math-entry-card">
+<div class="math-entry-label">Função interna</div>
+<div class="math-entry-line">
+<span class="math-prefix">g(x) =</span>
+<div class="math-editor math-entry-editor">
+<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceInnerExpr" placeholder="0" spellcheck="false" type="text" value="0"/>
+<button aria-label="Limpar função interna" class="clear-field-btn" data-clear="surfaceInnerExpr" title="Limpar" type="button">C</button>
+</div>
+</div>
+<div class="field-hint">Para discos, use <strong>g(x) = 0</strong>. Para anéis, defina o raio interno.</div>
+</div>
+<div class="math-interval-card">
+<div class="math-entry-label">Intervalo e eixo de rotação</div>
+<div class="math-interval-row">
+<div class="math-value-field"><span>a =</span><input aria-label="Limite inferior a" class="numeric-input" id="surfaceAMin" type="text" value="0"/></div>
+<span class="math-interval-symbol">≤ x ≤</span>
+<div class="math-value-field"><span>b =</span><input aria-label="Limite superior b" class="numeric-input" id="surfaceBMax" type="text" value="3"/></div>
+<div class="math-value-field axis-field"><span>y =</span><input aria-label="Eixo de rotação y igual a" class="numeric-input" id="surfaceAxisY" type="text" value="0"/></div>
+</div>
+</div>
+<div aria-label="Pré-visualização matemática do sólido e integral de volume" aria-live="polite" class="preview-box math-preview calculus-preview" id="surfacePreview"></div>
+<div aria-label="Fórmula do método dos discos e anéis" class="formula-card">
+<div class="formula-title">Volume por discos / anéis</div>
+<div class="formula-display" id="solidFormulaDisplay" aria-label="Fórmula do volume por discos e anéis"></div>
+</div>
 </section>
 <section class="tab-panel" data-panel="curve3d" hidden="" id="panel-curve3d" role="tabpanel">
 <div class="two-col">
@@ -258,7 +232,6 @@
 <div><label class="field-label" for="curve3dTMax">t máx.</label><input class="numeric-input" id="curve3dTMax" type="text" value="2*pi"/></div>
 </div>
 <div aria-label="Pré-visualização da curva 3D" aria-live="polite" class="math-preview" id="curve3dPreview"></div>
-<button class="primary-btn" data-panel-action="true" id="addCurve3DBtn" type="button">Adicionar curva 3D</button>
 </section>
 <section class="tab-panel" data-panel="line3d" hidden="" id="panel-line3d" role="tabpanel">
 <div class="field-label">Ponto inicial (x₁, y₁, z₁)</div>
@@ -266,10 +239,12 @@
 <div class="field-label">Ponto final (x₂, y₂, z₂)</div>
 <div class="three-col"><input aria-label="x2" class="numeric-input" id="line3dX2" type="text" value="3"/><input aria-label="y2" class="numeric-input" id="line3dY2" type="text" value="3"/><input aria-label="z2" class="numeric-input" id="line3dZ2" type="text" value="3"/></div>
 <div aria-label="Pré-visualização da reta 3D" aria-live="polite" class="math-preview" id="line3dPreview"></div>
-<button class="primary-btn" data-panel-action="true" id="addLine3DBtn" type="button">Adicionar reta 3D</button>
 </section>
-</div></section></div>
-<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
+</div></section><section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row object-toolbar"><h2>Objetos</h2><div aria-label="Ações dos objetos" class="object-actions">
+<button aria-label="Desfazer" class="icon-btn compact-icon-btn" disabled="" id="undoBtn" title="Desfazer (Ctrl+Z)" type="button"><svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"></path></svg></button>
+<button aria-label="Refazer" class="icon-btn compact-icon-btn" disabled="" id="redoBtn" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" type="button"><svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"></path></svg></button>
+<button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section></div>
+<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
 <section class="panel graph-panel">
 <div class="graph-toolbar">
 <div class="toolbar-group">
@@ -280,74 +255,59 @@
 </div>
 <div aria-atomic="true" aria-live="polite" class="coordinate-readout" id="coordinateReadout">x: 0 · y: 0</div>
 </div>
-<button aria-label="Abrir controles" class="fab hidden" id="mobileMenuBtn" title="Abrir controles" type="button">
-<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 0 24 24" width="24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
-</button>
-<button aria-label="Mostrar controles" class="show-controls-btn hidden" id="showControlsBtn" title="Mostrar controles" type="button"><svg aria-hidden="true" class="show-controls-icon" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg><span>Mostrar controles</span></button>
 <div class="canvas-wrap" id="canvasWrap">
 <canvas aria-describedby="graphHelp" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." id="graphCanvas" role="img" tabindex="0"></canvas>
-<div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
+<div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div><div aria-hidden="true" class="vector-tooltip hidden" id="vectorTooltip" role="status"></div>
 </div>
 <div class="sr-only" id="graphHelp">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div aria-live="polite" class="toast" id="toast" role="status"></div><div class="statusbar">
 <span id="statusText">Pronto</span>
-<span>Arraste para mover · roda para zoom · arraste em 3D para girar · passe o cursor para coordenadas</span>
+<span>Arraste para mover · roda para zoom · botão direito em 3D para girar · passe o cursor sobre um objeto para ver suas coordenadas (0,1)</span>
 </div>
 </section>
 </section>
 </main>
-<div class="settings-modal hidden" id="extrasModal" aria-hidden="true">
-  <div class="settings-modal-backdrop" data-close-extras="true"></div>
-  <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="extrasModalTitle" tabindex="-1">
-    <header class="settings-dialog-header">
-      <div>
-        <span class="section-kicker">CONFIGURAÇÕES</span>
-        <h2 id="extrasModalTitle">Configurações extras</h2>
-        <p>Ajustes de exportação, visualização e sessão.</p>
-      </div>
-      <button class="icon-btn settings-dialog-close" id="closeExtrasModalBtn" type="button" aria-label="Fechar configurações extras" title="Fechar">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-    </header>
-    <div class="settings-dialog-content">
+<div aria-hidden="true" class="settings-modal hidden" id="extrasModal">
+<div class="settings-modal-backdrop" data-close-extras="true"></div>
+<section aria-labelledby="extrasModalTitle" aria-modal="true" class="settings-dialog" role="dialog" tabindex="-1">
+<header class="settings-dialog-header">
+<div>
+<span class="section-kicker">EXPORTAR</span>
+<h2 id="extrasModalTitle">Exportar</h2>
+<p>Exporte o gráfico como imagem ou arquivo JSON. Você também pode abrir um arquivo JSON existente.</p>
+</div>
+<button aria-label="Fechar configurações extras" class="icon-btn settings-dialog-close" id="closeExtrasModalBtn" title="Fechar" type="button">
+<svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</button>
+</header>
+<div class="settings-dialog-content">
+<div class="extras-content">
+<section aria-labelledby="extrasExportTitle" class="extras-group">
+<div class="extras-title" id="extrasExportTitle">Exportação</div>
+<div class="extras-actions">
+<button aria-label="Exportar gráfico como PNG" class="secondary-btn action-btn" id="exportBtn" title="Exportar o gráfico como PNG" type="button">
+<svg aria-hidden="true" fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z"></path></svg><span>PNG</span>
+</button>
+<button aria-label="Exportar gráfico como SVG" class="secondary-btn action-btn" id="exportSvgBtn" title="Exportar o gráfico como SVG" type="button">
+<svg aria-hidden="true" fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M4 4h16v16H4zM8 8l2 2-2 2 2 2-2 2" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>SVG</span>
+</button>
+<button aria-label="Exportar sessão em JSON" class="secondary-btn action-btn" id="exportJsonBtn" title="Exportar sessão em JSON" type="button">
+<svg aria-hidden="true" fill="none" height="16" viewbox="0 0 24 24" width="16" stroke="currentColor" stroke-width="2"><path d="M4 4h10l6 6v10H4z"></path><path d="M14 4v6h6M8 14h8M8 17h6"></path></svg><span>JSON</span>
+</button>
+<button aria-label="Abrir arquivo JSON" class="secondary-btn action-btn" id="importJsonBtn" title="Abrir arquivo JSON" type="button">
+<svg aria-hidden="true" fill="none" height="16" viewbox="0 0 24 24" width="16" stroke="currentColor" stroke-width="2"><path d="M5 4h7l2 2h5v14H5z"></path><path d="M12 9v7M9 13l3 3 3-3"></path></svg><span>Abrir JSON</span>
+</button>
+<input id="importJsonFile" type="file" accept="application/json,.json" hidden>
+</div>
+</section>
 
-  <div class="extras-content">
-    <section class="extras-group" aria-labelledby="extrasExportTitle">
-      <div class="extras-title" id="extrasExportTitle">Exportação</div>
-      <div class="extras-actions">
-        <button class="secondary-btn action-btn" id="exportBtn" type="button" title="Exportar o gráfico como PNG" aria-label="Exportar gráfico como PNG">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z"/></svg><span>PNG</span>
-        </button>
-        <button class="secondary-btn action-btn" id="exportSvgBtn" type="button" title="Exportar o gráfico como SVG" aria-label="Exportar gráfico como SVG">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M4 4h16v16H4zM8 8l2 2-2 2 2 2-2 2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>SVG</span>
-        </button>
-      </div>
-    </section>
-    <section class="extras-group" aria-labelledby="extrasViewTitle">
-      <div class="extras-title" id="extrasViewTitle">Visualização</div>
-      <div class="extras-actions extras-actions-3">
-        <button class="secondary-btn" id="extraGridBtn" type="button">Grade</button>
-        <button class="secondary-btn" id="extraAxesBtn" type="button">Eixos</button>
-        <button class="secondary-btn" id="extraResetViewBtn" type="button">Recentrar</button>
-      </div>
-    </section>
-    <section class="extras-group" aria-labelledby="extrasSessionTitle">
-      <div class="extras-title" id="extrasSessionTitle">Sessão</div>
-      <div class="extras-actions">
-        <button class="secondary-btn" id="extraSaveBtn" type="button">Salvar sessão</button>
-        <button class="secondary-btn danger-btn" id="extraClearBtn" type="button">Limpar objetos</button>
-      </div>
-    </section>
-  </div>
-
-    </div>
-  </section>
-
+</div>
+</div>
+</section>
 <script src="js/mathEngine.js"></script>
 <script src="js/graphObjects.js"></script>
 <script src="js/graphEngine.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>
 </div>
-
 </body>
 </html>
