@@ -1,1 +1,1 @@
-60 - Cálculo II · refinamento da renderização 3D de discos e anéis
+v87 - correção de normalização inicial da notação matemática
