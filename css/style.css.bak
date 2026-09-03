@@ -1,0 +1,1103 @@
+:root{
+  --bg:#080d13;
+  --panel:#101823;
+  --panel-2:#0d1722;
+  --line:#253142;
+  --text:#e8f1f8;
+  --muted:#8fa3b7;
+  --accent:#5ac8fa;
+  --danger:#ff6fae;
+  --shadow:0 18px 50px rgba(0,0,0,.35);
+  --radius:12px;
+  --topbar-height:72px;
+  --modes-wide:180px;
+  --modes-compact:72px;
+  --controls-wide:360px;
+  --controls-compact:320px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at top,#122033 0,#080d13 45%,#05080c 100%);color:var(--text)}
+body.modal-open{overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{appearance:none}
+.hidden{display:none!important}
+
+.app-shell{width:100%;height:100vh;height:100dvh;margin:0;display:flex;flex-direction:column;border:0;border-radius:0;background:rgba(13,19,27,.98);overflow:hidden}
+
+.topbar{flex:0 0 var(--topbar-height);display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.eyebrow{font-size:10px;letter-spacing:.18em;color:var(--accent);font-weight:800}
+.topbar h1{margin:3px 0 2px;font-size:22px;line-height:1.1}
+.topbar p{margin:0;color:var(--muted);font-size:12px}
+.top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.mobile-panel-actions{display:none}
+
+.icon-btn,.tool-btn,.secondary-btn,.text-btn,.menu-toggle{border:1px solid var(--line);background:#131d28;color:var(--text);border-radius:8px;cursor:pointer}
+.icon-btn{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.action-btn{width:auto;min-width:38px;height:38px;padding:0 10px;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.icon-btn:hover,.tool-btn:hover,.secondary-btn:hover,.text-btn:hover,.menu-toggle:hover{border-color:#3e5168;background:#182433}
+.icon-btn:focus-visible,.action-btn:focus-visible,.tool-btn:focus-visible,.secondary-btn:focus-visible,.text-btn:focus-visible,.menu-toggle:focus-visible,.tab:focus-visible,.mode-btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(90,200,250,.75);outline-offset:2px}
+
+.workspace{min-height:0;flex:1;display:grid;grid-template-columns:var(--modes-wide) minmax(0,1fr) var(--controls-wide);grid-template-rows:minmax(0,1fr);position:relative;overflow:hidden}
+.mode-sidebar{grid-column:1;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--panel-2);border-right:1px solid var(--line);overflow:hidden}
+.controls-panel{grid-column:3;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:linear-gradient(180deg,#101823,#0c131c);border-left:1px solid var(--line);overflow:hidden}
+.graph-panel{grid-column:2;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#0d131b;position:relative}
+
+.mode-sidebar-header,.controls-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.mode-sidebar-title,.controls-header>span{font-size:13px;font-weight:800;color:#dfeaf5}
+.mode-nav{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:4px;padding:10px 8px;overflow:auto;overscroll-behavior:contain}
+.mode-btn{width:100%;min-height:44px;display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;text-align:left;white-space:nowrap}
+.mode-btn svg{width:18px;height:18px;flex:0 0 auto}
+.mode-btn.active{background:rgba(90,200,250,.14);border-color:rgba(90,200,250,.22);color:var(--accent);font-weight:700}
+.mode-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.mode-actions{display:flex;flex-direction:column;gap:7px;padding:10px 8px;border-top:1px solid var(--line);flex:0 0 auto}
+.mode-actions .icon-btn{width:100%;justify-content:flex-start;padding:0 10px}
+.mode-manage{flex:0 1 34%;min-height:130px;overflow:auto;padding:0 8px 10px}.panel-scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:14px}
+.panel-zone{min-width:0}
+.context-zone{display:block}
+.manage-zone{padding-top:8px}
+.panel-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel-title-row h2{font-size:13px;margin:0;color:#dfeaf5}
+.zone-header{display:flex;flex-direction:column;gap:3px}
+.zone-title{font-size:12px;font-weight:800;color:#dbe7f2}
+.zone-description{font-size:10px;color:var(--muted)}
+.section-divider{height:1px;background:var(--line);margin:12px 0}
+.text-btn{padding:5px 8px;font-size:11px}
+.object-toolbar .object-actions{display:flex;align-items:center;gap:5px}
+.compact-icon-btn{width:30px;height:30px;padding:0}
+.objects-list,.history-list{display:flex;flex-direction:column;gap:5px;margin-top:8px;max-height:230px;overflow:auto}
+.object-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:7px 8px;background:#0c141d;border:1px solid var(--line);border-radius:8px}
+.swatch{width:8px;height:24px;border-radius:999px}
+.object-label{border:0;background:none;color:#dce8f5;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;font-size:11px}
+.row-btn{border:1px solid var(--line);background:#111b25;color:var(--muted);padding:4px 6px;border-radius:6px;font-size:10px;cursor:pointer}
+.row-btn.danger:hover{color:#ffd5e6;border-color:rgba(255,111,174,.45)}
+.history-row{display:flex;justify-content:space-between;gap:8px;padding:8px;border:1px solid var(--line);background:#0c141d;color:#dbe7f2;border-radius:8px;text-align:left;cursor:pointer}
+.history-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.history-row small{color:var(--muted)}
+.empty-list{padding:14px 8px;color:var(--muted);text-align:center;font-size:11px}
+
+.field-label,label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:600}
+.field-error{min-height:15px;color:#ff9dbd;font-size:10px}
+
+.math-editor{position:relative;display:flex;min-width:0}
+.math-input,.numeric-input,.select-input{width:100%;min-width:0;border:1px solid var(--line);background:#091018;color:var(--text);border-radius:8px;min-height:42px;padding:9px 11px;outline:none}.math-input,.numeric-input{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",serif;font-variant-numeric:tabular-nums}
+.math-input:focus,.numeric-input:focus,.select-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(90,200,250,.1)}
+.select-input{appearance:none;padding-right:34px;background-color:#091018;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%238fa3b7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+.dropdown-btn{position:absolute;right:5px;top:5px;height:32px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.math-menu,.global-math-menu{position:absolute;right:0;top:46px;width:220px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px;border:1px solid var(--line);background:#0b1118;border-radius:10px;z-index:120;box-shadow:0 18px 40px rgba(0,0,0,.4);max-width:calc(100vw - 16px);max-height:45dvh;overflow:auto}
+.math-menu.hidden,.global-math-menu.hidden{display:none}
+.math-menu button,.quick-grid button{border:1px solid var(--line);background:#111b26;color:var(--text);border-radius:7px;min-height:34px;cursor:pointer}
+.math-menu button:hover,.quick-grid button:hover{border-color:var(--accent);background:#162636}
+.math-preview{min-height:44px;margin-top:7px;padding:10px 11px;border:1px solid #1f2b38;background:#0a1016;border-radius:8px;display:flex;align-items:center;overflow:auto}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.primary-btn{width:100%;margin-top:10px;min-height:42px;border:1px solid rgba(90,200,250,.45);background:linear-gradient(180deg,#1d3444,#152533);color:#eaf8ff;border-radius:8px;cursor:pointer;font-weight:700}
+.primary-btn:hover{border-color:var(--accent)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.three-col,.point-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.four-col{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}
+.inline-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.secondary-btn{min-height:36px;font-size:12px}
+.vector-result{margin:8px 0;padding:8px 10px;background:#0a1016;border:1px solid var(--line);border-radius:8px;color:#d8e7f5;font-size:12px}
+.vector-ops{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.point-card{min-width:0;padding:11px;background:#0c141d;border:1px solid var(--line);border-radius:10px}
+.point-header{font-size:11px;font-weight:800;color:#dbe7f2;margin-bottom:8px}
+.point-grid{margin:0}
+.line-controls{display:flex;flex-direction:column;gap:8px}
+.line-controls label{display:grid;grid-template-columns:28px minmax(0,70px) minmax(0,1fr);align-items:center;gap:8px}
+.line-controls input[type=number]{width:100%}
+.line-preview{background:#0a1016;border:1px solid var(--line);border-radius:7px;padding:9px;font-family:"Cambria Math",serif;font-size:14px;text-align:center;margin-top:4px}
+
+.graph-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.toolbar-group{display:flex;gap:7px;flex-wrap:wrap}
+.tool-btn{padding:7px 10px;font-size:11px}
+.coordinate-readout{font:12px ui-monospace,SFMono-Regular,monospace;color:var(--muted);white-space:nowrap}
+.canvas-wrap{position:relative;flex:1 1 auto;min-height:0;background:#0d131b;overflow:hidden}
+.canvas-wrap canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.canvas-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 16px;border:1px solid var(--line);background:rgba(8,13,19,.88);border-radius:9px;color:var(--muted);font-size:12px;pointer-events:none}
+.canvas-overlay.hidden{display:none}
+.statusbar{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;border-top:1px solid var(--line);color:var(--muted);font-size:10px;flex:0 0 auto}
+
+.action-bar{flex:0 0 auto;display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(16,24,35,.75),#101823)}
+.action-bar>*{flex:1 1 0}
+.controls-header .desktop-controls-collapse{flex:0 0 auto}
+.controls-header .close-controls-btn{display:none}
+.sheet-handle{display:none}
+
+.backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(2px);z-index:90;opacity:0;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
+.backdrop.show{display:block;opacity:1;pointer-events:auto;visibility:visible}
+
+.settings-modal{position:fixed;inset:0;display:grid;place-items:center;padding:20px;z-index:10000;isolation:isolate}
+.settings-modal.hidden{display:none!important}
+.settings-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(3px);z-index:0}
+.settings-dialog{position:relative;z-index:1;width:min(520px,calc(100vw - 32px));max-height:min(82dvh,720px);overflow:hidden auto;background:#101823;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.55);padding:16px;overscroll-behavior:contain}
+body.modal-open .app-shell{filter:none}
+body.modal-open .workspace, body.modal-open .topbar{pointer-events:none}
+
+/* ===== Responsive layout ===== */
+
+/* Desktop amplo: Modos | Gráfico | Controles */
+
+
+/* Desktop compacto */
+
+
+/* Tablet e mobile: o gráfico vira a área principal; modos ficam no topo
+   e os controles são um bottom sheet independente. */
+
+
+/* Tablet: a navegação superior ganha um pouco mais de espaço, sem cobrir o gráfico. */
+
+
+/* Mobile grande */
+
+
+/* Celulares muito estreitos */
+
+
+/* Standalone PWA: acrescenta somente a área segura do sistema, sem alterar a arquitetura. */
+
+
+/* Component-level responsiveness based on the real controls width. */
+.controls-panel{container-type:inline-size;container-name:controls}
+
+
+
+
+
+/* Scrollbars integradas ao tema */
+*{scrollbar-width:thin;scrollbar-color:#32455b #0b1118}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#0b1118}
+::-webkit-scrollbar-thumb{background:#32455b;border-radius:999px;border:2px solid #0b1118}
+::-webkit-scrollbar-thumb:hover{background:#47617e}
+
+/* v70 — gerenciamento movido para dentro do painel de controles.
+   A barra de modos fica dedicada exclusivamente à navegação. */
+.controls-panel .manage-zone{
+  display:block;
+  min-width:0;
+  padding-top:8px;
+  padding-bottom:12px;
+  border-top:1px solid var(--line);
+}
+.controls-panel .manage-zone .objects-list,
+.controls-panel .manage-zone .history-list{
+  max-height:220px;
+  overflow:auto;
+}
+.controls-panel .manage-zone .section-divider{margin:12px 0}
+
+
+
+
+
+
+/* ===== Settings modal: viewport-safe and independent of workspace ===== */
+.settings-dialog-content{min-height:0;max-height:calc(82dvh - 88px);overflow:auto;overscroll-behavior:contain}
+.settings-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.settings-dialog-close{flex:0 0 auto}
+
+
+
+
+/* v73 — camada final de consistência para todos os controles */
+:root{
+  --btn-height:38px;
+  --btn-bg:#131d28;
+  --btn-bg-hover:#182433;
+  --btn-border:#2a3949;
+  --btn-border-hover:#3e5168;
+  --btn-text:#e7eef6;
+  --btn-muted:#a8b6c5;
+}
+button{font:inherit;line-height:1.1;-webkit-tap-highlight-color:transparent}
+button svg{display:block;flex:0 0 auto}.icon-btn,.menu-toggle{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.action-btn{min-width:38px;height:38px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:12px;white-space:nowrap}
+.secondary-btn{min-height:36px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.tool-btn{min-height:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:11px}
+.primary-btn{min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(90,200,250,.45);background:linear-gradient(180deg,#1d3444,#152533);color:#eaf8ff;border-radius:8px;cursor:pointer;font-weight:700}
+.primary-btn:hover{border-color:var(--accent);background:linear-gradient(180deg,#214052,#182c3c)}
+.text-btn{min-height:30px;padding:0 9px;font-size:11px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.compact-icon-btn{width:30px;height:30px;padding:0}
+.row-btn{height:30px;min-width:30px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid var(--btn-border);background:#111b25;color:var(--btn-muted);border-radius:7px;font-size:10px;cursor:pointer;transition:background .16s ease,border-color .16s ease,color .16s ease,transform .08s ease}
+.row-btn:hover{background:var(--btn-bg-hover);border-color:var(--btn-border-hover);color:var(--btn-text)}
+.danger-btn{color:#ffc7df;border-color:rgba(255,111,174,.30)}
+.row-btn.danger:hover,.danger-btn:hover{color:#ffd5e6;border-color:rgba(255,111,174,.50);background:rgba(255,111,174,.07)}.math-tools-btn{min-height:38px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px}
+.math-tools-btn.is-active{background:rgba(90,200,250,.14);border-color:rgba(90,200,250,.45);color:var(--accent);box-shadow:0 0 0 1px rgba(90,200,250,.06) inset}
+.clear-field-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;position:absolute;right:42px;top:50%;transform:translateY(-50%);border:1px solid transparent;background:transparent;color:var(--btn-muted);border-radius:6px;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.clear-field-btn:hover{background:var(--btn-bg-hover);border-color:var(--btn-border);color:var(--btn-text)}
+.dropdown-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;position:absolute;right:5px;top:5px;border:1px solid transparent;background:transparent;color:var(--btn-muted);border-radius:6px;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.dropdown-btn:hover{background:var(--btn-bg-hover);border-color:var(--btn-border);color:var(--btn-text)}
+.controls-header .close-controls-btn,.settings-dialog-close{border-radius:8px}
+
+/* v73.1 — classes de estado e componentes específicos */
+.action-primary{min-height:42px}
+.action-secondary{min-height:42px}
+.install-btn{font-weight:700}
+.mode-collapse-btn{min-width:38px}
+.variables-reset-btn{min-height:36px;padding:0 12px}
+.math-menu button,.quick-grid button{
+  min-height:34px;
+  min-width:34px;
+  padding:0 9px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border:1px solid var(--btn-border);
+  background:#111b26;
+  color:var(--btn-text);
+  border-radius:7px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:12px;
+  line-height:1;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .08s ease;
+}
+.math-menu button:hover,.quick-grid button:hover{
+  background:#162636;
+  border-color:var(--accent);
+  color:#f4fbff;
+}
+.math-menu button:active,.quick-grid button:active{transform:scale(.98)}
+
+
+
+/* v74 — mobile controls moved to the topbar; stable desktop sidebars */
+
+
+
+
+
+
+
+
+
+
+
+
+/* v75 — mobile: somente Controles no topo; sem botão redundante no gráfico */
+
+
+
+/* v77 — refinamento da barra de modos */
+
+.extras-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.extras-actions-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+
+/* v78 — mobile export action */
+.mobile-export-btn{display:none;}
+
+
+
+
+
+
+
+.vector-tooltip{position:fixed;z-index:200;max-width:220px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:rgba(12,20,29,.94);color:var(--text);box-shadow:0 10px 26px rgba(0,0,0,.28);font-size:12px;line-height:1.45;pointer-events:none;backdrop-filter:blur(8px);}
+.vector-tooltip.hidden{display:none;}
+.vector-tooltip strong{display:inline-block;margin-bottom:2px;color:var(--accent);font-size:12px;}
+.theme-light .vector-tooltip{background:rgba(248,250,252,.96);color:#17202b;}
+
+/* v85 — apresentação matemática consistente também quando KaTeX/CDN não estiver disponível */
+.math-preview-fallback .math-fallback{font-family:"Cambria Math","STIX Two Math",serif;font-size:1.08em;line-height:1.55;white-space:normal;word-break:break-word;color:var(--text);}
+.math-preview-fallback{align-items:center;}
+
+
+/* v88 — sistema visual unificado e drawers responsivos */
+:root{
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+  --trans-fast:140ms cubic-bezier(.2,.7,.2,1);--trans-panel:240ms cubic-bezier(.22,.61,.36,1);
+  --panel-glass:rgba(16,24,35,.88);
+}
+
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mode-btn,.section-kicker,.zone-title,.extras-title{letter-spacing:.01em}
+.mode-btn{transition:background var(--trans-fast),border-color var(--trans-fast),color var(--trans-fast),transform var(--trans-fast)}
+.mode-btn:active,.action-btn:active,.tool-btn:active,.primary-btn:active,.secondary-btn:active,.text-btn:active{transform:scale(.985)}
+
+.controls-header-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.controls-header-copy span{font-size:13px;font-weight:800;color:#dfeaf5}
+.controls-header-copy small{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Section cards: conteúdo do modo e gerenciamento */
+.context-zone,.manage-zone{padding:0}
+.tab-panel{background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0));border:1px solid rgba(37,49,66,.8);border-radius:var(--radius-md);padding:12px}
+.tab-panel + .tab-panel{margin-top:10px}
+.panel-scroll{padding:14px}
+.manage-zone{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.panel-title-row h2{font-size:12px}
+.object-row,.history-row,.point-card,.math-entry-card,.math-interval-card,.formula-card,.variables-config,.vector-ops{border-radius:var(--radius-sm)}
+
+/* Teclado matemático móvel */
+.mobile-math-keyboard{display:none}
+.mobile-math-keyboard .math-keyboard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px;font-weight:800;color:var(--muted)}
+.mobile-math-keyboard .math-keyboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mobile-math-keyboard .math-keyboard-grid button{min-height:42px;border:1px solid var(--line);background:#111b26;color:var(--text);border-radius:8px;font-weight:700;cursor:pointer}
+.mobile-math-keyboard .math-keyboard-grid button:hover{border-color:var(--accent);background:#162636}
+
+/* Drawer de modos em mobile/tablet */
+
+
+
+
+
+
+
+
+/* Desktop: rail consistente, sem textos cortados */
+
+
+/* Conteúdo se reorganiza antes de ser cortado */
+
+
+
+
+/* v88.1 — polimento de drawers, cards e navegação móvel */
+.controls-panel,.mode-sidebar,.panel-scroll{container-type:inline-size}
+.mode-sidebar,.controls-panel,.panel-scroll,.objects-list,.history-list{scrollbar-width:thin;scrollbar-color:#40556d transparent}
+.mode-sidebar::-webkit-scrollbar,.controls-panel::-webkit-scrollbar,.panel-scroll::-webkit-scrollbar,.objects-list::-webkit-scrollbar,.history-list::-webkit-scrollbar{width:8px;height:8px}
+.mode-sidebar::-webkit-scrollbar-thumb,.controls-panel::-webkit-scrollbar-thumb,.panel-scroll::-webkit-scrollbar-thumb,.objects-list::-webkit-scrollbar-thumb,.history-list::-webkit-scrollbar-thumb{background:#33465a;border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+.mode-sidebar::-webkit-scrollbar-thumb:hover,.controls-panel::-webkit-scrollbar-thumb:hover,.panel-scroll::-webkit-scrollbar-thumb:hover,.objects-list::-webkit-scrollbar-thumb:hover,.history-list::-webkit-scrollbar-thumb:hover{background:#49627c}
+
+.section-card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:12px;padding:12px}
+.mode-btn svg{transition:transform var(--trans-fast)}
+.mode-btn.active svg{transform:scale(1.04)}
+.mobile-panel-btn.is-active{border-color:rgba(90,200,250,.5);background:rgba(90,200,250,.10);color:var(--accent)}
+
+
+
+/* v89 — correção do acesso aos modos em tablet/mobile
+   O drawer de modos precisa ter um gatilho visível no topbar e um cabeçalho
+   próprio quando aberto. Não há navegação duplicada: o botão só abre/fecha o drawer. */
+
+
+
+
+
+
+/* v90 — drawer mobile com TODOS os modos sempre acessíveis */
+
+
+
+
+
+
+
+/* ===== v92 — camada responsiva única e coesa ===== */
+:root{
+  --topbar-h:72px;
+  --mobile-topbar-h:58px;
+  --modes-w:180px;
+  --modes-rail:64px;
+  --controls-w:360px;
+  --controls-compact-w:320px;
+  --drawer-z:90;
+  --backdrop-z:80;
+  --sheet-z:100;
+  --mobile-padding:12px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+
+html,body,#root{width:100%;height:100%;min-width:0;min-height:0}
+body{overscroll-behavior:none}
+.app-shell{height:100dvh;min-height:100dvh;max-height:100dvh}
+.topbar{min-width:0;position:relative;z-index:120}
+.workspace{min-width:0;min-height:0;height:auto}
+.mode-sidebar,.graph-panel,.controls-panel{min-width:0;min-height:0}
+.mode-sidebar{overflow:hidden}
+.mode-nav{min-width:0;min-height:0}
+.mode-btn{min-width:0;overflow:hidden}
+.mode-btn span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.controls-panel,.panel-scroll{min-width:0;min-height:0}
+.panel-scroll{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.tab-panel[hidden]{display:none !important}
+.tab-panel.active{display:block !important}
+
+/* Densidade e tipografia acessíveis */
+:root{--muted:#b0c4d8}
+button,input,select,textarea{min-width:0}
+select,button{touch-action:manipulation}
+input[type="range"]{accent-color:var(--accent)}
+
+/* Modal: fundo realmente inerte e sem impacto no workspace */
+.settings-modal{position:fixed;inset:0;display:grid;place-items:center;z-index:10000;padding:20px;overflow:auto}
+.settings-modal.hidden{display:none !important}
+.settings-modal[aria-hidden="true"]{pointer-events:none}
+.settings-dialog{width:min(560px,calc(100vw - 24px));max-height:min(86dvh,760px);display:flex;flex-direction:column;overflow:hidden}
+.settings-dialog-content{min-height:0;overflow:auto}
+
+/* ===== Desktop: Modos | Gráfico | Controles ===== */
+@media (min-width:1024px){
+  .workspace{
+    display:grid;
+    grid-template-columns:var(--modes-w) minmax(0,1fr) var(--controls-w);
+    grid-template-rows:minmax(0,1fr);
+  }
+  .mode-sidebar{grid-column:1;grid-row:1;position:relative;transform:none;width:auto}
+  .graph-panel{grid-column:2;grid-row:1;position:relative}
+  .controls-panel{grid-column:3;grid-row:1;position:relative;width:auto;transform:none}
+  .mobile-panel-actions,.backdrop,.sheet-handle,.close-controls-btn{display:none !important}
+  .mode-collapse-btn{display:inline-flex}
+  .controls-collapse-btn,.desktop-controls-collapse{display:inline-flex}
+  .workspace.sidebar-modes-collapsed{grid-template-columns:var(--modes-rail) minmax(0,1fr) var(--controls-w)}
+  .workspace.sidebar-modes-collapsed .mode-sidebar{width:var(--modes-rail)}
+  .workspace.sidebar-modes-collapsed .mode-sidebar-title,
+  .workspace.sidebar-modes-collapsed .mode-btn span{display:none}
+  .workspace.sidebar-modes-collapsed .mode-sidebar-header{justify-content:center}
+  .workspace.sidebar-modes-collapsed .mode-btn{justify-content:center;padding-inline:8px}
+  .workspace.controls-collapsed{grid-template-columns:minmax(56px,var(--modes-w)) minmax(0,1fr) 0}
+  .workspace.sidebar-modes-collapsed.controls-collapsed{grid-template-columns:var(--modes-rail) minmax(0,1fr) 0}
+  .workspace.controls-collapsed .controls-panel{width:0;min-width:0;padding:0;border-left:0;opacity:0;pointer-events:none;overflow:hidden}
+  .mode-nav{overflow-y:auto;overflow-x:hidden}
+  .controls-panel{overflow:hidden}
+  .graph-toolbar{flex-wrap:wrap}
+  .coordinate-readout{max-width:45%;overflow:hidden;text-overflow:ellipsis}
+}
+
+/* ===== 900–1023: desktop compacto ===== */
+@media (min-width:900px) and (max-width:1023px){
+  .workspace{display:grid;grid-template-columns:var(--modes-rail) minmax(0,1fr) var(--controls-compact-w)}
+  .mode-sidebar{grid-column:1;grid-row:1;position:relative;transform:none}
+  .graph-panel{grid-column:2;grid-row:1}
+  .controls-panel{grid-column:3;grid-row:1;position:relative;transform:none}
+  .mode-sidebar-title,.mode-btn span{display:none}
+  .mode-sidebar-header{justify-content:center}
+  .mode-btn{justify-content:center;padding-inline:7px}
+  .mobile-panel-actions,.backdrop,.sheet-handle,.close-controls-btn{display:none !important}
+  .mode-nav{overflow-y:auto;overflow-x:hidden}
+  .controls-panel{overflow:hidden}
+}
+
+/* ===== 768–899: tablet/mobile drawer ===== */
+@media (min-width:768px) and (max-width:899px){
+  :root{--mobile-topbar-h:64px}
+}
+
+/* ===== <900: drawer de modos + bottom sheet de controles ===== */
+@media (max-width:899px){
+  .app-shell{height:100dvh}
+  .topbar{
+    flex:0 0 auto;
+    min-height:var(--mobile-topbar-h);
+    height:auto;
+    padding:8px 12px;
+    padding-top:calc(8px + var(--safe-top));
+  }
+  .workspace{
+    display:block;
+    position:relative;
+    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top));
+    min-height:0;
+    overflow:hidden;
+  }
+  .graph-panel{width:100%;height:100%;padding-top:0 !important;padding-bottom:0 !important}
+  .graph-toolbar{position:relative;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:7px 8px}
+  .toolbar-group{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  .coordinate-readout{flex:1 1 100%;width:100%;max-width:100%;order:3;text-align:center;overflow:hidden;text-overflow:ellipsis}
+
+  /* Gatilhos no topbar */
+  .mobile-panel-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}
+  .mobile-panel-btn{width:44px;min-width:44px;height:44px;min-height:44px;padding:0}
+  .mobile-panel-btn.is-active,[aria-expanded="true"].mobile-panel-btn{border-color:rgba(90,200,250,.5);background:rgba(90,200,250,.10);color:var(--accent)}
+
+  /* Drawer de modos */
+  .mode-sidebar{
+    position:fixed;
+    top:calc(var(--mobile-topbar-h) + var(--safe-top));
+    left:0;
+    bottom:0;
+    width:min(86vw,340px);
+    height:auto;
+    z-index:var(--drawer-z);
+    display:flex !important;
+    flex-direction:column;
+    transform:translateX(calc(-100% - 16px));
+    transition:transform var(--trans-panel);
+    box-shadow:18px 0 42px rgba(0,0,0,.34);
+    border-right:1px solid var(--line);
+    border-top:0;
+    overflow:hidden;
+    background:linear-gradient(180deg,#0f1822,#0a1118);
+  }
+  .mode-sidebar.mobile-open{transform:translateX(0)}
+  .mode-sidebar-header{display:flex !important;flex:0 0 auto;min-height:56px;padding:10px 12px;position:sticky;top:0;z-index:2;background:rgba(15,24,34,.96);backdrop-filter:blur(10px)}
+  .mode-sidebar-title{display:inline !important}
+  .mode-collapse-btn{display:none !important}
+  .mode-nav{flex:1 1 auto;display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:10px;overflow-y:auto;overflow-x:hidden;min-height:0}
+  .mode-btn{width:100%;flex:0 0 auto;min-height:48px;height:auto;padding:10px 12px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;font-size:13px;white-space:normal;text-align:left}
+  .mode-btn svg{width:22px;height:22px;flex:0 0 22px}
+  .mode-btn span{display:block;white-space:normal;overflow:visible;text-overflow:clip}
+  .mode-actions{display:none !important}
+
+  /* Backdrop fica entre os dois drawers */
+  .backdrop{position:fixed;inset:0;z-index:var(--backdrop-z);display:block !important;visibility:hidden;opacity:0;pointer-events:none;background:rgba(2,7,12,.56);transition:opacity var(--trans-fast),visibility var(--trans-fast)}
+  .backdrop.show{visibility:visible;opacity:1;pointer-events:auto}
+
+  /* Bottom sheet */
+  .controls-panel{
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:8px;
+    width:auto;
+    max-width:760px;
+    margin-inline:auto;
+    height:min(70dvh,680px);
+    max-height:calc(100dvh - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom));
+    z-index:var(--sheet-z);
+    transform:translateY(calc(100% + 24px));
+    transition:transform var(--trans-panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 18px 52px rgba(0,0,0,.44);
+    background:linear-gradient(180deg,#101823,#0b121a);
+    overflow:hidden;
+    padding:8px 10px 0;
+  }
+  .controls-panel.open{transform:translateY(0)}
+  .controls-panel.collapsed{transform:translateY(calc(100% + 24px))}
+  .controls-header{position:sticky;top:0;z-index:6;padding:9px 10px;background:rgba(16,24,35,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .desktop-controls-collapse{display:none !important}
+  .close-controls-btn{display:inline-flex !important;min-width:44px;width:44px;height:44px}
+  .sheet-handle{display:block;width:42px;height:4px;margin:0 auto 7px;border-radius:999px;background:rgba(255,255,255,.28);touch-action:none}
+  .panel-scroll{padding:8px 2px calc(14px + var(--safe-bottom));overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable}
+  .action-bar{position:sticky;bottom:0;z-index:7;padding:8px 2px calc(8px + var(--safe-bottom));background:linear-gradient(180deg,rgba(12,19,28,.72),#0c131c 36%);border-top:1px solid var(--line)}
+  .action-bar>*{min-height:44px}
+
+  /* Conteúdo dos painéis */
+  .math-menu,.global-math-menu{max-width:calc(100vw - 20px);max-height:min(46dvh,420px)}
+  .numeric-input,.math-input,.select-input{min-height:44px;font-size:16px}
+  .quick-grid button,.math-menu button{min-height:44px}
+  .inline-actions{grid-template-columns:1fr 1fr}
+  .three-col,.point-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .two-col{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .four-col{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .settings-dialog{max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 20px)}
+}
+
+/* ===== 600–767: mobile grande ===== */
+@media (min-width:600px) and (max-width:767px){
+  :root{--mobile-topbar-h:62px}
+  .controls-panel{height:min(68dvh,620px);max-height:calc(100dvh - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom))}
+}
+
+/* ===== ≤599: mobile ===== */
+@media (max-width:599px){
+  :root{--mobile-topbar-h:58px}
+  .topbar{padding-left:9px;padding-right:9px}
+  .topbar h1{font-size:17px}
+  .eyebrow{font-size:8px}
+  .topbar p{display:none}
+  .mobile-panel-btn{width:44px;min-width:44px;height:44px}
+  .controls-panel{left:4px;right:4px;bottom:4px;height:min(72dvh,680px);max-height:calc(100dvh - var(--mobile-topbar-h) - 12px - var(--safe-top) - var(--safe-bottom))}
+  .panel-scroll{padding-inline:2px}
+  .tab-panel{padding:10px}
+  .three-col,.point-grid{gap:5px}
+}
+
+/* ===== ≤379: telas muito estreitas ===== */
+@media (max-width:379px){
+  .topbar h1{font-size:15px}
+  .mobile-panel-btn{width:42px;min-width:42px;height:42px;min-height:42px}
+  .mobile-panel-actions{gap:4px}
+  .mode-sidebar{width:min(92vw,320px)}
+  .mode-btn{min-height:46px;font-size:12px;padding:9px 10px;gap:10px}
+  .mode-btn svg{width:20px;height:20px;flex-basis:20px}
+  .controls-panel{left:4px;right:4px}
+  .two-col{grid-template-columns:1fr}
+  .inline-actions{grid-template-columns:1fr}
+  .three-col,.point-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .math-menu,.global-math-menu{width:min(300px,calc(100vw - 20px))}
+}
+
+/* ===== Standalone PWA ===== */
+@media (display-mode:standalone){
+  .topbar{padding-top:calc(8px + var(--safe-top));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+}
+@media (display-mode:standalone) and (max-width:899px){
+  .workspace{height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top))}
+  .mode-sidebar{top:calc(var(--mobile-topbar-h) + var(--safe-top))}
+  .controls-panel{bottom:calc(8px + var(--safe-bottom));max-height:calc(100dvh - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom))}
+}
+
+/* ===== Container queries: componentes se adaptam à largura real ===== */
+.controls-panel{container-type:inline-size;container-name:controls}
+@container controls (max-width:340px){
+  .two-col,.four-col{grid-template-columns:1fr}
+  .line-controls label{grid-template-columns:24px minmax(0,1fr)}
+  .line-controls input[type=range]{grid-column:1/-1}
+  .math-entry-row,.math-interval-row{grid-template-columns:1fr}
+}
+@container controls (min-width:341px) and (max-width:420px){
+  .two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .three-col,.point-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* ===== Scrollbars integradas ao design ===== */
+.mode-sidebar,.controls-panel,.panel-scroll,.objects-list,.history-list{scrollbar-width:thin;scrollbar-color:#3a4c60 transparent}
+.mode-sidebar::-webkit-scrollbar,.controls-panel::-webkit-scrollbar,.panel-scroll::-webkit-scrollbar,.objects-list::-webkit-scrollbar,.history-list::-webkit-scrollbar{width:8px;height:8px}
+.mode-sidebar::-webkit-scrollbar-track,.controls-panel::-webkit-scrollbar-track,.panel-scroll::-webkit-scrollbar-track{background:transparent}
+.mode-sidebar::-webkit-scrollbar-thumb,.controls-panel::-webkit-scrollbar-thumb,.panel-scroll::-webkit-scrollbar-thumb,.objects-list::-webkit-scrollbar-thumb,.history-list::-webkit-scrollbar-thumb{background:#34495f;border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+.mode-sidebar::-webkit-scrollbar-thumb:hover,.controls-panel::-webkit-scrollbar-thumb:hover,.panel-scroll::-webkit-scrollbar-thumb:hover,.objects-list::-webkit-scrollbar-thumb:hover,.history-list::-webkit-scrollbar-thumb:hover{background:#4d6580}
+
+/* ===== Foco e movimento reduzido ===== */
+.icon-btn:focus-visible,.action-btn:focus-visible,.tool-btn:focus-visible,.secondary-btn:focus-visible,.text-btn:focus-visible,.menu-toggle:focus-visible,.mode-btn:focus-visible,.dropdown-btn:focus-visible,.clear-field-btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(90,200,250,.88);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto !important;animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+
+
+/* ===== v93: sistema único de botões e barra mobile ===== */
+:root{
+  --btn-h:38px;
+  --btn-radius:9px;
+  --btn-bg:#131d28;
+  --btn-bg-hover:#182433;
+  --btn-bg-active:#16283a;
+  --btn-border:#253142;
+  --btn-border-hover:#466078;
+  --btn-text:#e8f1f8;
+}
+
+button,
+.icon-btn,
+.action-btn,
+.tool-btn,
+.secondary-btn,
+.primary-btn,
+.text-btn,
+.menu-toggle,
+.mode-btn,
+.dropdown-btn,
+.clear-field-btn,
+.row-btn,
+.math-tools-btn,
+.quick-grid button,
+.math-menu button{
+  -webkit-tap-highlight-color:transparent;
+}
+
+.icon-btn,.action-btn,.tool-btn,.secondary-btn,.text-btn,.menu-toggle{
+  box-sizing:border-box;
+  border:1px solid var(--btn-border);
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  border-radius:var(--btn-radius);
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .08s ease,box-shadow .16s ease;
+}
+.icon-btn{width:38px;height:38px;min-width:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.action-btn{min-width:38px;height:38px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:650;white-space:nowrap}
+.tool-btn,.secondary-btn{min-height:38px;padding:0 11px;font-size:12px;font-weight:600}
+.primary-btn{min-height:42px;border:1px solid rgba(90,200,250,.45);background:linear-gradient(180deg,#1d3444,#152533);color:#eaf8ff;border-radius:var(--btn-radius);cursor:pointer;font-weight:750;transition:background .16s ease,border-color .16s ease,transform .08s ease,box-shadow .16s ease}
+.text-btn{min-height:30px;padding:5px 9px;font-size:11px;font-weight:650}
+.menu-toggle{width:38px;height:38px;min-width:38px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+
+.icon-btn:hover,.action-btn:hover,.tool-btn:hover,.secondary-btn:hover,.text-btn:hover,.menu-toggle:hover{
+  border-color:var(--btn-border-hover);
+  background:var(--btn-bg-hover);
+}
+.primary-btn:hover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(90,200,250,.08)}
+.icon-btn:active,.action-btn:active,.tool-btn:active,.secondary-btn:active,.text-btn:active,.menu-toggle:active,.primary-btn:active{transform:scale(.985)}
+.icon-btn:disabled,.action-btn:disabled,.tool-btn:disabled,.secondary-btn:disabled,.text-btn:disabled,.menu-toggle:disabled{opacity:.42;cursor:not-allowed;transform:none}
+
+.icon-btn svg,.action-btn svg,.menu-toggle svg{display:block;flex:0 0 auto}
+
+/* Selectores e botões de formulário */
+.select-input{min-height:42px;border:1px solid var(--btn-border);border-radius:var(--btn-radius);background-color:#091018;color:var(--text);outline:none}
+.dropdown-btn,.clear-field-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+.dropdown-btn:hover,.clear-field-btn:hover{background:rgba(90,200,250,.08);color:var(--accent)}
+.math-tools-btn{min-height:38px;padding:0 11px;border:1px solid var(--btn-border);background:#131d28;color:var(--text);border-radius:var(--btn-radius);cursor:pointer;font-size:11px;font-weight:700}
+.math-tools-btn:hover{border-color:var(--btn-border-hover);background:var(--btn-bg-hover)}
+
+/* Barra mobile: os três acessos ficam sempre visíveis */
+@media (max-width:899px){
+  .topbar{position:relative;z-index:120;min-width:0}
+  .topbar > div:first-child{min-width:0;flex:1 1 auto;overflow:hidden}
+  .topbar h1,.topbar p,.eyebrow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top-actions{min-width:0;flex:0 0 auto}
+  .mobile-panel-actions{display:flex !important;visibility:visible !important;opacity:1 !important;align-items:center;gap:6px;flex:0 0 auto;margin-left:8px;position:relative;z-index:130}
+  .mobile-panel-btn{display:inline-flex !important;visibility:visible !important;opacity:1 !important;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;align-items:center;justify-content:center}
+  .mobile-export-btn{display:inline-flex !important;visibility:visible !important;opacity:1 !important}
+  .mobile-panel-btn svg{width:20px;height:20px}
+}
+
+@media (max-width:379px){
+  .topbar{gap:6px;padding-left:7px;padding-right:7px}
+  .topbar h1{font-size:15px}
+  .mobile-panel-actions{gap:3px;margin-left:4px}
+  .mobile-panel-btn{width:42px;min-width:42px;height:42px;min-height:42px}
+  .mobile-panel-btn svg{width:19px;height:19px}
+}
+
+/* Modo: rail desktop e drawer mobile, sem estilos de botão concorrentes */
+.mode-btn{box-sizing:border-box;min-height:44px;border-radius:9px;transition:background .16s ease,border-color .16s ease,color .16s ease,transform .08s ease}
+.mode-btn:active{transform:scale(.99)}
+.mode-btn.active{box-shadow:inset 3px 0 0 var(--accent)}
+
+/* Toolbar do gráfico */
+.graph-toolbar .tool-btn{min-height:38px}
+
+/* Teclado e menus */
+.math-menu button,.quick-grid button{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",serif;font-weight:650}
+.math-menu button:focus-visible,.quick-grid button:focus-visible{outline:2px solid rgba(90,200,250,.88);outline-offset:2px}
+
+/* Movimento reduzido */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto !important;transition-duration:0.01ms !important;animation-duration:0.01ms !important;animation-iteration-count:1 !important}
+}
+
+/* v94 — teclado virtual: deslocamento dinâmico do bottom sheet */
+:root{--controls-keyboard-offset:0px;--visual-vh:100dvh}
+@media (max-width:899px){
+  .controls-panel{
+    bottom:calc(8px + var(--safe-bottom) + var(--controls-keyboard-offset));
+    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom));
+  }
+}
+@media (display-mode:standalone) and (max-width:899px){
+  .controls-panel{
+    bottom:calc(8px + var(--safe-bottom) + var(--controls-keyboard-offset));
+    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom));
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .controls-panel{transition:none!important}
+}
+
+
+/* ===== v95 — barra horizontal de modos + bottom sheet robusto ===== */
+@media (max-width:899px){
+  :root{
+    --mode-bar-h:58px;
+    --controls-bottom:8px;
+    --mode-bar-z:120;
+    --backdrop-z:140;
+    --sheet-z:150;
+  }
+
+  /* A barra de modos permanece fixa logo abaixo do cabeçalho. */
+  .topbar{z-index:240 !important}
+
+  .mode-sidebar{
+    position:fixed !important;
+    top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:auto !important;
+    width:100% !important;
+    height:var(--mode-bar-h) !important;
+    min-height:var(--mode-bar-h) !important;
+    z-index:var(--mode-bar-z) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    transform:none !important;
+    transition:none !important;
+    border:0 !important;
+    border-bottom:1px solid var(--line) !important;
+    border-radius:0 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
+    overflow:hidden !important;
+    background:linear-gradient(180deg,#101923,#0c141d) !important;
+  }
+
+  .mode-sidebar.mobile-open{transform:none !important}
+  .mode-sidebar-header{display:none !important}
+  .mode-actions{display:none !important}
+
+  .mode-nav{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:100% !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    gap:6px !important;
+    padding:6px 8px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:none !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  .mode-nav::-webkit-scrollbar{display:none !important}
+
+  .mode-btn{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:max-content !important;
+    min-height:46px !important;
+    height:46px !important;
+    padding:0 13px !important;
+    display:inline-flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:7px !important;
+    white-space:nowrap !important;
+    text-align:center !important;
+    border-radius:9px !important;
+    border:1px solid transparent !important;
+  }
+  .mode-btn svg{width:19px !important;height:19px !important;flex:0 0 19px !important}
+  .mode-btn span{display:inline !important;white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important}
+  .mode-btn.active{
+    border-color:rgba(90,200,250,.34) !important;
+    background:rgba(90,200,250,.10) !important;
+    box-shadow:inset 0 -3px 0 var(--accent) !important;
+    color:#f2fbff !important;
+  }
+
+  /* O gráfico começa abaixo da barra para nunca ficar encoberto. */
+  .workspace{
+    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
+    padding-top:var(--mode-bar-h) !important;
+  }
+  .graph-panel{height:100% !important;padding-top:0 !important;padding-bottom:0 !important}
+
+  /* Não há mais botão redundante de "Modos" no cabeçalho. */
+  .mobile-modes-btn{display:none !important}
+
+  /* Camada de fundo entre o gráfico/barra e o painel de controles. */
+  .backdrop{
+    z-index:var(--backdrop-z) !important;
+  }
+
+  /* Bottom sheet acima do backdrop e com posição sensível ao teclado virtual. */
+  .controls-panel{
+    left:8px !important;
+    right:8px !important;
+    bottom:var(--controls-bottom) !important;
+    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 12px - var(--safe-top) - var(--controls-bottom)) !important;
+    z-index:var(--sheet-z) !important;
+  }
+
+  .controls-panel.open{transform:translateY(0) !important}
+  .controls-panel.collapsed{transform:translateY(calc(100% + 24px)) !important}
+
+  /* O conteúdo interno continua rolável quando o teclado reduz o viewport. */
+  .panel-scroll{
+    min-height:0 !important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(14px + var(--safe-bottom) + var(--controls-bottom)) !important;
+  }
+
+  .numeric-input,.math-input,.select-input,
+  .controls-panel input,.controls-panel select,.controls-panel textarea{
+    scroll-margin-top:90px;
+    scroll-margin-bottom:120px;
+  }
+}
+
+@media (min-width:600px) and (max-width:767px){
+  :root{--mode-bar-h:58px}
+}
+
+@media (min-width:768px) and (max-width:899px){
+  :root{--mode-bar-h:58px}
+}
+
+
+/* ===== v97 — arquitetura mobile enxuta e editor sempre visível ===== */
+:root{
+  --mobile-mode-bar-h:56px;
+  --mobile-controls-top:calc(var(--mobile-topbar-h) + var(--safe-top) + var(--mobile-mode-bar-h));
+  --mobile-controls-bottom:8px;
+  --mobile-editor-z:190;
+  --mobile-backdrop-z:180;
+}
+
+/* Menos texto, mais área útil. A informação continua disponível via aria-label/title. */
+.section-help,.field-help,.field-hint,.zone-description,.advanced-summary-desc,
+.statusbar span:last-child,.topbar p,.eyebrow{display:none !important}
+.topbar .brand-block{min-width:0}
+.topbar .brand-block h1{margin:0}
+
+@media (max-width:899px){
+  .topbar{
+    position:relative !important;
+    z-index:240 !important;
+    flex-basis:var(--mobile-topbar-h) !important;
+    height:var(--mobile-topbar-h) !important;
+    min-height:var(--mobile-topbar-h) !important;
+    padding-top:calc(5px + var(--safe-top)) !important;
+    padding-bottom:5px !important;
+  }
+
+  /* Barra de modos: única navegação de modos no mobile. */
+  .mode-sidebar{
+    position:fixed !important;
+    top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:auto !important;
+    width:100% !important;
+    height:var(--mobile-mode-bar-h) !important;
+    min-height:var(--mobile-mode-bar-h) !important;
+    z-index:170 !important;
+    display:block !important;
+    transform:none !important;
+    border:0 !important;
+    border-bottom:1px solid var(--line) !important;
+    box-shadow:0 6px 18px rgba(0,0,0,.20) !important;
+    overflow:hidden !important;
+  }
+  .mode-sidebar-header,.mode-actions{display:none !important}
+  .mode-nav{
+    width:100%;
+    height:100%;
+    min-height:0;
+    padding:5px 7px !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    gap:5px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:none !important;
+  }
+  .mode-nav::-webkit-scrollbar{display:none !important}
+  .mode-btn{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:max-content !important;
+    height:46px !important;
+    min-height:46px !important;
+    padding:0 11px !important;
+    border-radius:9px !important;
+    gap:6px !important;
+    font-size:12px !important;
+    white-space:nowrap !important;
+  }
+  .mode-btn svg{width:18px !important;height:18px !important;flex-basis:18px !important}
+  .mode-btn span{display:inline !important}
+  .mobile-modes-btn{display:none !important}
+
+  /* A área de trabalho deixa espaço exato para a barra de modos. */
+  .workspace{
+    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
+    padding-top:var(--mobile-mode-bar-h) !important;
+  }
+  .graph-panel{height:100% !important}
+  .graph-toolbar{padding:7px 8px !important;gap:8px !important}
+  .toolbar-group{gap:5px !important}
+  .tool-btn{min-height:36px !important;padding:6px 8px !important}
+
+  /* Backdrop deixa o menu de modos fora da área escurecida e prioriza o editor. */
+  .backdrop{
+    z-index:var(--mobile-backdrop-z) !important;
+    top:var(--mobile-controls-top) !important;
+  }
+
+  /* Editor mobile: quase tela inteira, começando logo abaixo dos modos. */
+  .controls-panel{
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    top:var(--mobile-controls-top) !important;
+    bottom:var(--mobile-controls-bottom) !important;
+    width:auto !important;
+    max-width:none !important;
+    height:auto !important;
+    max-height:none !important;
+    margin:0 !important;
+    z-index:var(--mobile-editor-z) !important;
+    transform:translateY(calc(100% + 18px)) !important;
+    border:0 !important;
+    border-top:1px solid var(--line) !important;
+    border-radius:16px 16px 0 0 !important;
+    box-shadow:0 -18px 48px rgba(0,0,0,.40) !important;
+    padding:7px 9px 0 !important;
+    overflow:hidden !important;
+    background:linear-gradient(180deg,#101823,#0a1118) !important;
+  }
+  .controls-panel.open{transform:translateY(0) !important}
+  .controls-panel.collapsed{transform:translateY(calc(100% + 18px)) !important}
+  .sheet-handle{display:block !important;margin:0 auto 5px !important;width:44px !important;height:4px !important}
+  .controls-header{
+    position:sticky !important;
+    top:0 !important;
+    z-index:20 !important;
+    flex:0 0 auto !important;
+    padding:6px 5px 8px !important;
+    background:rgba(16,24,35,.98) !important;
+    border-bottom:1px solid var(--line) !important;
+  }
+  .controls-header-copy{min-width:0}
+  #controlsTitle{font-size:15px !important}
+  #controlsSubtitle{font-size:10px !important;color:var(--muted)}
+  .close-controls-btn{display:inline-flex !important;width:42px !important;min-width:42px !important;height:42px !important}
+  .desktop-controls-collapse{display:none !important}
+
+  .panel-scroll{
+    min-height:0 !important;
+    padding:8px 1px calc(18px + var(--safe-bottom)) !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+  .tab-panel{padding:7px !important}
+  .panel-zone.context-zone{padding-bottom:4px !important}
+  .global-math-tools{margin:2px 0 6px !important}
+  .advanced-section{margin-bottom:6px !important}
+  .section-divider{margin:8px 0 !important}
+  .field-label,label{font-size:11px !important;gap:4px !important}
+  .math-input,.numeric-input,.select-input{min-height:44px !important;font-size:16px !important}
+  .math-preview{min-height:40px !important;margin-top:5px !important;padding:7px 9px !important}
+  .quick-grid{margin-top:6px !important}
+  .quick-grid button,.math-menu button{min-height:40px !important}
+  .two-col{gap:7px !important;margin-bottom:7px !important}
+  .three-col,.point-grid{gap:6px !important;margin:7px 0 !important}
+  .point-card{padding:8px !important}
+  .point-header{margin-bottom:5px !important}
+
+  /* Objetos/histórico ficam compactos e só ocupam o espaço necessário. */
+  .manage-zone{padding-top:6px !important}
+  .objects-list,.history-list{max-height:180px !important}
+  .object-row{grid-template-columns:7px minmax(0,1fr) auto auto;gap:6px !important;padding:6px !important}
+  .object-label{font-size:11px !important}
+  .row-btn{min-height:32px !important}
+  .action-bar{
+    position:sticky !important;
+    bottom:0 !important;
+    z-index:25 !important;
+    padding:7px 1px calc(7px + var(--safe-bottom)) !important;
+  }
+  .action-bar>*{min-height:46px !important}
+
+  /* Em edição, o editor ganha destaque e o título deixa claro o estado. */
+  .controls-panel.is-editing{
+    border-top-color:var(--accent) !important;
+    box-shadow:0 -20px 54px rgba(90,200,250,.10),0 -18px 48px rgba(0,0,0,.42) !important;
+  }
+  .controls-panel.is-editing .action-bar .action-primary{
+    box-shadow:0 0 0 2px rgba(90,200,250,.10),0 8px 24px rgba(0,0,0,.18) !important;
+  }
+
+  /* Teclado: a altura disponível segue o visualViewport. */
+  :root{--mobile-controls-bottom:var(--controls-keyboard-offset,8px)}
+  .controls-panel{bottom:var(--mobile-controls-bottom) !important}
+  .controls-panel .math-input:focus,.controls-panel .numeric-input:focus,.controls-panel select:focus{
+    scroll-margin-top:72px !important;
+    scroll-margin-bottom:90px !important;
+  }
+}
+
+@media (display-mode:standalone) and (max-width:899px){
+  .controls-panel{
+    top:calc(var(--mobile-topbar-h) + var(--safe-top) + var(--mobile-mode-bar-h)) !important;
+  }
+}
+
+@media (max-width:379px){
+  :root{--mobile-mode-bar-h:52px}
+  .mode-btn{padding:0 9px !important;font-size:11px !important}
+  .mode-btn svg{width:17px !important;height:17px !important;flex-basis:17px !important}
+}
