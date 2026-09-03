@@ -768,3 +768,137 @@ button,
 @media (prefers-reduced-motion:reduce){
   .controls-panel{transition:none!important}
 }
+
+
+/* ===== v95 — barra horizontal de modos + bottom sheet robusto ===== */
+@media (max-width:899px){
+  :root{
+    --mode-bar-h:58px;
+    --controls-bottom:8px;
+    --mode-bar-z:120;
+    --backdrop-z:140;
+    --sheet-z:150;
+  }
+
+  /* A barra de modos permanece fixa logo abaixo do cabeçalho. */
+  .topbar{z-index:240 !important}
+
+  .mode-sidebar{
+    position:fixed !important;
+    top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:auto !important;
+    width:100% !important;
+    height:var(--mode-bar-h) !important;
+    min-height:var(--mode-bar-h) !important;
+    z-index:var(--mode-bar-z) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    transform:none !important;
+    transition:none !important;
+    border:0 !important;
+    border-bottom:1px solid var(--line) !important;
+    border-radius:0 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
+    overflow:hidden !important;
+    background:linear-gradient(180deg,#101923,#0c141d) !important;
+  }
+
+  .mode-sidebar.mobile-open{transform:none !important}
+  .mode-sidebar-header{display:none !important}
+  .mode-actions{display:none !important}
+
+  .mode-nav{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:100% !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    gap:6px !important;
+    padding:6px 8px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:none !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  .mode-nav::-webkit-scrollbar{display:none !important}
+
+  .mode-btn{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:max-content !important;
+    min-height:46px !important;
+    height:46px !important;
+    padding:0 13px !important;
+    display:inline-flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:7px !important;
+    white-space:nowrap !important;
+    text-align:center !important;
+    border-radius:9px !important;
+    border:1px solid transparent !important;
+  }
+  .mode-btn svg{width:19px !important;height:19px !important;flex:0 0 19px !important}
+  .mode-btn span{display:inline !important;white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important}
+  .mode-btn.active{
+    border-color:rgba(90,200,250,.34) !important;
+    background:rgba(90,200,250,.10) !important;
+    box-shadow:inset 0 -3px 0 var(--accent) !important;
+    color:#f2fbff !important;
+  }
+
+  /* O gráfico começa abaixo da barra para nunca ficar encoberto. */
+  .workspace{
+    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
+    padding-top:var(--mode-bar-h) !important;
+  }
+  .graph-panel{height:100% !important;padding-top:0 !important;padding-bottom:0 !important}
+
+  /* Não há mais botão redundante de "Modos" no cabeçalho. */
+  .mobile-modes-btn{display:none !important}
+
+  /* Camada de fundo entre o gráfico/barra e o painel de controles. */
+  .backdrop{
+    z-index:var(--backdrop-z) !important;
+  }
+
+  /* Bottom sheet acima do backdrop e com posição sensível ao teclado virtual. */
+  .controls-panel{
+    left:8px !important;
+    right:8px !important;
+    bottom:var(--controls-bottom) !important;
+    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 12px - var(--safe-top) - var(--controls-bottom)) !important;
+    z-index:var(--sheet-z) !important;
+  }
+
+  .controls-panel.open{transform:translateY(0) !important}
+  .controls-panel.collapsed{transform:translateY(calc(100% + 24px)) !important}
+
+  /* O conteúdo interno continua rolável quando o teclado reduz o viewport. */
+  .panel-scroll{
+    min-height:0 !important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(14px + var(--safe-bottom) + var(--controls-bottom)) !important;
+  }
+
+  .numeric-input,.math-input,.select-input,
+  .controls-panel input,.controls-panel select,.controls-panel textarea{
+    scroll-margin-top:90px;
+    scroll-margin-bottom:120px;
+  }
+}
+
+@media (min-width:600px) and (max-width:767px){
+  :root{--mode-bar-h:58px}
+}
+
+@media (min-width:768px) and (max-width:899px){
+  :root{--mode-bar-h:58px}
+}

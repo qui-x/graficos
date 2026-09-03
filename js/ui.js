@@ -124,7 +124,7 @@
         this.$.backdrop?.classList.remove('hidden');
         this.$.backdrop?.classList.add('show');
         this.updateModeMobileButton(true);
-        requestAnimationFrame(()=>this.$.modeButtons?.[0]?.focus?.());
+        requestAnimationFrame(()=>this.$.modeButtons?.find?.(b=>b.dataset.mode===this.activeTab)?.focus?.());
       } else {
         const collapsed = this.$.workspace?.classList.toggle('sidebar-modes-collapsed');
       }
@@ -589,6 +589,7 @@
         const keyboardInset = Math.max(0, innerH - (vvH + vvTop));
         document.documentElement.style.setProperty('--visual-vh', `${vvH}px`);
         document.documentElement.style.setProperty('--controls-keyboard-offset', `${keyboardInset}px`);
+      document.documentElement.style.setProperty('--controls-bottom', `${Math.max(8, keyboardInset + 8)}px`);
         if (this.$?.controls?.classList.contains('open') && global.innerWidth < 900) {
           this.engine?.resize?.();
           this.engine?.requestRender?.();
@@ -605,11 +606,20 @@
       if (!field || !this.$?.controls?.contains(field)) return;
       if (!(field.matches?.('input,select,textarea,[contenteditable="true"]'))) return;
       global.setTimeout(() => {
-        if (!this.$?.controls?.contains(document.activeElement)) return;
+        const active=document.activeElement;
+        if (!this.$?.controls?.contains(active)) return;
+        const scroller=this.$.controls.querySelector('.panel-scroll');
         try {
-          document.activeElement.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+          active.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
         } catch (_) {
-          document.activeElement.scrollIntoView({block:'center', inline:'nearest'});
+          active.scrollIntoView({block:'center', inline:'nearest'});
+        }
+        if(scroller){
+          const fieldRect=active.getBoundingClientRect();
+          const scrollRect=scroller.getBoundingClientRect();
+          const margin=18;
+          if(fieldRect.top<scrollRect.top+margin){ scroller.scrollTop-= (scrollRect.top+margin-fieldRect.top); }
+          else if(fieldRect.bottom>scrollRect.bottom-margin){ scroller.scrollTop+= (fieldRect.bottom-(scrollRect.bottom-margin)); }
         }
       }, 120);
     },
