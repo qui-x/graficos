@@ -8,9 +8,6 @@
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#10151d" name="theme-color"/>
-<meta content="yes" name="mobile-web-app-capable"/>
-<meta content="yes" name="apple-mobile-web-app-capable"/>
-<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Calculadora Gráfica" name="apple-mobile-web-app-title"/>
 <link href="icons/icon-192.png" rel="icon" type="image/png"/>
 <link href="icons/icon-192.png" rel="apple-touch-icon"/>
@@ -27,7 +24,10 @@
 </div>
 <div class="top-actions">
 <div aria-label="Painéis" class="mobile-panel-actions">
-<button aria-expanded="false" aria-label="Abrir controles" class="menu-toggle mobile-panel-btn" id="mobileControlsBtn" title="Controles" type="button">
+<button aria-expanded="false" aria-label="Abrir modos" aria-controls="modeSidebar" class="menu-toggle mobile-panel-btn mobile-modes-btn" id="mobileModesBtn" title="Modos" type="button">
+<svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 6h16M4 12h16M4 18h16"></path><path d="M8 3v6M16 9v6M8 15v6"></path></svg>
+</button>
+<button aria-expanded="false" aria-label="Abrir controles" aria-controls="controlsPanel" class="menu-toggle mobile-panel-btn" id="mobileControlsBtn" title="Controles" type="button">
 <svg aria-hidden="true" class="panel-controls-icon" fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h10M18 17h2"></path><circle cx="16" cy="7" fill="currentColor" r="2" stroke="none"></circle><circle cx="9" cy="12" fill="currentColor" r="2" stroke="none"></circle><circle cx="16" cy="17" fill="currentColor" r="2" stroke="none"></circle></svg>
 </button>
 <button aria-label="Abrir exportação" class="menu-toggle mobile-panel-btn mobile-export-btn" id="mobileExportBtn" title="Exportar" type="button">
@@ -57,7 +57,6 @@
 <button class="mode-btn" data-mode="curve3d" title="Curva 3D" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 15c2-9 6 9 8 0s6-9 8 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path></svg><span>Curva 3D</span></button>
 <button class="mode-btn" data-mode="line3d" title="Reta 3D" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 20L20 4M7 20h-3v-3M17 4h3v3" fill="none" stroke="currentColor" stroke-width="2"></path></svg><span>Reta 3D</span></button>
 </nav>
-<button aria-expanded="false" aria-label="Mais opções" class="mobile-more-btn" id="mobileMoreBtn" title="Mais opções" type="button"><svg aria-hidden="true" fill="currentColor" height="20" viewbox="0 0 24 24" width="20"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg><span>Mais</span></button>
 <div class="mode-actions">
 <button aria-label="Abrir exportação" class="icon-btn" id="extrasBtn" title="Exportar" type="button">
 <svg aria-hidden="true" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65-2-3.46-2.49 1a7.3 7.3 0 0 0-1.69-.98L15 3h-4l-.36 2.93c-.6.24-1.17.57-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.04.32-.07.65-.07.98s.02.66.07.98l-2.11 1.65 2 3.46 2.49-1c.52.41 1.09.74 1.69.98L11 21h4l.36-2.93c.6-.24 1.17-.57 1.69-.98l2.49 1 2-3.46-2.11-1.65zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"></path></svg>
@@ -66,7 +65,7 @@
 
 </section>
 <aside aria-label="Controles de entrada" class="panel controls-panel" id="controlsPanel"><div aria-hidden="true" class="sheet-handle"></div><div class="controls-header">
-<span>Configurações</span>
+<div class="controls-header-copy"><span id="controlsTitle">Configurações</span><small id="controlsSubtitle"></small></div>
 <button aria-label="Recolher controles" aria-pressed="false" class="icon-btn desktop-controls-collapse" id="controlsCollapseBtn" title="Recolher controles" type="button">
 <svg aria-hidden="true" class="controls-arrow-left hidden" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"></path></svg>
 <svg aria-hidden="true" class="controls-arrow-right" fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"></path></svg>
@@ -74,7 +73,15 @@
 <button aria-label="Fechar controles" class="icon-btn close-controls-btn" id="closeControlsBtn" title="Fechar controles" type="button">
 <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
-</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone"><div aria-label="Ferramentas matemáticas" class="global-math-tools">
+</div><div aria-label="Configurações e entrada de dados" class="panel-scroll" role="region"><section class="panel-zone context-zone">
+<div class="mobile-math-keyboard hidden" id="mobileMathKeyboard" aria-label="Teclado matemático" role="group">
+  <div class="math-keyboard-head"><span>Teclado matemático</span><button class="icon-btn compact-icon-btn math-keyboard-close" id="mobileMathKeyboardClose" aria-label="Fechar teclado matemático" type="button">×</button></div>
+  <div class="math-keyboard-grid">
+    <button type="button" data-math-token="sen(">sen</button><button type="button" data-math-token="cos(">cos</button><button type="button" data-math-token="tan(">tan</button><button type="button" data-math-token="sqrt(">√</button>
+    <button type="button" data-math-token="pi">π</button><button type="button" data-math-token="^2">x²</button><button type="button" data-math-token="^3">x³</button><button type="button" data-math-token="abs(">|x|</button>
+    <button type="button" data-math-token="+">+</button><button type="button" data-math-token="-">−</button><button type="button" data-math-token="*">×</button><button type="button" data-math-token="/">÷</button>
+  </div>
+</div><div aria-label="Ferramentas matemáticas" class="global-math-tools">
 <button aria-expanded="false" aria-haspopup="true" class="math-tools-btn" id="globalMathBtn" type="button">Σ Símbolos matemáticos</button>
 <div class="math-menu hidden global-math-menu" id="globalMathMenu"></div>
 </div><details class="advanced-section" id="advancedVariables"><summary><span class="advanced-summary-title">Variáveis e identificadores</span><span class="advanced-summary-desc">Defina o escopo permitido</span></summary><section aria-labelledby="variablesConfigTitle" class="variables-config">
@@ -130,8 +137,8 @@
 <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input aria-describedby="paramPreview" autocomplete="off" class="math-input" id="paramY" spellcheck="false" type="text" value="sen(t)"/><button aria-label="Limpar y(t)" class="clear-field-btn" data-clear="paramY" title="Limpar" type="button">C</button><button aria-label="Abrir símbolos matemáticos para y(t)" class="dropdown-btn" data-menu="math-menu-param-y" type="button">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
 </div>
 <div class="two-col">
-<div><label class="field-label" for="tMin">t mín.</label><input class="numeric-input" id="tMin" type="text" value="0"/></div>
-<div><label class="field-label" for="tMax">t máx.</label><input class="numeric-input" id="tMax" type="text" value="2*pi"/></div>
+<div><label class="field-label" for="tMin">t mín.</label><input class="numeric-input" inputmode="decimal" id="tMin" type="text" value="0"/></div>
+<div><label class="field-label" for="tMax">t máx.</label><input class="numeric-input" inputmode="decimal" id="tMax" type="text" value="2*pi"/></div>
 </div>
 <div aria-label="Pré-visualização matemática da curva paramétrica" aria-live="polite" class="math-preview" id="paramPreview"></div>
 </section>
@@ -146,26 +153,26 @@
 <div class="vector-endpoint">
 <div class="field-label endpoint-title">Ponto inicial P₁</div>
 <div class="three-col vector-coords">
-<label>x₁<input class="numeric-input expression-input" id="vx1" type="text" value="0"/></label>
-<label>y₁<input class="numeric-input expression-input" id="vy1" type="text" value="0"/></label>
-<label>z₁<input class="numeric-input expression-input" id="vz1" type="text" value="0"/></label>
+<label>x₁<input class="numeric-input expression-input" inputmode="decimal" id="vx1" type="text" value="0"/></label>
+<label>y₁<input class="numeric-input expression-input" inputmode="decimal" id="vy1" type="text" value="0"/></label>
+<label>z₁<input class="numeric-input expression-input" inputmode="decimal" id="vz1" type="text" value="0"/></label>
 </div>
 </div>
 <div class="vector-endpoint">
 <div class="field-label endpoint-title">Ponto final P₂</div>
 <div class="three-col vector-coords">
-<label>x₂<input class="numeric-input expression-input" id="vx2" type="text" value="3"/></label>
-<label>y₂<input class="numeric-input expression-input" id="vy2" type="text" value="4"/></label>
-<label>z₂<input class="numeric-input expression-input" id="vz2" type="text" value="0"/></label>
+<label>x₂<input class="numeric-input expression-input" inputmode="decimal" id="vx2" type="text" value="3"/></label>
+<label>y₂<input class="numeric-input expression-input" inputmode="decimal" id="vy2" type="text" value="4"/></label>
+<label>z₂<input class="numeric-input expression-input" inputmode="decimal" id="vz2" type="text" value="0"/></label>
 </div>
 </div>
 <div aria-live="polite" class="vector-result" id="vectorResult">v = (3, 4) · ‖v‖ = 5</div>
 <div class="vector-ops">
 <div class="field-label">Segundo vetor (para produto)</div>
 <div class="three-col vector-coords">
-<label>x<input aria-label="Segundo vetor x" class="numeric-input expression-input" id="v2x" type="text" value="1"/></label>
-<label>y<input aria-label="Segundo vetor y" class="numeric-input expression-input" id="v2y" type="text" value="0"/></label>
-<label>z<input aria-label="Segundo vetor z" class="numeric-input expression-input" id="v2z" type="text" value="0"/></label>
+<label>x<input aria-label="Segundo vetor x" class="numeric-input expression-input" inputmode="decimal" id="v2x" type="text" value="1"/></label>
+<label>y<input aria-label="Segundo vetor y" class="numeric-input expression-input" inputmode="decimal" id="v2y" type="text" value="0"/></label>
+<label>z<input aria-label="Segundo vetor z" class="numeric-input expression-input" inputmode="decimal" id="v2z" type="text" value="0"/></label>
 </div>
 <div class="inline-actions"><button class="secondary-btn" id="dotBtn" type="button">Produto escalar</button><button class="secondary-btn" id="crossBtn" type="button">Produto vetorial</button></div>
 <div class="vector-result" id="vectorOpsResult"></div>
@@ -189,30 +196,30 @@
 <div class="math-entry-line">
 <span class="math-prefix">f(x) =</span>
 <div class="math-editor math-entry-editor">
-<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceOuterExpr" placeholder="x²" spellcheck="false" type="text" value="x²"/>
+<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceOuterExpr" placeholder="x²" aria-describedby="surfaceOuterHelp surfacePreview" spellcheck="false" type="text" value="x²"/>
 <button aria-label="Limpar função externa" class="clear-field-btn" data-clear="surfaceOuterExpr" title="Limpar" type="button">C</button>
 </div>
 </div>
-<div class="field-hint">Raio externo: <strong>R(x) = |f(x) − k|</strong></div>
+<div class="field-hint" id="surfaceOuterHelp">Raio externo: <strong>R(x) = |f(x) − k|</strong></div>
 </div>
 <div class="math-entry-card">
 <div class="math-entry-label">Função interna</div>
 <div class="math-entry-line">
 <span class="math-prefix">g(x) =</span>
 <div class="math-editor math-entry-editor">
-<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceInnerExpr" placeholder="0" spellcheck="false" type="text" value="0"/>
+<input aria-describedby="surfacePreview" autocomplete="off" class="math-input" id="surfaceInnerExpr" placeholder="0" aria-describedby="surfaceInnerHelp surfacePreview" spellcheck="false" type="text" value="0"/>
 <button aria-label="Limpar função interna" class="clear-field-btn" data-clear="surfaceInnerExpr" title="Limpar" type="button">C</button>
 </div>
 </div>
-<div class="field-hint">Para discos, use <strong>g(x) = 0</strong>. Para anéis, defina o raio interno.</div>
+<div class="field-hint" id="surfaceInnerHelp">Para discos, use <strong>g(x) = 0</strong>. Para anéis, defina o raio interno.</div>
 </div>
 <div class="math-interval-card">
 <div class="math-entry-label">Intervalo e eixo de rotação</div>
 <div class="math-interval-row">
-<div class="math-value-field"><span>a =</span><input aria-label="Limite inferior a" class="numeric-input" id="surfaceAMin" type="text" value="0"/></div>
+<div class="math-value-field"><span>a =</span><input aria-label="Limite inferior a" class="numeric-input" inputmode="decimal" id="surfaceAMin" type="text" value="0"/></div>
 <span class="math-interval-symbol">≤ x ≤</span>
-<div class="math-value-field"><span>b =</span><input aria-label="Limite superior b" class="numeric-input" id="surfaceBMax" type="text" value="3"/></div>
-<div class="math-value-field axis-field"><span>y =</span><input aria-label="Eixo de rotação y igual a" class="numeric-input" id="surfaceAxisY" type="text" value="0"/></div>
+<div class="math-value-field"><span>b =</span><input aria-label="Limite superior b" class="numeric-input" inputmode="decimal" id="surfaceBMax" type="text" value="3"/></div>
+<div class="math-value-field axis-field"><span>y =</span><input aria-label="Eixo de rotação y igual a" class="numeric-input" inputmode="decimal" id="surfaceAxisY" type="text" value="0"/></div>
 </div>
 </div>
 <div aria-label="Pré-visualização matemática do sólido e integral de volume" aria-live="polite" class="preview-box math-preview calculus-preview" id="surfacePreview"></div>
@@ -228,30 +235,29 @@
 <div><label class="field-label" for="curve3dZ">z(t)</label><input class="math-input" id="curve3dZ" placeholder="t" type="text" value="t"/></div>
 </div>
 <div class="two-col">
-<div><label class="field-label" for="curve3dTMin">t mín.</label><input class="numeric-input" id="curve3dTMin" type="text" value="0"/></div>
-<div><label class="field-label" for="curve3dTMax">t máx.</label><input class="numeric-input" id="curve3dTMax" type="text" value="2*pi"/></div>
+<div><label class="field-label" for="curve3dTMin">t mín.</label><input class="numeric-input" inputmode="decimal" id="curve3dTMin" type="text" value="0"/></div>
+<div><label class="field-label" for="curve3dTMax">t máx.</label><input class="numeric-input" inputmode="decimal" id="curve3dTMax" type="text" value="2*pi"/></div>
 </div>
 <div aria-label="Pré-visualização da curva 3D" aria-live="polite" class="math-preview" id="curve3dPreview"></div>
 </section>
 <section class="tab-panel" data-panel="line3d" hidden="" id="panel-line3d" role="tabpanel">
 <div class="field-label">Ponto inicial (x₁, y₁, z₁)</div>
-<div class="three-col"><input aria-label="x1" class="numeric-input" id="line3dX1" type="text" value="0"/><input aria-label="y1" class="numeric-input" id="line3dY1" type="text" value="0"/><input aria-label="z1" class="numeric-input" id="line3dZ1" type="text" value="0"/></div>
+<div class="three-col"><input aria-label="x1" class="numeric-input" inputmode="decimal" id="line3dX1" type="text" value="0"/><input aria-label="y1" class="numeric-input" inputmode="decimal" id="line3dY1" type="text" value="0"/><input aria-label="z1" class="numeric-input" inputmode="decimal" id="line3dZ1" type="text" value="0"/></div>
 <div class="field-label">Ponto final (x₂, y₂, z₂)</div>
-<div class="three-col"><input aria-label="x2" class="numeric-input" id="line3dX2" type="text" value="3"/><input aria-label="y2" class="numeric-input" id="line3dY2" type="text" value="3"/><input aria-label="z2" class="numeric-input" id="line3dZ2" type="text" value="3"/></div>
+<div class="three-col"><input aria-label="x2" class="numeric-input" inputmode="decimal" id="line3dX2" type="text" value="3"/><input aria-label="y2" class="numeric-input" inputmode="decimal" id="line3dY2" type="text" value="3"/><input aria-label="z2" class="numeric-input" inputmode="decimal" id="line3dZ2" type="text" value="3"/></div>
 <div aria-label="Pré-visualização da reta 3D" aria-live="polite" class="math-preview" id="line3dPreview"></div>
 </section>
 </div></section><section class="panel-zone manage-zone"><div class="zone-header"><span class="zone-title">Objetos e histórico</span><span class="zone-description">Gerencie o que está desenhado</span></div><div class="section-divider"></div><div class="panel-title-row object-toolbar"><h2>Objetos</h2><div aria-label="Ações dos objetos" class="object-actions">
 <button aria-label="Desfazer" class="icon-btn compact-icon-btn" disabled="" id="undoBtn" title="Desfazer (Ctrl+Z)" type="button"><svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"></path></svg></button>
 <button aria-label="Refazer" class="icon-btn compact-icon-btn" disabled="" id="redoBtn" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" type="button"><svg aria-hidden="true" height="16" viewbox="0 0 24 24" width="16"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"></path></svg></button>
 <button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div></div><div aria-live="polite" class="objects-list" id="objectsList"></div><div class="section-divider"></div><div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div><div class="history-list" id="historyList"></div></section></div>
-<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button><button aria-label="Salvar sessão agora" class="secondary-btn action-secondary" id="saveSessionBtn" title="Salvar sessão agora" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M4 4h13l3 3v13H4z"></path></svg><span>Salvar</span></button></div></aside>
+<div aria-label="Ações principais" class="action-bar"><button aria-label="Adicionar objeto" class="primary-btn action-primary" id="panelAddBtn" type="button"><svg aria-hidden="true" fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M12 5v14M5 12h14"></path></svg><span class="action-label">Adicionar</span></button></div></aside>
 <section class="panel graph-panel">
 <div class="graph-toolbar">
 <div class="toolbar-group">
 <button class="tool-btn" id="resetViewBtn" type="button">Recentrar</button>
 <button aria-pressed="true" class="tool-btn" id="gridBtn" type="button">Grade</button>
 <button aria-pressed="true" class="tool-btn" id="axesBtn" type="button">Eixos</button>
-<button class="tool-btn" id="reset3DBtn" title="Reiniciar orientação 3D" type="button">Orientação 3D</button>
 </div>
 <div aria-atomic="true" aria-live="polite" class="coordinate-readout" id="coordinateReadout">x: 0 · y: 0</div>
 </div>
@@ -293,6 +299,9 @@
 <button aria-label="Exportar sessão em JSON" class="secondary-btn action-btn" id="exportJsonBtn" title="Exportar sessão em JSON" type="button">
 <svg aria-hidden="true" fill="none" height="16" viewbox="0 0 24 24" width="16" stroke="currentColor" stroke-width="2"><path d="M4 4h10l6 6v10H4z"></path><path d="M14 4v6h6M8 14h8M8 17h6"></path></svg><span>JSON</span>
 </button>
+<button aria-label="Compartilhar gráfico" class="secondary-btn action-btn" id="shareBtn" title="Compartilhar gráfico" type="button">
+<svg aria-hidden="true" fill="none" height="16" viewbox="0 0 24 24" width="16" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="2"></circle><circle cx="6" cy="12" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="m8 11 8-5M8 13l8 5"></path></svg><span>Compartilhar</span>
+</button>
 <button aria-label="Abrir arquivo JSON" class="secondary-btn action-btn" id="importJsonBtn" title="Abrir arquivo JSON" type="button">
 <svg aria-hidden="true" fill="none" height="16" viewbox="0 0 24 24" width="16" stroke="currentColor" stroke-width="2"><path d="M5 4h7l2 2h5v14H5z"></path><path d="M12 9v7M9 13l3 3 3-3"></path></svg><span>Abrir JSON</span>
 </button>
@@ -311,4 +320,3 @@
 </div>
 </body>
 </html>
-

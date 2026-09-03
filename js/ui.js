@@ -6,6 +6,16 @@
   const menuHtml = symbols.map(([label, value]) => `<button type="button" data-insert="${value}" aria-label="Inserir ${label}">${label}</button>`).join('');
   const ICON = Object.freeze({ hide: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>', show: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M3 12s3-5.5 9-5.5 9 5.5 9 5.5-3 5.5-9 5.5S3 12 3 12z" fill="none" stroke="currentColor" stroke-width="2"/></svg>' });
 
+  const modeData = Object.freeze({
+    function:{title:'Função',subtitle:'y = f(x)'},
+    parametric:{title:'Paramétrica',subtitle:'x(t), y(t)'},
+    vector:{title:'Vetor',subtitle:'Representação vetorial'},
+    geometry:{title:'Geometria',subtitle:'Retas, círculos, elipses e pontos'},
+    surface:{title:'Discos / Anéis',subtitle:'Cálculo II · sólido de revolução'},
+    curve3d:{title:'Curva 3D',subtitle:'x(t), y(t), z(t)'},
+    line3d:{title:'Reta 3D',subtitle:'Pontos no espaço'}
+  });
+
   const AppUI = {
     _initialized: false,
     objects: null, engine: null, history: [], activeTab: 'function', editingId: null, statusTimer: null, toastTimer: null, deferredInstallPrompt: null, lineLiveCommitted: false,
@@ -18,7 +28,7 @@
         document.body.appendChild(this.$.extrasModal);
       }
       if (this.$?.extrasModal) this.$.extrasModal.inert=true;
-      this.buildMenus(); this.bindForms(); this.initGeometryFields(); this.normalizeInitialInputs(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall?.(); this.loadPreferences(); this.syncVariableConfig(false); this.initMobileLayout(); this.bindPreferencePersistence();
+      this.buildMenus(); this.bindForms(); this.initGeometryFields(); this.normalizeInitialInputs(); this.bindVisualViewport?.(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall?.(); this.loadPreferences(); this.setTab(this.activeTab, false); this.syncVariableConfig(false); this.initMobileLayout(); this.bindPreferencePersistence(); this.initMathKeyboard?.();
     },
     getActiveTabLabel() {
       const labels={function:'Função',parametric:'Paramétrica',vector:'Vetor',geometry:'Geometria',surface:'Discos / Anéis',curve3d:'Curva 3D',line3d:'Reta 3D'};
@@ -114,6 +124,7 @@
         this.$.backdrop?.classList.remove('hidden');
         this.$.backdrop?.classList.add('show');
         this.updateModeMobileButton(true);
+        requestAnimationFrame(()=>this.$.modeButtons?.[0]?.focus?.());
       } else {
         const collapsed = this.$.workspace?.classList.toggle('sidebar-modes-collapsed');
       }
@@ -128,6 +139,11 @@
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
     updateModeMobileButton(open) {
+      const b=this.$?.mobileModesBtn; if(!b)return;
+      b.setAttribute('aria-expanded',String(open));
+      b.setAttribute('aria-label',open?'Fechar modos':'Abrir modos');
+      b.setAttribute('title',open?'Fechar modos':'Modos');
+      b.classList.toggle('is-active',open);
     },
     updateMobileControlsButton(open) {
       this.$.mobileControlsBtn?.setAttribute('aria-expanded', String(open));
@@ -197,6 +213,7 @@
       modal.inert=false;
       modal.setAttribute('aria-hidden','false');
       document.body.classList.add('modal-open');
+      if (this.$.appShell) this.$.appShell.inert = true;
       requestAnimationFrame(()=>this.$?.closeExtrasModalBtn?.focus());
     },
     closeExtrasModal() {
@@ -207,6 +224,7 @@
       modal.inert=true;
       modal.setAttribute('aria-hidden','true');
       document.body.classList.remove('modal-open');
+      if (this.$.appShell) this.$.appShell.inert = false;
       this._extrasReturnFocus?.focus?.();
       this._extrasReturnFocus=null;
     },
@@ -277,16 +295,21 @@
     cache() {
       const byId = (id) => document.getElementById(id);
       this.$ = {
+        appShell: document.querySelector('.app-shell'),
         workspace: document.querySelector('.workspace'),
         modeSidebar: document.querySelector('.mode-sidebar'),
         modeButtons: [...document.querySelectorAll('.mode-btn')],
         panels: [...document.querySelectorAll('.tab-panel')],
         controls: byId('controlsPanel'),
+        controlsTitle: byId('controlsTitle'), controlsSubtitle: byId('controlsSubtitle'),
         controlsCollapse: byId('controlsCollapseBtn'),
         closeControls: byId('closeControlsBtn'),
         mobileControlsBtn: byId('mobileControlsBtn'),
+        mobileModesBtn: byId('mobileModesBtn'),
         mobileExportBtn: byId('mobileExportBtn'),
-        mobileMore: byId('mobileMoreBtn'),
+        mobileMathKeyboard: byId('mobileMathKeyboard'),
+        mobileMathKeyboardClose: byId('mobileMathKeyboardClose'),
+        shareBtn: byId('shareBtn'),
         backdrop: byId('backdrop'),
         showControls: byId('showControlsBtn'),
         modeCollapse: byId('modeCollapseBtn'),
@@ -314,7 +337,7 @@
         resetVariables: byId('resetVariablesBtn'),
         clearObjects: byId('clearObjectsBtn'), clearHistory: byId('clearHistoryBtn'),
         undo: byId('undoBtn'), redo: byId('redoBtn'), objectsList: byId('objectsList'), historyList: byId('historyList'),
-        resetViewBtn: byId('resetViewBtn'), reset3DBtn: byId('reset3DBtn'), gridBtn: byId('gridBtn'), axesBtn: byId('axesBtn'), saveSessionBtn: byId('saveSessionBtn'),
+        resetViewBtn: byId('resetViewBtn'), gridBtn: byId('gridBtn'), axesBtn: byId('axesBtn'),
         exportBtn: byId('exportBtn'), exportSvgBtn: byId('exportSvgBtn'), exportJsonBtn: byId('exportJsonBtn'), importJsonBtn: byId('importJsonBtn'), importJsonFile: byId('importJsonFile'),
         extrasBtn: byId('extrasBtn'), extrasModal: byId('extrasModal'), closeExtrasModalBtn: byId('closeExtrasModalBtn'),
                install: byId('installBtn'), status: byId('statusText'), statusText: byId('statusText'), toast: byId('toast'), emptyState: byId('emptyState'),
@@ -418,12 +441,10 @@
       window.addEventListener('resize', closeGlobalMenu, { passive: true });
       window.addEventListener('scroll', closeGlobalMenu, { passive: true });
     },
-    setTab(tabName) {
+    setTab(tabName, clearCanvas=true) {
       this.cancelEdit();
-      // Cada modo inicia uma área de desenho independente: ao trocar de modo,
-      // remove os objetos exibidos anteriormente sem registrar isso como uma ação
-      // de undo, mantendo o histórico de expressões separado.
-      if (this.activeTab !== tabName) this.objects.clearForMode?.();
+      // Cada modo inicia uma área de desenho independente ao trocar de modo.
+      if (clearCanvas && this.activeTab !== tabName) this.objects.clearForMode?.();
       this.activeTab = tabName;
       this.$.modeButtons?.forEach((button) => {
         const active = button.dataset.mode === tabName;
@@ -436,10 +457,15 @@
         panel.hidden = !active;
         panel.setAttribute('aria-hidden', String(!active));
       });
+      const meta=modeData[tabName]||{};
+      if(this.$?.controlsTitle){this.$.controlsTitle.textContent=meta.title||this.getActiveTabLabel();}
+      if(this.$?.controlsSubtitle){this.$.controlsSubtitle.textContent=meta.subtitle||'';}
       this.updatePreviews();
       this.updateActionBar();
       this.savePreferences();
+      requestAnimationFrame(()=>this.$.modeButtons?.find(b=>b.dataset.mode===tabName)?.scrollIntoView({block:'nearest',inline:'nearest'}));
     },
+    setMode(mode){ this.setTab(mode); },
     loadPreferences() {
       try {
         const raw = localStorage.getItem('graphCalcPreferencesV1');
@@ -495,6 +521,18 @@
         try { await prompt.prompt(); await prompt.userChoice; } catch (_) {}
       });
     },
+    async shareGraph(){
+      try{
+        if(!navigator.share){ this.showToast('Compartilhamento não disponível neste dispositivo.',true); return; }
+        this.engine.render();
+        const blob=await new Promise(resolve=>this.engine.canvas.toBlob(resolve,'image/png'));
+        if(!blob) throw new Error('Não foi possível preparar a imagem.');
+        const file=new File([blob],'grafico.png',{type:'image/png'});
+        const data={title:'Calculadora Gráfica',text:'Gráfico exportado da Calculadora Gráfica'};
+        if(navigator.canShare?.({files:[file]})){data.files=[file];}
+        await navigator.share(data);
+      }catch(e){ if(e?.name!=='AbortError') this.showError(e); }
+    },
     exportJson() {
       const payload = {
         format: 'calculadora-grafica',
@@ -531,9 +569,54 @@
       } catch(error) { this.showError(error); }
       finally { if(this.$.importJsonFile) this.$.importJsonFile.value=''; }
     },
+    initMathKeyboard(){
+      const kb=this.$?.mobileMathKeyboard; if(!kb) return;
+      const isMobile=()=>global.innerWidth<900;
+      const show=()=>{ if(isMobile() && document.activeElement?.classList?.contains('math-input')) kb.classList.remove('hidden'); };
+      const hide=()=>kb.classList.add('hidden');
+      document.addEventListener('focusin',(e)=>{ if(e.target?.classList?.contains('math-input')){ this.lastMathInputId=e.target.id; show(); }});
+      document.addEventListener('focusout',()=>setTimeout(()=>{ if(!kb.contains(document.activeElement)) hide(); },120));
+      kb.querySelectorAll('[data-math-token]').forEach(btn=>btn.addEventListener('click',()=>{this.insertText(btn.dataset.mathToken,this.lastMathInputId); if(global.navigator?.vibrate) global.navigator.vibrate(8);}));
+      this.$.mobileMathKeyboardClose?.addEventListener('click',hide);
+      global.addEventListener('resize',()=>{if(!isMobile()) hide();},{passive:true});
+    },
+    bindVisualViewport() {
+      const update = () => {
+        const vv = global.visualViewport;
+        const innerH = global.innerHeight || document.documentElement.clientHeight || 0;
+        const vvH = vv?.height || innerH;
+        const vvTop = vv?.offsetTop || 0;
+        const keyboardInset = Math.max(0, innerH - (vvH + vvTop));
+        document.documentElement.style.setProperty('--visual-vh', `${vvH}px`);
+        document.documentElement.style.setProperty('--controls-keyboard-offset', `${keyboardInset}px`);
+        if (this.$?.controls?.classList.contains('open') && global.innerWidth < 900) {
+          this.engine?.resize?.();
+          this.engine?.requestRender?.();
+          this.scrollFocusedControlIntoView();
+        }
+      };
+      global.visualViewport?.addEventListener('resize', update, {passive:true});
+      global.visualViewport?.addEventListener('scroll', update, {passive:true});
+      global.addEventListener('resize', update, {passive:true});
+      update();
+    },
+    scrollFocusedControlIntoView() {
+      const field = document.activeElement;
+      if (!field || !this.$?.controls?.contains(field)) return;
+      if (!(field.matches?.('input,select,textarea,[contenteditable="true"]'))) return;
+      global.setTimeout(() => {
+        if (!this.$?.controls?.contains(document.activeElement)) return;
+        try {
+          document.activeElement.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+        } catch (_) {
+          document.activeElement.scrollIntoView({block:'center', inline:'nearest'});
+        }
+      }, 120);
+    },
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
-      document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id;}));
+      document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id; if(global.innerWidth<900) this.scrollFocusedControlIntoView();}));
+      document.addEventListener('focusin',(event)=>{ if(global.innerWidth<900 && this.$?.controls?.contains(event.target)) this.scrollFocusedControlIntoView(); });
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
       this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);});
@@ -542,7 +625,7 @@
       document.getElementById('dotBtn').addEventListener('click',()=>this.vectorOperation('dot')); document.getElementById('crossBtn').addEventListener('click',()=>this.vectorOperation('cross'));
       document.getElementById('geometryType').addEventListener('change',()=>{this.cancelEdit();this.initGeometryFields();this.updateGeometryPreview();});
       this.$.clearObjects.addEventListener('click',()=>{this.objects.clear();this.persistSession();}); this.$.clearHistory.addEventListener('click',()=>this.clearHistory()); this.$.undo.addEventListener('click',()=>this.undo()); this.$.redo.addEventListener('click',()=>this.redo());
-      document.getElementById('resetViewBtn').addEventListener('click',()=>this.engine.center()); document.getElementById('reset3DBtn')?.addEventListener('click',()=>{this.engine.rotationX=0.62;this.engine.rotationY=0.78;this.engine.projectionScale=1;this.engine.requestRender();this.showToast('Orientação 3D restaurada.');}); document.getElementById('gridBtn').addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn').addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
+      document.getElementById('resetViewBtn')?.addEventListener('click',()=>this.engine.center()); document.getElementById('gridBtn')?.addEventListener('click',(e)=>{this.engine.showGrid=!this.engine.showGrid;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showGrid));this.engine.requestRender();}); document.getElementById('axesBtn')?.addEventListener('click',(e)=>{this.engine.showAxes=!this.engine.showAxes;e.currentTarget.setAttribute('aria-pressed',String(this.engine.showAxes));this.engine.requestRender();});
       this.$.exportBtn?.addEventListener('click',()=>this.engine.exportPng()); this.$.exportSvgBtn?.addEventListener('click',()=>this.engine.exportSvg());
       this.$.exportJsonBtn?.addEventListener('click',()=>this.exportJson());
       this.$.importJsonBtn?.addEventListener('click',()=>this.importJson());
@@ -551,8 +634,8 @@
       this.$.closeExtrasModalBtn?.addEventListener('click',()=>this.closeExtrasModal());
       this.$.extrasModal?.addEventListener('click',(event)=>{ if(event.target.matches('[data-close-extras=\"true\"]')) this.closeExtrasModal(); });
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
-      this.$.mobileMore?.addEventListener('click',()=>{const open=this.$.modeSidebar.classList.toggle('mobile-expanded');this.$.mobileMore.setAttribute('aria-expanded',String(open));requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
+      this.$.mobileModesBtn?.addEventListener('click',()=>this.$.modeSidebar?.classList.contains('mobile-open') ? this.closeModesMobile() : this.openModesMobile());
       this.$.mobileControlsBtn?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.mobileExportBtn?.addEventListener('click',()=>this.openExtrasModal());
       const sheetHandle = document.querySelector('.sheet-handle');
@@ -574,7 +657,8 @@
       this.$.controlsCollapse?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
       this.$.backdrop?.addEventListener('click',()=>{this.closeSidebar(false);this.closeModesMobile(false);this.engine.resize();this.engine.requestRender();});
-      this.$.saveSessionBtn?.addEventListener('click',()=>{this.persistSession();this.showToast('Sessão salva.');}); this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
+      this.$.shareBtn?.addEventListener('click',()=>this.shareGraph());
+this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
       this.$.modeButtons?.forEach((button)=>button.addEventListener('click',()=>this.setTab(button.dataset.mode)));
       global.addEventListener('keydown',(event)=>this.handleSidebarKeydown?.(event));
       this.$.showControls?.addEventListener('click',()=>this.toggleControlsSidebar());
@@ -836,4 +920,3 @@
   };
   global.AppUI=AppUI;
 })(window);
-

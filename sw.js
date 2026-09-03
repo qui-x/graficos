@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-grafica-v87.1';
+const CACHE_NAME = 'calc-grafica-v94';
 const APP_SHELL = [
   './',
   './index.html',
@@ -49,4 +49,3 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
-
