@@ -751,186 +751,57 @@ button,
   *,*::before,*::after{scroll-behavior:auto !important;transition-duration:0.01ms !important;animation-duration:0.01ms !important;animation-iteration-count:1 !important}
 }
 
-/* v94 — teclado virtual: deslocamento dinâmico do bottom sheet */
-:root{--controls-keyboard-offset:0px;--visual-vh:100dvh}
-@media (max-width:899px){
-  .controls-panel{
-    bottom:calc(8px + var(--safe-bottom) + var(--controls-keyboard-offset));
-    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom));
-  }
-}
-@media (display-mode:standalone) and (max-width:899px){
-  .controls-panel{
-    bottom:calc(8px + var(--safe-bottom) + var(--controls-keyboard-offset));
-    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 20px - var(--safe-top) - var(--safe-bottom));
-  }
-}
-@media (prefers-reduced-motion:reduce){
-  .controls-panel{transition:none!important}
-}
 
 
-/* ===== v95 — barra horizontal de modos + bottom sheet robusto ===== */
-@media (max-width:899px){
-  :root{
-    --mode-bar-h:58px;
-    --controls-bottom:8px;
-    --mode-bar-z:120;
-    --backdrop-z:140;
-    --sheet-z:150;
-  }
-
-  /* A barra de modos permanece fixa logo abaixo do cabeçalho. */
-  .topbar{z-index:240 !important}
-
-  .mode-sidebar{
-    position:fixed !important;
-    top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
-    left:0 !important;
-    right:0 !important;
-    bottom:auto !important;
-    width:100% !important;
-    height:var(--mode-bar-h) !important;
-    min-height:var(--mode-bar-h) !important;
-    z-index:var(--mode-bar-z) !important;
-    display:flex !important;
-    flex-direction:row !important;
-    transform:none !important;
-    transition:none !important;
-    border:0 !important;
-    border-bottom:1px solid var(--line) !important;
-    border-radius:0 !important;
-    box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
-    overflow:hidden !important;
-    background:linear-gradient(180deg,#101923,#0c141d) !important;
-  }
-
-  .mode-sidebar.mobile-open{transform:none !important}
-  .mode-sidebar-header{display:none !important}
-  .mode-actions{display:none !important}
-
-  .mode-nav{
-    flex:1 1 auto !important;
-    min-width:0 !important;
-    min-height:0 !important;
-    height:100% !important;
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:stretch !important;
-    gap:6px !important;
-    padding:6px 8px !important;
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-    scrollbar-width:none !important;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-x:contain;
-  }
-  .mode-nav::-webkit-scrollbar{display:none !important}
-
-  .mode-btn{
-    flex:0 0 auto !important;
-    width:auto !important;
-    min-width:max-content !important;
-    min-height:46px !important;
-    height:46px !important;
-    padding:0 13px !important;
-    display:inline-flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:7px !important;
-    white-space:nowrap !important;
-    text-align:center !important;
-    border-radius:9px !important;
-    border:1px solid transparent !important;
-  }
-  .mode-btn svg{width:19px !important;height:19px !important;flex:0 0 19px !important}
-  .mode-btn span{display:inline !important;white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important}
-  .mode-btn.active{
-    border-color:rgba(90,200,250,.34) !important;
-    background:rgba(90,200,250,.10) !important;
-    box-shadow:inset 0 -3px 0 var(--accent) !important;
-    color:#f2fbff !important;
-  }
-
-  /* O gráfico começa abaixo da barra para nunca ficar encoberto. */
-  .workspace{
-    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
-    padding-top:var(--mode-bar-h) !important;
-  }
-  .graph-panel{height:100% !important;padding-top:0 !important;padding-bottom:0 !important}
-
-  /* Não há mais botão redundante de "Modos" no cabeçalho. */
-  .mobile-modes-btn{display:none !important}
-
-  /* Camada de fundo entre o gráfico/barra e o painel de controles. */
-  .backdrop{
-    z-index:var(--backdrop-z) !important;
-  }
-
-  /* Bottom sheet acima do backdrop e com posição sensível ao teclado virtual. */
-  .controls-panel{
-    left:8px !important;
-    right:8px !important;
-    bottom:var(--controls-bottom) !important;
-    max-height:calc(var(--visual-vh) - var(--mobile-topbar-h) - 12px - var(--safe-top) - var(--controls-bottom)) !important;
-    z-index:var(--sheet-z) !important;
-  }
-
-  .controls-panel.open{transform:translateY(0) !important}
-  .controls-panel.collapsed{transform:translateY(calc(100% + 24px)) !important}
-
-  /* O conteúdo interno continua rolável quando o teclado reduz o viewport. */
-  .panel-scroll{
-    min-height:0 !important;
-    overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;
-    padding-bottom:calc(14px + var(--safe-bottom) + var(--controls-bottom)) !important;
-  }
-
-  .numeric-input,.math-input,.select-input,
-  .controls-panel input,.controls-panel select,.controls-panel textarea{
-    scroll-margin-top:90px;
-    scroll-margin-bottom:120px;
-  }
-}
-
-@media (min-width:600px) and (max-width:767px){
-  :root{--mode-bar-h:58px}
-}
-
-@media (min-width:768px) and (max-width:899px){
-  :root{--mode-bar-h:58px}
-}
-
-
-/* ===== v97 — arquitetura mobile enxuta e editor sempre visível ===== */
+/* ===== v98 — arquitetura mobile unificada + teclado virtual ===== */
 :root{
-  --mobile-mode-bar-h:56px;
+  --controls-keyboard-offset:0px;
+  --controls-bottom:8px;
+  --mobile-controls-bottom:var(--controls-bottom);
+  --visual-vh:100dvh;
+  --mobile-mode-bar-h:58px;
   --mobile-controls-top:calc(var(--mobile-topbar-h) + var(--safe-top) + var(--mobile-mode-bar-h));
-  --mobile-controls-bottom:8px;
-  --mobile-editor-z:190;
-  --mobile-backdrop-z:180;
+  --mode-bar-z:120;
+  --backdrop-z:140;
+  --sheet-z:150;
 }
 
-/* Menos texto, mais área útil. A informação continua disponível via aria-label/title. */
-.section-help,.field-help,.field-hint,.zone-description,.advanced-summary-desc,
-.statusbar span:last-child,.topbar p,.eyebrow{display:none !important}
-.topbar .brand-block{min-width:0}
-.topbar .brand-block h1{margin:0}
-
+/* Mobile: interface única. Modos permanecem visíveis; o editor é o único painel sobreposto. */
 @media (max-width:899px){
   .topbar{
     position:relative !important;
     z-index:240 !important;
-    flex-basis:var(--mobile-topbar-h) !important;
+    flex:0 0 var(--mobile-topbar-h) !important;
     height:var(--mobile-topbar-h) !important;
     min-height:var(--mobile-topbar-h) !important;
     padding-top:calc(5px + var(--safe-top)) !important;
     padding-bottom:5px !important;
   }
 
-  /* Barra de modos: única navegação de modos no mobile. */
+  .mobile-panel-actions{
+    display:flex !important;
+    align-items:center !important;
+    gap:6px !important;
+    flex:0 0 auto !important;
+    margin-left:auto !important;
+    position:relative !important;
+    z-index:241 !important;
+  }
+  .mobile-panel-btn{
+    display:inline-flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    width:44px !important;
+    min-width:44px !important;
+    height:44px !important;
+    min-height:44px !important;
+    padding:0 !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .mobile-modes-btn{display:none !important}
+
+  /* Barra horizontal de modos, sempre disponível sem botão extra. */
   .mode-sidebar{
     position:fixed !important;
     top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
@@ -940,27 +811,33 @@ button,
     width:100% !important;
     height:var(--mobile-mode-bar-h) !important;
     min-height:var(--mobile-mode-bar-h) !important;
-    z-index:170 !important;
-    display:block !important;
+    z-index:var(--mode-bar-z) !important;
+    display:flex !important;
+    flex-direction:row !important;
     transform:none !important;
+    transition:none !important;
+    overflow:hidden !important;
     border:0 !important;
     border-bottom:1px solid var(--line) !important;
-    box-shadow:0 6px 18px rgba(0,0,0,.20) !important;
-    overflow:hidden !important;
+    border-radius:0 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
+    background:linear-gradient(180deg,#101923,#0c141d) !important;
   }
   .mode-sidebar-header,.mode-actions{display:none !important}
   .mode-nav{
-    width:100%;
-    height:100%;
-    min-height:0;
-    padding:5px 7px !important;
+    width:100% !important;
+    height:100% !important;
+    min-height:0 !important;
     display:flex !important;
     flex-direction:row !important;
     align-items:stretch !important;
-    gap:5px !important;
+    gap:6px !important;
+    padding:6px 8px !important;
     overflow-x:auto !important;
     overflow-y:hidden !important;
     scrollbar-width:none !important;
+    overscroll-behavior-x:contain !important;
+    -webkit-overflow-scrolling:touch !important;
   }
   .mode-nav::-webkit-scrollbar{display:none !important}
   .mode-btn{
@@ -970,45 +847,57 @@ button,
     height:46px !important;
     min-height:46px !important;
     padding:0 11px !important;
-    border-radius:9px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
     gap:6px !important;
+    border-radius:9px !important;
     font-size:12px !important;
     white-space:nowrap !important;
   }
-  .mode-btn svg{width:18px !important;height:18px !important;flex-basis:18px !important}
-  .mode-btn span{display:inline !important}
-  .mobile-modes-btn{display:none !important}
+  .mode-btn span{display:inline !important;white-space:nowrap !important}
+  .mode-btn svg{width:18px !important;height:18px !important;flex:0 0 18px !important}
+  .mode-btn.active{box-shadow:inset 0 -3px 0 var(--accent) !important}
 
-  /* A área de trabalho deixa espaço exato para a barra de modos. */
+  /* Workspace sempre reserva a barra de modos. */
   .workspace{
     height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
+    min-height:0 !important;
     padding-top:var(--mobile-mode-bar-h) !important;
+    overflow:hidden !important;
   }
-  .graph-panel{height:100% !important}
-  .graph-toolbar{padding:7px 8px !important;gap:8px !important}
-  .toolbar-group{gap:5px !important}
-  .tool-btn{min-height:36px !important;padding:6px 8px !important}
+  .graph-panel{height:100% !important;min-height:0 !important;padding:0 !important}
 
-  /* Backdrop deixa o menu de modos fora da área escurecida e prioriza o editor. */
+  /* Fundo escurece somente a área de conteúdo; topbar e barra de modos permanecem utilizáveis. */
   .backdrop{
-    z-index:var(--mobile-backdrop-z) !important;
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
     top:var(--mobile-controls-top) !important;
+    bottom:0 !important;
+    z-index:var(--backdrop-z) !important;
+    display:block !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
   }
+  .backdrop.show{visibility:visible !important;opacity:1 !important;pointer-events:auto !important}
 
-  /* Editor mobile: quase tela inteira, começando logo abaixo dos modos. */
+  /* Editor móvel: começa abaixo da barra de modos e cresce apenas no espaço visível. */
   .controls-panel{
     position:fixed !important;
     left:0 !important;
     right:0 !important;
     top:var(--mobile-controls-top) !important;
-    bottom:var(--mobile-controls-bottom) !important;
+    bottom:calc(var(--mobile-controls-bottom) + var(--safe-bottom)) !important;
     width:auto !important;
     max-width:none !important;
     height:auto !important;
-    max-height:none !important;
+    max-height:calc(var(--visual-vh) - var(--mobile-controls-top) - var(--mobile-controls-bottom) - var(--safe-bottom)) !important;
     margin:0 !important;
-    z-index:var(--mobile-editor-z) !important;
+    z-index:var(--sheet-z) !important;
     transform:translateY(calc(100% + 18px)) !important;
+    transition:transform var(--trans-panel) !important;
     border:0 !important;
     border-top:1px solid var(--line) !important;
     border-radius:16px 16px 0 0 !important;
@@ -1019,6 +908,8 @@ button,
   }
   .controls-panel.open{transform:translateY(0) !important}
   .controls-panel.collapsed{transform:translateY(calc(100% + 18px)) !important}
+  .controls-panel.is-editing{border-top-color:var(--accent) !important}
+
   .sheet-handle{display:block !important;margin:0 auto 5px !important;width:44px !important;height:4px !important}
   .controls-header{
     position:sticky !important;
@@ -1029,41 +920,34 @@ button,
     background:rgba(16,24,35,.98) !important;
     border-bottom:1px solid var(--line) !important;
   }
-  .controls-header-copy{min-width:0}
   #controlsTitle{font-size:15px !important}
-  #controlsSubtitle{font-size:10px !important;color:var(--muted)}
+  #controlsSubtitle{font-size:10px !important;color:var(--muted) !important}
   .close-controls-btn{display:inline-flex !important;width:42px !important;min-width:42px !important;height:42px !important}
   .desktop-controls-collapse{display:none !important}
 
   .panel-scroll{
+    flex:1 1 auto !important;
     min-height:0 !important;
+    height:auto !important;
     padding:8px 1px calc(18px + var(--safe-bottom)) !important;
     overflow-x:hidden !important;
     overflow-y:auto !important;
     overscroll-behavior:contain !important;
     -webkit-overflow-scrolling:touch !important;
+    scroll-padding-top:78px !important;
+    scroll-padding-bottom:110px !important;
   }
-  .tab-panel{padding:7px !important}
-  .panel-zone.context-zone{padding-bottom:4px !important}
-  .global-math-tools{margin:2px 0 6px !important}
-  .advanced-section{margin-bottom:6px !important}
-  .section-divider{margin:8px 0 !important}
-  .field-label,label{font-size:11px !important;gap:4px !important}
-  .math-input,.numeric-input,.select-input{min-height:44px !important;font-size:16px !important}
-  .math-preview{min-height:40px !important;margin-top:5px !important;padding:7px 9px !important}
-  .quick-grid{margin-top:6px !important}
-  .quick-grid button,.math-menu button{min-height:40px !important}
-  .two-col{gap:7px !important;margin-bottom:7px !important}
-  .three-col,.point-grid{gap:6px !important;margin:7px 0 !important}
-  .point-card{padding:8px !important}
-  .point-header{margin-bottom:5px !important}
+  .panel-scroll:focus-within{scroll-behavior:smooth}
 
-  /* Objetos/histórico ficam compactos e só ocupam o espaço necessário. */
-  .manage-zone{padding-top:6px !important}
-  .objects-list,.history-list{max-height:180px !important}
-  .object-row{grid-template-columns:7px minmax(0,1fr) auto auto;gap:6px !important;padding:6px !important}
-  .object-label{font-size:11px !important}
-  .row-btn{min-height:32px !important}
+  /* Campos preservam tamanho mínimo para toque e scroll automático. */
+  .numeric-input,.math-input,.select-input,
+  .controls-panel input,.controls-panel select,.controls-panel textarea{
+    min-height:44px !important;
+    font-size:16px !important;
+    scroll-margin-top:82px !important;
+    scroll-margin-bottom:116px !important;
+  }
+
   .action-bar{
     position:sticky !important;
     bottom:0 !important;
@@ -1071,33 +955,32 @@ button,
     padding:7px 1px calc(7px + var(--safe-bottom)) !important;
   }
   .action-bar>*{min-height:46px !important}
-
-  /* Em edição, o editor ganha destaque e o título deixa claro o estado. */
-  .controls-panel.is-editing{
-    border-top-color:var(--accent) !important;
-    box-shadow:0 -20px 54px rgba(90,200,250,.10),0 -18px 48px rgba(0,0,0,.42) !important;
-  }
-  .controls-panel.is-editing .action-bar .action-primary{
-    box-shadow:0 0 0 2px rgba(90,200,250,.10),0 8px 24px rgba(0,0,0,.18) !important;
-  }
-
-  /* Teclado: a altura disponível segue o visualViewport. */
-  :root{--mobile-controls-bottom:var(--controls-keyboard-offset,8px)}
-  .controls-panel{bottom:var(--mobile-controls-bottom) !important}
-  .controls-panel .math-input:focus,.controls-panel .numeric-input:focus,.controls-panel select:focus{
-    scroll-margin-top:72px !important;
-    scroll-margin-bottom:90px !important;
-  }
 }
 
-@media (display-mode:standalone) and (max-width:899px){
-  .controls-panel{
-    top:calc(var(--mobile-topbar-h) + var(--safe-top) + var(--mobile-mode-bar-h)) !important;
-  }
+@media (min-width:768px) and (max-width:899px){
+  :root{--mobile-topbar-h:64px;--mobile-mode-bar-h:58px}
+}
+
+@media (min-width:600px) and (max-width:767px){
+  :root{--mobile-topbar-h:62px;--mobile-mode-bar-h:58px}
+}
+
+@media (max-width:599px){
+  :root{--mobile-topbar-h:58px;--mobile-mode-bar-h:56px}
+  .topbar{padding-left:9px !important;padding-right:9px !important}
+  .topbar h1{font-size:17px !important}
+  .topbar p,.eyebrow{display:none !important}
 }
 
 @media (max-width:379px){
-  :root{--mobile-mode-bar-h:52px}
+  :root{--mobile-topbar-h:58px;--mobile-mode-bar-h:52px}
+  .topbar h1{font-size:15px !important}
+  .mobile-panel-actions{gap:4px !important}
+  .mobile-panel-btn{width:42px !important;min-width:42px !important;height:42px !important}
   .mode-btn{padding:0 9px !important;font-size:11px !important}
   .mode-btn svg{width:17px !important;height:17px !important;flex-basis:17px !important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .controls-panel{transition:none !important}
 }

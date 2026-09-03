@@ -142,14 +142,7 @@
       this.savePreferences();
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
-    updateModeMobileButton(open) {
-      const b=this.$?.mobileModesBtn;
-      if(!b) return;
-      b.setAttribute('aria-expanded',String(open));
-      b.setAttribute('aria-label',open?'Fechar modos':'Abrir modos');
-      b.setAttribute('title',open?'Fechar modos':'Modos');
-      b.classList.toggle('is-active',open);
-    },
+    updateModeMobileButton() {},
     updateMobileControlsButton(open) {
       this.$.mobileControlsBtn?.setAttribute('aria-expanded', String(open));
       this.$.mobileControlsBtn?.setAttribute('aria-label', open ? 'Fechar controles' : 'Abrir controles');
@@ -307,7 +300,6 @@
         controlsCollapse: byId('controlsCollapseBtn'),
         closeControls: byId('closeControlsBtn'),
         mobileControlsBtn: byId('mobileControlsBtn'),
-        mobileModesBtn: null,
         mobileExportBtn: byId('mobileExportBtn'),
         mobileMathKeyboard: byId('mobileMathKeyboard'),
         mobileMathKeyboardClose: byId('mobileMathKeyboardClose'),
@@ -583,19 +575,34 @@
       global.addEventListener('resize',()=>{if(!isMobile()) hide();},{passive:true});
     },
     bindVisualViewport() {
+      let scrollTimer = 0;
+      let settleTimer = 0;
       const update = () => {
         const vv = global.visualViewport;
         const innerH = global.innerHeight || document.documentElement.clientHeight || 0;
-        const vvH = vv?.height || innerH;
-        const vvTop = vv?.offsetTop || 0;
+        const vvH = Math.max(0, vv?.height || innerH);
+        const vvTop = Math.max(0, vv?.offsetTop || 0);
         const keyboardInset = Math.max(0, innerH - (vvH + vvTop));
+        const bottomGap = Math.max(8, keyboardInset + 8);
+
         document.documentElement.style.setProperty('--visual-vh', `${vvH}px`);
         document.documentElement.style.setProperty('--controls-keyboard-offset', `${keyboardInset}px`);
-      document.documentElement.style.setProperty('--controls-bottom', `${Math.max(8, keyboardInset + 8)}px`);
+        document.documentElement.style.setProperty('--controls-bottom', `${bottomGap}px`);
+        document.documentElement.style.setProperty('--mobile-controls-bottom', `${bottomGap}px`);
+
         if (this.$?.controls?.classList.contains('open') && global.innerWidth < 900) {
           this.engine?.resize?.();
           this.engine?.requestRender?.();
-          this.scrollFocusedControlIntoView();
+
+          global.clearTimeout(scrollTimer);
+          global.clearTimeout(settleTimer);
+          scrollTimer = global.setTimeout(() => this.scrollFocusedControlIntoView(), 150);
+          // Alguns teclados móveis alteram o visualViewport em mais de uma etapa.
+          settleTimer = global.setTimeout(() => {
+            this.engine?.resize?.();
+            this.engine?.requestRender?.();
+            this.scrollFocusedControlIntoView();
+          }, 340);
         }
       };
       global.visualViewport?.addEventListener('resize', update, {passive:true});
@@ -606,24 +613,45 @@
     scrollFocusedControlIntoView() {
       const field = document.activeElement;
       if (!field || !this.$?.controls?.contains(field)) return;
-      if (!(field.matches?.('input,select,textarea,[contenteditable="true"]'))) return;
-      global.setTimeout(() => {
-        const active=document.activeElement;
-        if (!this.$?.controls?.contains(active)) return;
-        const scroller=this.$.controls.querySelector('.panel-scroll');
+      if (!field.matches?.('input,select,textarea,[contenteditable="true"]')) return;
+
+      const run = () => {
+        const active = document.activeElement;
+        if (!active || !this.$?.controls?.contains(active)) return;
+        const scroller = this.$?.controls?.querySelector('.panel-scroll');
+        if (!scroller) return;
+
         try {
           active.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
         } catch (_) {
           active.scrollIntoView({block:'center', inline:'nearest'});
         }
-        if(scroller){
-          const fieldRect=active.getBoundingClientRect();
-          const scrollRect=scroller.getBoundingClientRect();
-          const margin=18;
-          if(fieldRect.top<scrollRect.top+margin){ scroller.scrollTop-= (scrollRect.top+margin-fieldRect.top); }
-          else if(fieldRect.bottom>scrollRect.bottom-margin){ scroller.scrollTop+= (fieldRect.bottom-(scrollRect.bottom-margin)); }
+
+        const fieldRect = active.getBoundingClientRect();
+        const scrollRect = scroller.getBoundingClientRect();
+        const actionBar = this.$.controls.querySelector('.action-bar');
+        const actionRect = actionBar?.getBoundingClientRect?.();
+        const topGuard = scrollRect.top + 18;
+        const bottomGuard = Math.min(
+          scrollRect.bottom - 18,
+          (actionRect?.top ?? scrollRect.bottom) - 16
+        );
+
+        if (fieldRect.top < topGuard) {
+          scroller.scrollTop -= (topGuard - fieldRect.top);
+        } else if (fieldRect.bottom > bottomGuard) {
+          scroller.scrollTop += (fieldRect.bottom - bottomGuard);
         }
-      }, 120);
+
+        // Mantém o campo na faixa superior do editor quando o teclado ocupa grande parte da tela.
+        const visualH = global.visualViewport?.height || global.innerHeight || 0;
+        if (visualH && fieldRect.bottom > visualH - 20) {
+          const target = scrollRect.top + Math.max(24, scrollRect.height * 0.34);
+          scroller.scrollTop += (fieldRect.top - target);
+        }
+      };
+
+      global.setTimeout(run, 40);
     },
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
