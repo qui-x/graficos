@@ -36,31 +36,35 @@
     },
     updateMobileControlsBar() { this.updateMobileControlsButton(this.$?.controls?.classList.contains('open')); },
     initMobileLayout() {
-      const apply = () => {
+      let previousMobile = global.innerWidth < 900;
+      const recalibrate = () => { this.engine?.resize?.(); this.engine?.requestRender?.(); };
+      const applyInitial = (force=false) => {
         const mobile = global.innerWidth < 900;
+        const crossedBreakpoint = force || mobile !== previousMobile;
+        previousMobile = mobile;
+        if (!crossedBreakpoint) return;
         if (!mobile) {
-          this.$.controls?.classList.remove('open');
-          this.$.controls?.classList.remove('collapsed');
+          this.$.controls?.classList.remove('open','collapsed','is-editing');
           this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
           this.$.backdrop?.classList.remove('show');
           this.$.backdrop?.classList.add('hidden');
           this.$.mobileControlsBtn?.classList.add('hidden');
           this.hideShowControlsButton();
           this.updateSidebarButtons(false);
-          return;
+        } else {
+          this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
+          this.$.controls?.classList.remove('collapsed');
+          this.$.mobileControlsBtn?.classList.remove('hidden');
+          this.updateMobileControlsButton(this.$.controls?.classList.contains('open'));
         }
-        this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
-        this.$.controls?.classList.remove('collapsed');
-        this.$.modeSidebar?.classList.remove('mobile-open');
-        this.$.mobileControlsBtn?.classList.remove('hidden');
-        this.updateModeMobileButton(false);
-        this.updateMobileControlsButton(false);
-        this.setInitialPanelState(false);
       };
-      apply();
-      const recalibrate = () => { this.engine?.resize?.(); this.engine?.requestRender?.(); };
+      applyInitial(true);
       requestAnimationFrame(() => requestAnimationFrame(recalibrate));
-      const onViewportChange = () => { apply(); requestAnimationFrame(() => requestAnimationFrame(recalibrate)); };
+      const onViewportChange = () => {
+        // NÃO fechar o editor durante redimensionamentos causados pelo teclado virtual.
+        applyInitial(false);
+        requestAnimationFrame(() => requestAnimationFrame(recalibrate));
+      };
       global.addEventListener('resize', onViewportChange, { passive: true });
       global.addEventListener('orientationchange', onViewportChange, { passive: true });
     },
@@ -139,7 +143,8 @@
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
     updateModeMobileButton(open) {
-      const b=this.$?.mobileModesBtn; if(!b)return;
+      const b=this.$?.mobileModesBtn;
+      if(!b) return;
       b.setAttribute('aria-expanded',String(open));
       b.setAttribute('aria-label',open?'Fechar modos':'Abrir modos');
       b.setAttribute('title',open?'Fechar modos':'Modos');
@@ -153,15 +158,12 @@
     openSidebar(redraw=true) {
       const mobile = global.innerWidth < 900;
       if (mobile) {
-        this.$.modeSidebar?.classList.remove('mobile-open');
-        this.updateModeMobileButton(false);
         this.$.controls?.classList.add('open');
         this.$.backdrop?.classList.remove('hidden');
         this.$.backdrop?.classList.add('show');
         this.hideShowControlsButton();
         this.updateMobileControlsButton(true);
         this.updateSidebarButtons(false);
-        requestAnimationFrame(()=>{ this.focusFirstSidebarControl(); this.scrollFocusedControlIntoView(); setTimeout(()=>this.scrollFocusedControlIntoView(), 220); });
       } else {
         this.$.workspace?.classList.remove('controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
@@ -305,7 +307,7 @@
         controlsCollapse: byId('controlsCollapseBtn'),
         closeControls: byId('closeControlsBtn'),
         mobileControlsBtn: byId('mobileControlsBtn'),
-        mobileModesBtn: byId('mobileModesBtn'),
+        mobileModesBtn: null,
         mobileExportBtn: byId('mobileExportBtn'),
         mobileMathKeyboard: byId('mobileMathKeyboard'),
         mobileMathKeyboardClose: byId('mobileMathKeyboardClose'),
@@ -626,7 +628,7 @@
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id; if(global.innerWidth<900) this.scrollFocusedControlIntoView();}));
-      document.addEventListener('focusin',(event)=>{ if(global.innerWidth<900 && this.$?.controls?.contains(event.target)){ if(!this.$.controls.classList.contains('open')) this.openSidebar(false); this.scrollFocusedControlIntoView(); } });
+      document.addEventListener('focusin',(event)=>{ if(global.innerWidth<900 && this.$?.controls?.contains(event.target)) this.scrollFocusedControlIntoView(); });
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
       this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);});
@@ -645,7 +647,6 @@
       this.$.extrasModal?.addEventListener('click',(event)=>{ if(event.target.matches('[data-close-extras=\"true\"]')) this.closeExtrasModal(); });
       document.querySelectorAll('.quick-grid').forEach((grid)=>grid.addEventListener('click',(e)=>{const btn=e.target.closest('[data-token]');if(btn)this.insertText(btn.dataset.token,grid.dataset.target);}));
       this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
-      this.$.mobileModesBtn?.addEventListener('click',()=>this.$.modeSidebar?.classList.contains('mobile-open') ? this.closeModesMobile() : this.openModesMobile());
       this.$.mobileControlsBtn?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.mobileExportBtn?.addEventListener('click',()=>this.openExtrasModal());
       const sheetHandle = document.querySelector('.sheet-handle');
@@ -769,8 +770,43 @@ this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
     validateNumericField(input){if(!input?.value.trim()){input.classList.remove('valid','invalid');return;}try{this.parseNum(input.value,{pi:Math.PI,tau:2*Math.PI,phi:(1+Math.sqrt(5))/2});input.classList.add('valid');input.classList.remove('invalid');}catch{input.classList.add('invalid');input.classList.remove('valid');}},
     validateExpressionField(input){if(!input?.value.trim()){input.classList.remove('valid','invalid');return;}try{MathEngine.compile(this.toMathEngine(input.value),this.getDefaultVariables());input.classList.add('valid');input.classList.remove('invalid');}catch{input.classList.add('invalid');input.classList.remove('valid');}},
     requireNonEmpty(value, message='Preencha o campo antes de adicionar.') {if(!String(value??'').trim()){this.showToast(message,true);return false;}return true;},
-    beginEdit(o){this.cancelEdit();this.setTab(o.type==='function'?'function':o.type==='parametric'?'parametric':o.type==='vector'?'vector':'geometry');this.editingId=o.id;this.lineLiveCommitted=false;if(o.type==='function'){this.$.functionVariable.value=o.data.variable||'x';this.updateFunctionEquationHint();this.$.functionExpr.value=this.display(o.data.expression);}else if(o.type==='parametric'){this.$.paramX.value=this.display(o.data.xExpr);this.$.paramY.value=this.display(o.data.yExpr);this.$.tMin.value=o.data.tMin;this.$.tMax.value=o.data.tMax;}else if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];[['vx1',pts[0][0]],['vy1',pts[0][1]],['vz1',pts[0][2]],['vx2',pts[1][0]],['vy2',pts[1][1]],['vz2',pts[1][2]]].forEach(([id,v])=>document.getElementById(id).value=v);if(this.$.vectorType)this.$.vectorType.value=o.data.arrow===false?'segment':'vector';}else{this.$.geometryType.value=o.type;this.initGeometryFields();this.fillGeometry(o);}if(o.type==='solid'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.outerExpression||o.data.expression||'0');this.$.surfaceInnerExpr.value=this.display(o.data.innerExpression||'0');this.$.surfaceAMin.value=o.data.a??0;this.$.surfaceBMax.value=o.data.b??5;this.$.surfaceAxisY.value=o.data.axisY??0;this.editingId=o.id;this.updateSolidPreview();}else if(o.type==='surface'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.expression);this.$.surfaceInnerExpr.value='0';this.$.surfaceAMin.value=0;this.$.surfaceBMax.value=o.data.range||5;this.$.surfaceAxisY.value=0;this.editingId=o.id;}else if(o.type==='curve3d'){this.setTab('curve3d');this.$.curve3dX.value=this.display(o.data.xExpr);this.$.curve3dY.value=this.display(o.data.yExpr);this.$.curve3dZ.value=this.display(o.data.zExpr);this.$.curve3dTMin.value=o.data.tMin;this.$.curve3dTMax.value=o.data.tMax;this.editingId=o.id;}else if(o.type==='line3d'){this.setTab('line3d');['line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach((id,i)=>document.getElementById(id).value=[...o.data.p1,...o.data.p2][i]);this.editingId=o.id;}this.updatePreviews();this.showToast('Objeto carregado para edição.');},
-    cancelEdit(){this.editingId=null;this.updateActionBar?.();},
+    getEditFieldId(o){
+      if(!o) return null;
+      if(o.type==='function') return 'functionExpr';
+      if(o.type==='parametric') return 'paramX';
+      if(o.type==='vector') return 'vx1';
+      if(o.type==='solid' || o.type==='surface') return 'surfaceOuterExpr';
+      if(o.type==='curve3d') return 'curve3dX';
+      if(o.type==='line3d') return 'line3dX1';
+      return this.$?.geometryFields?.querySelector('input,select,textarea')?.id || null;
+    },
+    revealEditorField(fieldId, focus=false){
+      const field=fieldId ? document.getElementById(fieldId) : null;
+      const mobile=global.innerWidth<900;
+      if(mobile) this.openSidebar(false);
+      if(!field) return;
+      this.lastMathInputId=fieldId;
+      const reveal=()=>{
+        const scroller=this.$?.controls?.querySelector('.panel-scroll');
+        if(!this.$?.controls?.contains(field)) return;
+        if(focus) field.focus({preventScroll:true});
+        try { field.scrollIntoView({behavior:'auto',block:'center',inline:'nearest'}); } catch(_) { field.scrollIntoView(); }
+        if(scroller){
+          const fr=field.getBoundingClientRect(), sr=scroller.getBoundingClientRect(), margin=16;
+          if(fr.top<sr.top+margin) scroller.scrollTop-=sr.top+margin-fr.top;
+          else if(fr.bottom>sr.bottom-margin) scroller.scrollTop+=fr.bottom-(sr.bottom-margin);
+        }
+      };
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{reveal(); global.setTimeout(reveal,120); global.setTimeout(reveal,280);}));
+    },
+    beginEdit(o){this.cancelEdit();this.setTab(o.type==='function'?'function':o.type==='parametric'?'parametric':o.type==='vector'?'vector':'geometry');this.editingId=o.id;this.lineLiveCommitted=false;if(o.type==='function'){this.$.functionVariable.value=o.data.variable||'x';this.updateFunctionEquationHint();this.$.functionExpr.value=this.display(o.data.expression);}else if(o.type==='parametric'){this.$.paramX.value=this.display(o.data.xExpr);this.$.paramY.value=this.display(o.data.yExpr);this.$.tMin.value=o.data.tMin;this.$.tMax.value=o.data.tMax;}else if(o.type==='vector'){const pts=this.engine.vectorIs3D(o)?this.engine.getVector3DPoints(o):[[o.data.x1||0,o.data.y1||0,o.data.z1||0],[o.data.x2||0,o.data.y2||0,o.data.z2||0]];[['vx1',pts[0][0]],['vy1',pts[0][1]],['vz1',pts[0][2]],['vx2',pts[1][0]],['vy2',pts[1][1]],['vz2',pts[1][2]]].forEach(([id,v])=>document.getElementById(id).value=v);if(this.$.vectorType)this.$.vectorType.value=o.data.arrow===false?'segment':'vector';}else{this.$.geometryType.value=o.type;this.initGeometryFields();this.fillGeometry(o);}if(o.type==='solid'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.outerExpression||o.data.expression||'0');this.$.surfaceInnerExpr.value=this.display(o.data.innerExpression||'0');this.$.surfaceAMin.value=o.data.a??0;this.$.surfaceBMax.value=o.data.b??5;this.$.surfaceAxisY.value=o.data.axisY??0;this.editingId=o.id;this.updateSolidPreview();}else if(o.type==='surface'){this.setTab('surface');this.$.surfaceExpr.value=this.display(o.data.expression);this.$.surfaceInnerExpr.value='0';this.$.surfaceAMin.value=0;this.$.surfaceBMax.value=o.data.range||5;this.$.surfaceAxisY.value=0;this.editingId=o.id;}else if(o.type==='curve3d'){this.setTab('curve3d');this.$.curve3dX.value=this.display(o.data.xExpr);this.$.curve3dY.value=this.display(o.data.yExpr);this.$.curve3dZ.value=this.display(o.data.zExpr);this.$.curve3dTMin.value=o.data.tMin;this.$.curve3dTMax.value=o.data.tMax;this.editingId=o.id;}else if(o.type==='line3d'){this.setTab('line3d');['line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach((id,i)=>document.getElementById(id).value=[...o.data.p1,...o.data.p2][i]);this.editingId=o.id;}this.updatePreviews();
+      this.$.controls?.classList.add('is-editing');
+      if(this.$?.controlsTitle) this.$.controlsTitle.textContent=`Editar · ${this.getActiveTabLabel()}`;
+      if(this.$?.controlsSubtitle) this.$.controlsSubtitle.textContent='Alterações';
+      this.revealEditorField(this.getEditFieldId(o), false);
+      this.showToast('Dados carregados para edição.');
+    },
+    cancelEdit(){this.editingId=null;this.$?.controls?.classList.remove('is-editing');if(this.$?.controlsTitle)this.$.controlsTitle.textContent=this.getActiveTabLabel();if(this.$?.controlsSubtitle)this.$.controlsSubtitle.textContent=modeData[this.activeTab]?.subtitle||'';this.updateActionBar?.();},
     addFunction(){if(!this.requireNonEmpty(this.$.functionExpr.value,'Digite uma função, por exemplo x² + sen(x).'))return;const expr=this.toMathEngine(this.$.functionExpr.value);const variable=this.getFunctionVariable();try{MathEngine.compile(expr,{...this.getDefaultVariables(),[variable]:0});if(this.editingId){this.objects.update(this.editingId,{expression:expr,variable});this.showToast('Curva atualizada.');}else{const obj=this.objects.add('function',{expression:expr,variable},colors[this.objects.items.length%colors.length]);const lhs=variable==='y'?'x':'y';this.addHistory(`${lhs} = f(${variable}) = ${this.$.functionExpr.value}`,obj);this.showToast('Curva adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     addParametric(){if(!this.requireNonEmpty(this.$.paramX.value,'Preencha x(t).')||!this.requireNonEmpty(this.$.paramY.value,'Preencha y(t).'))return;const xExpr=this.toMathEngine(this.$.paramX.value),yExpr=this.toMathEngine(this.$.paramY.value);try{const tMin=this.parseNum(this.$.tMin.value,{pi:Math.PI}),tMax=this.parseNum(this.$.tMax.value,{pi:Math.PI});MathEngine.compile(xExpr,this.getDefaultVariables());MathEngine.compile(yExpr,this.getDefaultVariables());if(!(tMax>tMin))throw new Error('t máx. deve ser maior que t mín.');const data={xExpr,yExpr,tMin,tMax};if(this.editingId){this.objects.update(this.editingId,data);this.showToast('Curva paramétrica atualizada.');}else{const obj=this.objects.add('parametric',data,colors[this.objects.items.length%colors.length]);this.addHistory(`x(t) = ${this.$.paramX.value}, y(t) = ${this.$.paramY.value}`,obj);this.showToast('Curva paramétrica adicionada.');}this.cancelEdit();}catch(e){this.showError(e);}},
     parseNum(v,vars){const normalized=this.toMathEngine(String(v));if(!normalized.trim())throw new Error('Valor numérico vazio.');const n=Number(normalized);const value=Number.isFinite(n)?n:MathEngine.evalExpr(normalized,vars || this.getDefaultVariables());if(!Number.isFinite(value))throw new Error('Valor numérico inválido. Use, por exemplo, 1,5 ou 2·π.');return value;},
