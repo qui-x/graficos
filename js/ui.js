@@ -161,7 +161,7 @@
         this.hideShowControlsButton();
         this.updateMobileControlsButton(true);
         this.updateSidebarButtons(false);
-        requestAnimationFrame(()=>this.focusFirstSidebarControl());
+        requestAnimationFrame(()=>{ this.focusFirstSidebarControl(); this.scrollFocusedControlIntoView(); setTimeout(()=>this.scrollFocusedControlIntoView(), 220); });
       } else {
         this.$.workspace?.classList.remove('controls-collapsed');
         this.$.controls?.classList.remove('collapsed');
@@ -626,7 +626,7 @@
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id; if(global.innerWidth<900) this.scrollFocusedControlIntoView();}));
-      document.addEventListener('focusin',(event)=>{ if(global.innerWidth<900 && this.$?.controls?.contains(event.target)) this.scrollFocusedControlIntoView(); });
+      document.addEventListener('focusin',(event)=>{ if(global.innerWidth<900 && this.$?.controls?.contains(event.target)){ if(!this.$.controls.classList.contains('open')) this.openSidebar(false); this.scrollFocusedControlIntoView(); } });
       document.querySelectorAll('.clear-field-btn').forEach((btn)=>btn.addEventListener('click',()=>this.clearField(btn.dataset.clear)));
       document.querySelectorAll('.numeric-input').forEach((input)=>{input.addEventListener('input',()=>this.validateNumericField(input));this.validateNumericField(input);});
       this.$.variableOptions.forEach((el)=>el.addEventListener('change',()=>this.syncVariableConfig(true))); this.$.customVariables.addEventListener('input',()=>{clearTimeout(this.variableTimer);this.variableTimer=setTimeout(()=>this.syncVariableConfig(),180);}); this.$.resetVariables.addEventListener('click',()=>{this.$.variableOptions.forEach((el)=>{el.checked=['x','y','z','t'].includes(el.value);});this.$.customVariables.value='';this.syncVariableConfig(true);});

@@ -902,3 +902,73 @@ button,
 @media (min-width:768px) and (max-width:899px){
   :root{--mode-bar-h:58px}
 }
+
+
+/* ===== v96 — mobile: campo focado sempre visível + cabeçalho/modos garantidos ===== */
+@media (max-width:899px){
+  :root{
+    --controls-top:calc(var(--mobile-topbar-h) + var(--safe-top) + var(--mode-bar-h) + 8px);
+    --controls-bottom:8px;
+  }
+
+  /* O cabeçalho do aplicativo não pode desaparecer durante o resize do viewport/teclado. */
+  .app-shell{position:relative !important;display:flex !important;height:100dvh !important;min-height:100dvh !important;overflow:hidden !important}
+  .topbar{display:flex !important;visibility:visible !important;opacity:1 !important;position:relative !important;z-index:240 !important;flex:0 0 auto !important}
+  .mobile-panel-actions{display:flex !important;visibility:visible !important;opacity:1 !important}
+  .mobile-panel-btn{display:inline-flex !important;visibility:visible !important;opacity:1 !important}
+
+  /* Barra horizontal de modos: independente do estado do drawer antigo. */
+  .mode-sidebar{
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    position:fixed !important;
+    top:calc(var(--mobile-topbar-h) + var(--safe-top)) !important;
+    left:0 !important;
+    right:0 !important;
+    width:100% !important;
+    height:var(--mode-bar-h) !important;
+    max-height:var(--mode-bar-h) !important;
+    min-height:var(--mode-bar-h) !important;
+    bottom:auto !important;
+    z-index:120 !important;
+    transform:none !important;
+    pointer-events:auto !important;
+  }
+  .mode-sidebar.mobile-open{transform:none !important}
+
+  .workspace{
+    position:relative !important;
+    display:block !important;
+    height:calc(100dvh - var(--mobile-topbar-h) - var(--safe-top)) !important;
+    min-height:0 !important;
+    padding-top:var(--mode-bar-h) !important;
+    overflow:hidden !important;
+  }
+
+  /* Bottom sheet reposicionado por limites superior/inferior, evitando que o teclado o cubra. */
+  .controls-panel{
+    position:fixed !important;
+    top:var(--controls-top) !important;
+    left:8px !important;
+    right:8px !important;
+    bottom:var(--controls-bottom) !important;
+    width:auto !important;
+    height:auto !important;
+    max-height:calc(var(--visual-vh) - var(--controls-top) - var(--controls-bottom)) !important;
+    z-index:150 !important;
+    transform:translateY(calc(100% + 24px)) !important;
+    overflow:hidden !important;
+  }
+  .controls-panel.open{transform:translateY(0) !important}
+  .controls-panel.collapsed{transform:translateY(calc(100% + 24px)) !important}
+  .controls-panel .panel-scroll{min-height:0 !important;overflow-x:hidden !important;overflow-y:auto !important;scroll-behavior:smooth}
+
+  /* Ao receber foco, o painel fica aberto antes do teclado e o campo recebe margem de segurança. */
+  .controls-panel input,
+  .controls-panel select,
+  .controls-panel textarea{
+    scroll-margin-top:calc(20px + var(--mobile-topbar-h) + var(--mode-bar-h));
+    scroll-margin-bottom:160px;
+  }
+}
