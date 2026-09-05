@@ -28,7 +28,11 @@
         document.body.appendChild(this.$.extrasModal);
       }
       if (this.$?.extrasModal) this.$.extrasModal.inert=true;
-      this.buildMenus(); this.bindForms(); this.initGeometryFields(); this.normalizeInitialInputs(); this.bindVisualViewport?.(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall?.(); this.loadPreferences(); this.setTab(this.activeTab, false); this.syncVariableConfig(false); this.initMobileLayout(); this.bindPreferencePersistence(); this.initMathKeyboard?.();
+      this.buildMenus(); this.bindForms(); this.initGeometryFields(); this.normalizeInitialInputs(); this.bindVisualViewport?.(); this.bindObjectEvents(); this.history=[]; this.renderHistory(); this.renderObjects(); this.updatePreviews(); this.updateVectorResult(); this.updateUndoButtons(); this.updateEmptyState(); this.initPWAInstall?.(); this.loadPreferences(); this.applyHashMode(); this.setTab(this.activeTab, false); this.syncVariableConfig(false); this.initMobileLayout(); this.bindPreferencePersistence(); this.initMathKeyboard?.(); this.initModeScrollFade();
+    },
+    applyHashMode() {
+      const hash = String(global.location?.hash || '').replace('#', '').trim().toLowerCase();
+      if (hash && modeData[hash]) this.activeTab = hash;
     },
     getActiveTabLabel() {
       const labels={function:'Função',parametric:'Paramétrica',vector:'Vetor',geometry:'Geometria',surface:'Discos / Anéis',curve3d:'Curva 3D',line3d:'Reta 3D'};
@@ -68,29 +72,6 @@
       global.addEventListener('resize', onViewportChange, { passive: true });
       global.addEventListener('orientationchange', onViewportChange, { passive: true });
     },
-    setInitialPanelState(redraw=true) {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.remove('open','collapsed');
-        this.$.modeSidebar?.classList.remove('mobile-open');
-        this.$.backdrop?.classList.remove('show');
-        this.$.backdrop?.classList.add('hidden');
-        this.$.mobileControlsBtn?.classList.remove('hidden');
-        this.updateModeMobileButton(false);
-        this.updateMobileControlsButton(false);
-      } else {
-        this.$.controls?.classList.remove('open','collapsed');
-        this.$.modeSidebar?.classList.remove('mobile-open');
-        this.$.workspace?.classList.remove('sidebar-collapsed','sidebar-modes-collapsed','controls-collapsed');
-        this.$.backdrop?.classList.remove('show');
-        this.$.backdrop?.classList.add('hidden');
-        this.$.mobileControlsBtn?.classList.add('hidden');
-        this.hideShowControlsButton();
-        this.updateSidebarButtons(false);
-      }
-      this.savePreferences();
-      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine?.resize?.(); this.engine?.requestRender?.(); }));
-    },
     hideShowControlsButton() {
       const btn = this.$?.showControls;
       if (!btn) return;
@@ -119,30 +100,6 @@
         collapsed ? this.showShowControlsButton() : this.hideShowControlsButton();
       }
     },
-    openModesMobile(redraw=true) {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.remove('open');
-        this.updateMobileControlsButton(false);
-        this.$.modeSidebar?.classList.add('mobile-open');
-        this.$.backdrop?.classList.remove('hidden');
-        this.$.backdrop?.classList.add('show');
-        this.updateModeMobileButton(true);
-        requestAnimationFrame(()=>this.$.modeButtons?.find?.(b=>b.dataset.mode===this.activeTab)?.focus?.());
-      } else {
-        const collapsed = this.$.workspace?.classList.toggle('sidebar-modes-collapsed');
-      }
-      this.savePreferences();
-      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
-    },
-    closeModesMobile(redraw=true) {
-      this.$.modeSidebar?.classList.remove('mobile-open');
-      if (!this.$.controls?.classList.contains('open')) { this.$.backdrop?.classList.remove('show'); this.$.backdrop?.classList.add('hidden'); }
-      this.updateModeMobileButton(false);
-      this.savePreferences();
-      if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
-    },
-    updateModeMobileButton() {},
     updateMobileControlsButton(open) {
       this.$.mobileControlsBtn?.setAttribute('aria-expanded', String(open));
       this.$.mobileControlsBtn?.setAttribute('aria-label', open ? 'Fechar controles' : 'Abrir controles');
@@ -183,15 +140,6 @@
       if (redraw) requestAnimationFrame(() => requestAnimationFrame(() => { this.engine.resize(); this.engine.requestRender(); }));
     },
 
-    toggleSidebar() {
-      const mobile = global.innerWidth < 900;
-      if (mobile) {
-        this.$.controls?.classList.contains('open') ? this.closeSidebar() : this.openSidebar();
-      } else {
-        const collapsed = this.$.workspace?.classList.contains('sidebar-modes-collapsed');
-        collapsed ? this.openModesMobile() : this.closeModesMobile();
-      }
-    },
     toggleControlsSidebar() {
       const mobile = global.innerWidth < 900;
       if (mobile) {
@@ -653,6 +601,56 @@
 
       global.setTimeout(run, 40);
     },
+    // Mostra um degradê nas bordas da barra de modos quando ela tem mais
+    // conteúdo pra rolar naquela direção — sinaliza que dá pra arrastar pros
+    // modos que não cabem na largura da tela.
+    initModeScrollFade() {
+      const bar = this.$?.modeSidebar;
+      const nav = bar?.querySelector('.mode-nav');
+      if (!bar || !nav) return;
+      const update = () => {
+        const max = nav.scrollWidth - nav.clientWidth;
+        bar.classList.toggle('can-scroll-start', nav.scrollLeft > 4);
+        bar.classList.toggle('can-scroll-end', nav.scrollLeft < max - 4);
+      };
+      nav.addEventListener('scroll', update, { passive: true });
+      global.addEventListener('resize', update, { passive: true });
+      requestAnimationFrame(update);
+    },
+    // Arrasta o bottom sheet junto com o dedo (feedback visual em tempo real) e o
+    // fecha com um gesto de soltar, ou volta pra posição aberta com uma pequena animação.
+    bindSheetDrag(handle) {
+      if (!handle) return;
+      const panel = this.$?.controls;
+      let startY = null, dragging = false, panelHeight = 0;
+      const setOffset = (px) => panel?.style.setProperty('--sheet-drag-y', `${px}px`);
+      const onMove = (event) => {
+        if (startY === null || global.innerWidth >= 900) return;
+        const delta = Math.max(0, event.clientY - startY);
+        if (!dragging && delta > 4) { dragging = true; panel?.classList.add('dragging'); }
+        if (!dragging) return;
+        setOffset(delta);
+      };
+      const endDrag = (event, cancelled) => {
+        if (startY === null) return;
+        const delta = (!cancelled && event) ? Math.max(0, event.clientY - startY) : 0;
+        startY = null;
+        const wasDragging = dragging;
+        dragging = false;
+        panel?.classList.remove('dragging');
+        setOffset(0);
+        if (!cancelled && wasDragging && delta > Math.min(120, panelHeight * 0.28)) this.closeSidebar();
+      };
+      handle.addEventListener('pointerdown', (event) => {
+        if (global.innerWidth >= 900) return;
+        startY = event.clientY;
+        panelHeight = panel?.getBoundingClientRect?.().height || 1;
+        handle.setPointerCapture?.(event.pointerId);
+      });
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', (event) => endDrag(event, false));
+      handle.addEventListener('pointercancel', () => endDrag(null, true));
+    },
     bindForms() {
       ['functionExpr','paramX','paramY','tMin','tMax','surfaceOuterExpr','surfaceInnerExpr','surfaceAMin','surfaceBMax','surfaceAxisY','curve3dX','curve3dY','curve3dZ','curve3dTMin','curve3dTMax','line3dX1','line3dY1','line3dZ1','line3dX2','line3dY2','line3dZ2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{this.normalizeInput(id);this.updatePreviews();this.validateExpressionField(document.getElementById(id));}));
       document.querySelectorAll('input').forEach((input)=>input.addEventListener('focus',()=>{this.lastMathInputId=input.id; if(global.innerWidth<900) this.scrollFocusedControlIntoView();}));
@@ -677,25 +675,10 @@
       this.$.modeCollapse?.addEventListener('click',()=>{const c=this.$.workspace.classList.toggle('sidebar-modes-collapsed'); this.$.modeCollapse.setAttribute('aria-pressed',String(c)); this.$.modeCollapse.setAttribute('aria-label',c?'Expandir barra de modos':'Recolher barra de modos'); this.$.modeCollapse.setAttribute('title',c?'Expandir barra de modos':'Recolher barra de modos'); requestAnimationFrame(()=>requestAnimationFrame(()=>{this.engine.resize();this.engine.requestRender();}));});
       this.$.mobileControlsBtn?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.mobileExportBtn?.addEventListener('click',()=>this.openExtrasModal());
-      const sheetHandle = document.querySelector('.sheet-handle');
-      if (sheetHandle) {
-        let startY = null;
-        sheetHandle.addEventListener('pointerdown', (event) => {
-          if (global.innerWidth >= 900) return;
-          startY = event.clientY;
-          sheetHandle.setPointerCapture?.(event.pointerId);
-        });
-        sheetHandle.addEventListener('pointerup', (event) => {
-          if (startY === null || global.innerWidth >= 900) { startY = null; return; }
-          const delta = event.clientY - startY;
-          if (delta > 40) this.closeSidebar();
-          startY = null;
-        });
-        sheetHandle.addEventListener('pointercancel', () => { startY = null; });
-      }
+      this.bindSheetDrag(document.querySelector('.sheet-handle'));
       this.$.controlsCollapse?.addEventListener('click',()=>this.toggleControlsSidebar());
       this.$.closeControls?.addEventListener('click',()=>this.closeSidebar());
-      this.$.backdrop?.addEventListener('click',()=>{this.closeSidebar(false);this.closeModesMobile(false);this.engine.resize();this.engine.requestRender();});
+      this.$.backdrop?.addEventListener('click',()=>{this.closeSidebar(false);this.engine.resize();this.engine.requestRender();});
       this.$.shareBtn?.addEventListener('click',()=>this.shareGraph());
 this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
       this.$.modeButtons?.forEach((button)=>button.addEventListener('click',()=>this.setTab(button.dataset.mode)));
@@ -788,7 +771,7 @@ this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
       this.renderKatex('paramPreview',`\\begin{cases}x(t)=${this.$.paramX.value}\\\\y(t)=${this.$.paramY.value}\\end{cases}`);
       this.updateGeometryPreview();
       if(this.$.surfaceExpr) this.updateSolidPreview();
-      if(document.getElementById('solidFormulaDisplay')) this.renderKatex('solidFormulaDisplay', 'V=\\pi\\int_{a}^{b}\\left[R(x)^2-r(x)^2\right]\\,dx');
+      if(document.getElementById('solidFormulaDisplay')) this.renderKatex('solidFormulaDisplay', 'V=\\pi\\int_{a}^{b}\\left[R(x)^2-r(x)^2\\right]\\,dx');
       if(this.$.curve3dX) this.renderKatex('curve3dPreview',`\\mathbf r(t)=\\left(${this.$.curve3dX.value},${this.$.curve3dY.value},${this.$.curve3dZ.value}\\right)`);
       if(this.$.line3dX1) this.renderKatex('line3dPreview',`P_1=\\left(${this.$.line3dX1.value},${this.$.line3dY1.value},${this.$.line3dZ1.value}\\right),\\quad P_2=\\left(${this.$.line3dX2.value},${this.$.line3dY2.value},${this.$.line3dZ2.value}\\right)`);
     },
@@ -934,7 +917,7 @@ this.$.panelAdd?.addEventListener('click',()=>this.addActiveTab());
         const volume=validInterval?this.computeSolidVolume(data):null;
         const extraLatex=validInterval?`\\,\\quad V\\approx ${this.fmt(volume)}`:'';
         if(this.$.surfacePreview){
-          this.renderKatex('surfacePreview',`V=\\pi\\int_{${aText}}^{${bText}}\\left[R(x)^2-r(x)^2\\right]\\,dx${extraLatex}\\quad \text{eixo de rotação: }y=${kText}`);
+          this.renderKatex('surfacePreview',`V=\\pi\\int_{${aText}}^{${bText}}\\left[R(x)^2-r(x)^2\\right]\\,dx${extraLatex}\\quad \\text{eixo de rotação: }y=${kText}`);
         }
       }catch(err){
         if(this.$.surfacePreview) this.$.surfacePreview.textContent='Informe funções e limites válidos.';
