@@ -65,3 +65,10 @@ Consulte `AUDITORIA_PWA_ACESSIBILIDADE.md` para os detalhes e as cores adotadas.
 ## Correção V4.1 — coerência do PWA
 
 A versão 4.1 corrige mistura de arquivos entre releases causada pelo cache do Service Worker. CSS e JavaScript críticos agora usam URLs versionadas e estratégia network-first, o Service Worker usa `updateViaCache: none`, o cache foi incrementado e há recarga única quando um novo controlador assume. Isso evita carregar um `ui.js` antigo junto do `index.html` novo.
+
+## V4.2 — identificadores matemáticos automáticos
+- O editor reconhece automaticamente identificadores matemáticos usuais sem exigir configuração manual de "variáveis ativas".
+- Letras latinas simples (`a`–`z`), formas indexadas como `x1`/`x_1` e letras gregas comuns são aceitas como parâmetros.
+- Justaposições da literatura, como `xy`, `nt` e `ab`, são interpretadas como multiplicação implícita.
+- `π`, `e`, `τ` e `φ` continuam reservadas como constantes; nomes de funções continuam reservados.
+- Parâmetros livres recebem valor inicial automático `1` para que a expressão continue calculável até a futura interface de parâmetros/sliders.

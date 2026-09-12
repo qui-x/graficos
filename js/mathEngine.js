@@ -20,6 +20,23 @@
   });
   const DISPLAY_NAMES = Object.freeze({ sin: 'sen', cos: 'cos', tan: 'tg', asin: 'arcsen', acos: 'arccos', atan: 'arctg', ln: 'ln', log: 'log' });
   const MAX_EXPRESSION_LENGTH = 500;
+  const STANDARD_IDENTIFIER_DEFAULT = 1;
+  const GREEK_SYMBOLS = Object.freeze({
+    'α':'alpha','β':'beta','γ':'gamma','δ':'delta','ε':'epsilon','ζ':'zeta','η':'eta','θ':'theta','ι':'iota','κ':'kappa','λ':'lambda','μ':'mu','ν':'nu','ξ':'xi','ο':'omicron','ρ':'rho','σ':'sigma','ς':'sigma','υ':'upsilon','ω':'omega'
+  });
+  const GREEK_IDENTIFIERS = new Set(Object.values(GREEK_SYMBOLS));
+  const STANDARD_IDENTIFIER_RE = /^[a-z](?:_[0-9]+|[0-9]+)?$/;
+
+  function isStandardIdentifier(name) {
+    const id = String(name || '').toLowerCase();
+    return STANDARD_IDENTIFIER_RE.test(id) || GREEK_IDENTIFIERS.has(id);
+  }
+
+  function identifierNames(expression) {
+    const normalized = normalize(expression);
+    const names = normalized.match(/[A-Za-z_][A-Za-z0-9_]*/g) || [];
+    return [...new Set(names.map((name) => name.toLowerCase()).filter((name) => !(name in CONSTANTS) && !(name in FUNCTIONS) && name !== 'mod' && isStandardIdentifier(name)))];
+  }
 
   const ERROR_MESSAGES = Object.freeze({
     EMPTY: 'Digite uma expressão matemática.',
@@ -40,7 +57,10 @@
       .replace(/[×·⋅]/g, '*')
       .replace(/÷/g, '/')
       .replace(/π/g, 'pi').replace(/τ/g, 'tau').replace(/φ/g, 'phi')
+      .replace(/[αβγδεζηθικλμνξορσςυω]/g, (ch) => GREEK_SYMBOLS[ch] || ch)
       .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/⁵/g, '^5')
+      .replace(/([A-Za-z])₀/g, '$1_0').replace(/([A-Za-z])₁/g, '$1_1').replace(/([A-Za-z])₂/g, '$1_2').replace(/([A-Za-z])₃/g, '$1_3')
+      .replace(/([A-Za-z])₄/g, '$1_4').replace(/([A-Za-z])₅/g, '$1_5').replace(/([A-Za-z])₆/g, '$1_6').replace(/([A-Za-z])₇/g, '$1_7').replace(/([A-Za-z])₈/g, '$1_8').replace(/([A-Za-z])₉/g, '$1_9')
       .replace(/√\s*\(/g, 'sqrt(')
       .replace(/√\s*([A-Za-z0-9_.]+)/g, 'sqrt($1)')
       .replace(/\^\{([^}]+)\}/g, '^($1)')
@@ -68,11 +88,22 @@
       }
       const id = input.slice(i).match(/^[A-Za-z_][A-Za-z0-9_]*/);
       if (id) {
-        const name = id[0].toLowerCase();
-        if (!(name in CONSTANTS) && !(name in FUNCTIONS) && !(name in variables) && name !== 'mod') {
-          throw new Error(ERROR_MESSAGES.IDENTIFIER(id[0]));
+        const rawName = id[0];
+        const name = rawName.toLowerCase();
+        const known = (name in CONSTANTS) || (name in FUNCTIONS) || (name in variables) || name === 'mod' || isStandardIdentifier(name);
+        if (known) {
+          out.push({ type: 'identifier', value: name }); i += rawName.length; continue;
         }
-        out.push({ type: 'identifier', value: name }); i += id[0].length; continue;
+        // Na notação matemática, justaposições como xy, nt e abc significam produto
+        // entre identificadores de uma letra, desde que não formem função/constante reservada.
+        if (/^[A-Za-z]{2,}$/.test(rawName)) {
+          const letters = rawName.toLowerCase().split('');
+          if (letters.every((letter) => isStandardIdentifier(letter) || letter in variables)) {
+            letters.forEach((letter) => out.push({ type: 'identifier', value: letter }));
+            i += rawName.length; continue;
+          }
+        }
+        throw new Error(ERROR_MESSAGES.IDENTIFIER(rawName));
       }
       throw new Error(ERROR_MESSAGES.CHAR);
     }
@@ -171,7 +202,7 @@
           return { type: 'call', name, argument: arg };
         }
         if (name in CONSTANTS) return { type: 'constant', name, value: CONSTANTS[name] };
-        if (name in this.variables) return { type: 'variable', name };
+        if (name in this.variables || isStandardIdentifier(name)) return { type: 'variable', name };
         throw new Error(ERROR_MESSAGES.IDENTIFIER(name));
       }
       if (this.peek('(')) {
@@ -195,7 +226,10 @@
     switch (node.type) {
       case 'number': return node.value;
       case 'constant': return node.value;
-      case 'variable': return Number(variables[node.name]);
+      case 'variable': {
+        if (variables && Object.prototype.hasOwnProperty.call(variables, node.name)) return Number(variables[node.name]);
+        return isStandardIdentifier(node.name) ? STANDARD_IDENTIFIER_DEFAULT : NaN;
+      }
       case 'group': return evaluate(node.value, variables);
       case 'unary': { const v = evaluate(node.argument, variables); return node.op === '-' ? -v : v; }
       case 'factorial': return factorial(evaluate(node.argument, variables));
@@ -226,7 +260,12 @@
     if (node.type === 'constant') {
       if (node.name === 'pi') return '<mi>π</mi>'; if (node.name === 'tau') return '<mi>τ</mi>'; if (node.name === 'phi') return '<mi>φ</mi>'; return '<mi>e</mi>';
     }
-    if (node.type === 'variable') return `<mi>${escapeXml(node.name)}</mi>`;
+    if (node.type === 'variable') {
+      const greekDisplay = {alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',omicron:'ο',rho:'ρ',sigma:'σ',upsilon:'υ',omega:'ω'};
+      const sub = node.name.match(/^([a-z])_(\d+)$/) || node.name.match(/^([a-z])(\d+)$/);
+      if (sub) return `<msub><mi>${escapeXml(sub[1])}</mi><mn>${escapeXml(sub[2])}</mn></msub>`;
+      return `<mi>${escapeXml(greekDisplay[node.name] || node.name)}</mi>`;
+    }
     if (node.type === 'group') return `<mrow><mo>(</mo>${mathMLNode(node.value)}<mo>)</mo></mrow>`;
     if (node.type === 'unary') return `<mrow><mo>${node.op === '-' ? '−' : '+'}</mo>${mathMLNode(node.argument)}</mrow>`;
     if (node.type === 'factorial') return `<mrow>${mathMLNode(node.argument)}<mo>!</mo></mrow>`;
@@ -312,5 +351,5 @@
     return Number(value.toFixed(decimals)).toLocaleString('pt-BR', { maximumFractionDigits: decimals });
   }
 
-  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, functions: Object.keys(FUNCTIONS), constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES });
+  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, identifierNames, isStandardIdentifier, standardIdentifierDefault: STANDARD_IDENTIFIER_DEFAULT, functions: Object.keys(FUNCTIONS), constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES });
 })(window);
