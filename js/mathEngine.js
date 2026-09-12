@@ -435,5 +435,44 @@
     return Number(value.toFixed(decimals)).toLocaleString('pt-BR', { maximumFractionDigits: decimals });
   }
 
-  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, identifierNames, isStandardIdentifier, standardIdentifierDefault: STANDARD_IDENTIFIER_DEFAULT, functions: Object.keys(FUNCTIONS), calculusFunctions:[...CALCULUS_FUNCTIONS], constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES });
+  function analyzeRevolution(config = {}) {
+    const method = config.method === 'disks' ? 'disks' : 'washers';
+    const axis = config.axis === 'y' ? 'y' : 'x';
+    const outerExpr = normalize(config.outerExpr ?? '');
+    const innerExpr = method === 'washers' ? normalize(config.innerExpr ?? '0') : '0';
+    const a = Number(config.a), b = Number(config.b);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || !(a < b)) return { valid:false, error:'O intervalo de integração deve ser finito e crescente.' };
+    let outerFn, innerFn;
+    try {
+      outerFn = compile(outerExpr, { [axis]: 0 });
+      innerFn = compile(innerExpr, { [axis]: 0 });
+    } catch (error) {
+      return { valid:false, error:error?.message || 'Não foi possível interpretar os raios.' };
+    }
+    const samples = Math.max(240, Math.min(1200, Math.floor(Number(config.samples) || 480)));
+    let maxOuter = 0, maxInner = 0, minGap = Infinity, sampleAt = a, sampleOuter = 0, sampleInner = 0;
+    for (let i = 0; i <= samples; i += 1) {
+      const u = a + (b - a) * i / samples;
+      const R = outerFn({ [axis]: u }), r = method === 'washers' ? innerFn({ [axis]: u }) : 0;
+      if (!Number.isFinite(R) || !Number.isFinite(r)) return { valid:false, error:`Os raios não estão definidos em todo o intervalo. Verifique ${axis} = ${formatNumber(u,4)}.` };
+      const tol = 1e-9 * Math.max(1, Math.abs(R), Math.abs(r));
+      if (R < -tol || r < -tol) return { valid:false, error:`Raios representam distâncias ao eixo e devem ser não negativos. Verifique ${axis} = ${formatNumber(u,4)}.` };
+      if (r - R > tol) return { valid:false, error:`O raio interno não pode exceder o raio externo. Em ${axis} = ${formatNumber(u,4)}, r = ${formatNumber(r,4)} e R = ${formatNumber(R,4)}.` };
+      maxOuter = Math.max(maxOuter, R); maxInner = Math.max(maxInner, r); minGap = Math.min(minGap, R - r);
+      if (i === Math.floor(samples / 2)) { sampleAt = u; sampleOuter = R; sampleInner = r; }
+    }
+    let n = Math.max(200, Math.floor(Number(config.segments) || 800)); if (n % 2) n += 1;
+    const h = (b - a) / n; let acc = 0;
+    for (let i = 0; i <= n; i += 1) {
+      const u = a + i * h, R = outerFn({ [axis]: u }), r = method === 'washers' ? innerFn({ [axis]: u }) : 0;
+      if (!Number.isFinite(R) || !Number.isFinite(r)) return { valid:false, error:'Não foi possível integrar porque existe uma descontinuidade no intervalo.' };
+      const area = Math.PI * Math.max(0, R * R - r * r);
+      acc += (i === 0 || i === n ? 1 : i % 2 ? 4 : 2) * area;
+    }
+    const volume = acc * h / 3;
+    const sampleArea = Math.PI * Math.max(0, sampleOuter * sampleOuter - sampleInner * sampleInner);
+    return { valid:true, method, axis, outerExpr, innerExpr, a, b, volume, maxOuter, maxInner, minGap:Number.isFinite(minGap)?minGap:0, sample:{ u:sampleAt, R:sampleOuter, r:sampleInner, area:sampleArea } };
+  }
+
+  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, analyzeRevolution, identifierNames, isStandardIdentifier, standardIdentifierDefault: STANDARD_IDENTIFIER_DEFAULT, functions: Object.keys(FUNCTIONS), calculusFunctions:[...CALCULUS_FUNCTIONS], constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES });
 })(window);

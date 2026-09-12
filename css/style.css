@@ -426,3 +426,6 @@ html.high-contrast .math-display,.math-command-pad{box-shadow:none}
 .math-key.calculus-key:hover small{color:currentColor}
 html[data-theme="light"] .math-pad-note.success{background:rgba(35,114,79,.06);border-color:rgba(35,114,79,.24);color:#23724f}
 html.high-contrast .math-pad-note.success{border-color:var(--line-strong);background:var(--surface);color:var(--text)}
+
+.valid-feedback{color:var(--success-text)}
+.error-feedback{color:var(--danger-text)}

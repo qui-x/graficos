@@ -17,7 +17,7 @@ No primeiro acesso, o programa apresenta automaticamente um tour das principais 
 - **Paramétrica:** representa curvas definidas por `x(t)` e `y(t)` em um intervalo do parâmetro.
 - **Vetor:** cria vetores a partir de origem e extremidade e apresenta módulo e direção.
 - **Geometria:** cria pontos, retas, círculos, elipses e polígonos.
-- **Discos/Anéis:** calcula numericamente volumes de revolução e representa o perfil 2D.
+- **Discos/Anéis:** valida R ≥ r ≥ 0, calcula volumes de revolução e representa o perfil simétrico, o eixo, as seções transversais e os raios didáticos.
 - **Curva 3D e Reta 3D:** possuem formulários e notação preparados; o motor espacial ainda está reservado para a etapa de implementação 3D.
 
 ## Editor matemático

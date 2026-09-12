@@ -460,13 +460,37 @@
     drawWashers(obj){
       const axis=obj.data.axis==='y'?'y':'x',vars={[axis]:0};let outer,inner;
       try{outer=this.getCompiled(`${obj.id}:outer:${axis}`,obj.data.outerExpr,vars);inner=this.getCompiled(`${obj.id}:inner:${axis}`,obj.data.innerExpr||'0',vars);}catch{return;}
-      const a=obj.data.a,b=obj.data.b,steps=220,point=(u,r)=>axis==='x'?this.worldToScreen(u,r):this.worldToScreen(r,u);
-      this.ctx.save();this.ctx.fillStyle=this.objectColor(obj);this.ctx.globalAlpha=.12;this.ctx.beginPath();let started=false;
-      for(let i=0;i<=steps;i+=1){const u=a+(b-a)*i/steps,r=outer({[axis]:u});if(!Number.isFinite(r))continue;const p=point(u,r);if(!started){this.ctx.moveTo(p.x,p.y);started=true;}else this.ctx.lineTo(p.x,p.y);}
-      for(let i=steps;i>=0;i-=1){const u=a+(b-a)*i/steps,r=inner({[axis]:u});if(!Number.isFinite(r))continue;const p=point(u,r);this.ctx.lineTo(p.x,p.y);}
-      if(started){this.ctx.closePath();this.ctx.fill();}this.ctx.restore();this.lineStyle(obj);
-      for(const [key,expr] of [['outer',obj.data.outerExpr],['inner',obj.data.innerExpr||'0']]){let fn;try{fn=this.getCompiled(`${obj.id}:${key}:${axis}`,expr,vars);}catch{continue;}this.ctx.beginPath();let pen=false;for(let i=0;i<=steps;i+=1){const u=a+(b-a)*i/steps,r=fn({[axis]:u});if(!Number.isFinite(r)){pen=false;continue;}const p=point(u,r);if(!pen){this.ctx.moveTo(p.x,p.y);pen=true;}else this.ctx.lineTo(p.x,p.y);}this.ctx.stroke();}
-      this.finishStyle();
+      const a=obj.data.a,b=obj.data.b,steps=300,color=this.objectColor(obj),isWasher=obj.data.method==='washers';
+      const P=(u,r)=>axis==='x'?this.worldToScreen(u,r):this.worldToScreen(r,u);
+      const radial=(fn,u)=>{const v=fn({[axis]:u});return Number.isFinite(v)?Math.max(0,v):NaN;};
+      const outerSamples=[],innerSamples=[];
+      for(let i=0;i<=steps;i+=1){const u=a+(b-a)*i/steps,R=radial(outer,u),r=isWasher?radial(inner,u):0;if(!Number.isFinite(R)||!Number.isFinite(r))continue;outerSamples.push({u,r:R});innerSamples.push({u,r:Math.min(R,r)});}
+      if(outerSamples.length<2)return;
+      const c=this.ctx;c.save();
+      // Eixo de rotação destacado apenas no intervalo do sólido.
+      const axisA=P(a,0),axisB=P(b,0);c.strokeStyle=this.theme.guide;c.lineWidth=1.25;c.globalAlpha=.72;c.setLineDash([7,5]);c.beginPath();c.moveTo(axisA.x,axisA.y);c.lineTo(axisB.x,axisB.y);c.stroke();c.setLineDash([]);
+      // Envelope completo do sólido: +R e -R, com vazio central ±r para anéis.
+      c.beginPath();
+      outerSamples.forEach((q,i)=>{const p=P(q.u,q.r);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});
+      [...outerSamples].reverse().forEach(q=>{const p=P(q.u,-q.r);c.lineTo(p.x,p.y);});c.closePath();
+      if(isWasher){
+        innerSamples.forEach((q,i)=>{const p=P(q.u,q.r);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});
+        [...innerSamples].reverse().forEach(q=>{const p=P(q.u,-q.r);c.lineTo(p.x,p.y);});c.closePath();
+      }
+      c.fillStyle=color;c.globalAlpha=.13;try{c.fill('evenodd');}catch{c.fill();}
+      // Fronteiras externas e internas espelhadas em torno do eixo de rotação.
+      c.globalAlpha=1;c.strokeStyle=color;c.lineWidth=obj.id===this.selectedId?3.2:2.1;c.lineCap='round';c.lineJoin='round';c.setLineDash(this.objectDash(obj));
+      for(const sign of [1,-1]){c.beginPath();outerSamples.forEach((q,i)=>{const p=P(q.u,sign*q.r);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});c.stroke();}
+      if(isWasher){for(const sign of [1,-1]){c.beginPath();innerSamples.forEach((q,i)=>{const p=P(q.u,sign*q.r);i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y);});c.stroke();}}
+      c.setLineDash([]);
+      // Faces inicial/final e seções didáticas ao longo do intervalo.
+      const drawSection=(u,R,r,strong=false)=>{c.save();c.strokeStyle=color;c.lineWidth=strong?1.6:1;c.globalAlpha=strong?.88:.34;c.setLineDash(strong?[]:[3,5]);const a1=P(u,R),a2=P(u,r),b1=P(u,-R),b2=P(u,-r);c.beginPath();if(isWasher&&r>1e-10){c.moveTo(a1.x,a1.y);c.lineTo(a2.x,a2.y);c.moveTo(b2.x,b2.y);c.lineTo(b1.x,b1.y);}else{c.moveTo(a1.x,a1.y);c.lineTo(b1.x,b1.y);}c.stroke();c.restore();};
+      for(const u of [a,b]){const R=radial(outer,u),r=isWasher?Math.min(R,radial(inner,u)):0;if(Number.isFinite(R)&&Number.isFinite(r))drawSection(u,R,r,true);}
+      const sections=6;for(let k=1;k<=sections;k+=1){const u=a+(b-a)*k/(sections+1),R=radial(outer,u),r=isWasher?Math.min(R,radial(inner,u)):0;if(!Number.isFinite(R)||!Number.isFinite(r))continue;drawSection(u,R,r,false);const area=Math.PI*Math.max(0,R*R-r*r),hit=P(u,R);this.registerHoverPoint(obj,hit,axis==='x'?{x:u,y:R}:{x:R,y:u},{kind:isWasher?'seção de anel':'seção de disco',label:isWasher?'Seção de anel':'Seção de disco',expression:`${axis} = ${this.formatTooltipNumber(u)} · R = ${this.formatTooltipNumber(R)}${isWasher?` · r = ${this.formatTooltipNumber(r)}`:''} · A ≈ ${this.formatTooltipNumber(area)}`});}
+      // Raios didáticos na seção central.
+      const mid=(a+b)/2,Rm=radial(outer,mid),rm=isWasher?Math.min(Rm,radial(inner,mid)):0;
+      if(Number.isFinite(Rm)){const center=P(mid,0),out=P(mid,Rm);c.save();c.strokeStyle=this.theme.guide;c.fillStyle=this.theme.label;c.lineWidth=1.25;c.globalAlpha=.9;c.setLineDash([4,3]);c.beginPath();c.moveTo(center.x,center.y);c.lineTo(out.x,out.y);c.stroke();c.setLineDash([]);c.font='600 11px system-ui';c.textAlign='left';c.textBaseline='middle';c.fillText('R',out.x+6,out.y);if(isWasher&&rm>1e-10){const inn=P(mid,rm);c.beginPath();c.moveTo(center.x,center.y);c.lineTo(inn.x,inn.y);c.stroke();c.fillText('r',inn.x+6,inn.y);}c.restore();}
+      c.restore();this.finishStyle();
     }
     strokeSegment(obj,x1,y1,x2,y2){const p1=this.worldToScreen(x1,y1),p2=this.worldToScreen(x2,y2);this.lineStyle(obj);this.ctx.beginPath();this.ctx.moveTo(p1.x,p1.y);this.ctx.lineTo(p2.x,p2.y);this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,{x:(p1.x+p2.x)/2,y:(p1.y+p2.y)/2});}
     drawObject(obj){if(obj.type==='function')this.drawFunction(obj);else if(obj.type==='parametric')this.drawParametric(obj);else if(obj.type==='vector')this.drawVector(obj);else if(obj.type==='point')this.drawPoint(obj);else if(obj.type==='circle')this.drawCircle(obj);else if(obj.type==='ellipse')this.drawEllipse(obj);else if(obj.type==='line')this.drawLine(obj);else if(obj.type==='polygon')this.drawPolygon(obj);else if(obj.type==='washers')this.drawWashers(obj);}
@@ -530,7 +554,7 @@
         if(obj.type==='circle')return{xmin:obj.data.cx-obj.data.r,xmax:obj.data.cx+obj.data.r,ymin:obj.data.cy-obj.data.r,ymax:obj.data.cy+obj.data.r};
         if(obj.type==='ellipse')return{xmin:obj.data.cx-obj.data.a,xmax:obj.data.cx+obj.data.a,ymin:obj.data.cy-obj.data.b,ymax:obj.data.cy+obj.data.b};
         if(obj.type==='polygon'){const v=obj.data.vertices||[];if(!v.length)return null;return{xmin:Math.min(...v.map(p=>p[0])),xmax:Math.max(...v.map(p=>p[0])),ymin:Math.min(...v.map(p=>p[1])),ymax:Math.max(...v.map(p=>p[1]))};}
-        if(obj.type==='washers'){const axis=obj.data.axis==='y'?'y':'x',fn=this.getCompiled(`${obj.id}:outer:${axis}`,obj.data.outerExpr,{[axis]:0});let rmin=0,rmax=0;for(let i=0;i<=180;i+=1){const u=obj.data.a+(obj.data.b-obj.data.a)*i/180,r=fn({[axis]:u});if(Number.isFinite(r)){rmin=Math.min(rmin,r);rmax=Math.max(rmax,r);}}return axis==='x'?{xmin:obj.data.a,xmax:obj.data.b,ymin:rmin,ymax:rmax}:{xmin:rmin,xmax:rmax,ymin:obj.data.a,ymax:obj.data.b};}
+        if(obj.type==='washers'){const axis=obj.data.axis==='y'?'y':'x',fn=this.getCompiled(`${obj.id}:outer:${axis}`,obj.data.outerExpr,{[axis]:0});let rmax=0;for(let i=0;i<=240;i+=1){const u=obj.data.a+(obj.data.b-obj.data.a)*i/240,r=fn({[axis]:u});if(Number.isFinite(r))rmax=Math.max(rmax,Math.max(0,r));}return axis==='x'?{xmin:obj.data.a,xmax:obj.data.b,ymin:-rmax,ymax:rmax}:{xmin:-rmax,xmax:rmax,ymin:obj.data.a,ymax:obj.data.b};}
         if(obj.type==='function'){const fn=this.getCompiled(obj.id,obj.data.expression,{x:0});const xmin=Number.isFinite(obj.data.xMin)?obj.data.xMin:-10,xmax=Number.isFinite(obj.data.xMax)?obj.data.xMax:10;let ymin=Infinity,ymax=-Infinity;for(let i=0;i<=220;i+=1){const x=xmin+(xmax-xmin)*i/220,y=fn({x});if(Number.isFinite(y)&&Math.abs(y)<1e6){ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}}return Number.isFinite(ymin)?{xmin,xmax,ymin,ymax}:null;}
         if(obj.type==='parametric'){const fx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;for(let i=0;i<=220;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/220,x=fx({t}),y=fy({t});if(Number.isFinite(x)&&Number.isFinite(y)){xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}}return Number.isFinite(xmin)?{xmin,xmax,ymin,ymax}:null;}
       } catch {}
