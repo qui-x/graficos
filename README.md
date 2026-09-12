@@ -1,46 +1,89 @@
-# OrbisV — identidade oficial + teclado mobile calculadora
+# OrbisV
 
 **Visualize · Explore · Descubra**  
 **Matemática em qualquer dimensão**
 
-Esta versão consolida a nova arquitetura visual e funcional do OrbisV para o primeiro teste em navegador. O foco desta entrega é validar a experiência de uso, a edição matemática, o gerenciamento da cena e a responsividade antes de fechar o motor 3D e as rotinas simbólicas avançadas.
+OrbisV é um ambiente gráfico matemático responsivo para explorar funções, curvas paramétricas, vetores, geometria analítica e aplicações de cálculo com entrada visual em notação matemática.
 
-## O que já está integrado
+## Ao abrir o programa
 
-- Identidade OrbisV baseada diretamente na arte aprovada: `assets/orbisv-brand-master.png` preserva o arquivo mestre, `orbisv-wordmark-official.png` é o recorte oficial para cabeçalho e `orbisv-v-symbol.png` é o V parabólico usado como símbolo representativo, favicon e ícone do app.
-- Layout adaptativo: mobile com navegação inferior e bottom sheet, landscape/tablet com painel à direita e desktop com barra de modos recolhível.
-- Modos: Função, Paramétrica, Vetor, Geometria, Discos/Anéis, Curva 3D e Reta 3D.
-- Funções, curvas paramétricas, vetores, pontos, retas, círculos, elipses e polígonos desenháveis no plano.
-- Discos/Anéis com cálculo numérico de volume e perfil 2D para eixos x ou y.
-- Curva 3D e Reta 3D já possuem interface preparada; o motor 3D será fechado depois do primeiro teste.
-- Editor Matemático OrbisV em modal próprio, sem abrir o teclado nativo no mobile por padrão.
-- Teclado mobile reorganizado como calculadora científica: bloco superior de funções matemáticas e teclado numérico principal em grade 4×5, com AC, parênteses, operadores, DEL e tecla `=` para confirmar.
-- Notação matemática visual em MathML: frações, raízes, expoentes, multiplicação implícita e funções em convenção PT-BR.
-- Entrada compatível com `2x`, `3(x+1)`, `2pi`, `sen(x)`, `tg(x)`, raízes e potências.
-- Objetos: editar ao tocar, mostrar/ocultar, bloquear, duplicar, ordenar, seleção múltipla e ações em lote.
-- Histórico real de ações com desfazer/refazer.
-- Autosave local com versões atual, anterior e de recuperação; migração da sessão antiga quando disponível.
-- Arquivo de projeto `.orbisv` com cena, câmera, histórico e modo atual.
-- Exportações PNG, SVG, CSV e impressão/PDF.
-- Ferramentas do gráfico: recentrar, grade, eixos, ajustar à tela e modo Inspecionar.
-- Pontos notáveis numéricos para funções e análise inicial.
-- Central de acessibilidade: tema, alto contraste, escala de fonte, espaçamento, redução de movimento, leitura simplificada, simulação de visão de cores, padrões de linha, marcadores, descrição do gráfico e navegação por teclado.
-- Sem dependências CDN para a interface ou a renderização matemática principal.
-- Sem `eval` e sem `new Function` no parser matemático.
+O OrbisV sempre inicia pelo menu **Projeto**, que funciona como a página inicial do aplicativo. A partir dele é possível continuar a sessão salva automaticamente, iniciar um novo gráfico, abrir ou salvar um projeto `.orbisv`, acessar a biblioteca de modelos, configurar acessibilidade e visualização, exportar resultados ou iniciar o tour guiado.
 
-## Escopo deliberadamente reservado para o ciclo após o primeiro teste
+No primeiro acesso, o programa apresenta automaticamente um tour das principais áreas. O tour pode ser repetido a qualquer momento pelo menu Projeto.
 
-O layout e os formulários 3D estão prontos, mas o motor de renderização espacial, a câmera 3D final, as rotinas simbólicas completas e o cursor matemático estrutural avançado serão definidos após o feedback deste primeiro teste. Isso evita cristalizar decisões de motor antes de validar a nova experiência de uso.
+## Modos matemáticos
 
-## Executar
+- **Função:** representa funções de uma variável e oferece análise numérica, pontos notáveis e tabela CSV.
+- **Paramétrica:** representa curvas definidas por `x(t)` e `y(t)` em um intervalo do parâmetro.
+- **Vetor:** cria vetores a partir de origem e extremidade e apresenta módulo e direção.
+- **Geometria:** cria pontos, retas, círculos, elipses e polígonos.
+- **Discos/Anéis:** calcula numericamente volumes de revolução e representa o perfil 2D.
+- **Curva 3D e Reta 3D:** possuem formulários e notação preparados; o motor espacial ainda está reservado para a etapa de implementação 3D.
 
-O projeto é estático. Para teste local, prefira um servidor HTTP simples:
+## Editor matemático
+
+Campos matemáticos abrem o Editor Matemático OrbisV. No mobile, o editor utiliza teclado próprio em formato de calculadora científica e não abre o teclado nativo por padrão.
+
+A entrada aceita notação próxima à literatura matemática, incluindo multiplicação implícita, parênteses, potências, raízes, constantes e funções. Exemplos válidos incluem `2x`, `3(x+1)`, `2pi`, `sen(x)` e `tg(x)`.
+
+O editor possui cursor visual, validação da expressão, desfazer/refazer próprio e navegação pelas posições de inserção. A representação visual utiliza MathML para frações, raízes e expoentes.
+
+## Modelos matemáticos
+
+A biblioteca de modelos pré-prontos pode ser aberta pelos formulários compatíveis ou pelo menu inicial. Os modelos são organizados por categoria e podem ser pesquisados. Ao usar um modelo, os dados são carregados no formulário para revisão antes de serem adicionados ao gráfico.
+
+## Objetos e histórico
+
+A aba **Objetos** permite:
+
+- editar um objeto;
+- mostrar ou ocultar;
+- bloquear ou desbloquear;
+- duplicar;
+- alterar a ordem;
+- selecionar múltiplos objetos;
+- executar ações em lote;
+- mostrar pontos notáveis quando aplicável;
+- excluir objetos.
+
+A aba **Histórico** registra as alterações da cena e oferece desfazer/refazer. O histórico do projeto é separado do histórico interno do Editor Matemático.
+
+## Área gráfica
+
+A barra flutuante do gráfico oferece recentralização, grade, eixos, ajuste dos objetos à tela e modo de inspeção. A área gráfica aceita pan e zoom e mostra coordenadas temporárias quando o recurso está habilitado.
+
+## Projetos e salvamento automático
+
+A sessão atual é salva automaticamente no navegador. Um arquivo `.orbisv` preserva objetos, visualização, histórico e modo matemático ativo, permitindo continuar o trabalho em outra execução do aplicativo.
+
+## Exportação
+
+O menu de exportação disponibiliza:
+
+- PNG;
+- SVG;
+- PDF por impressão do navegador;
+- CSV para tabelas de funções visíveis.
+
+## Acessibilidade
+
+A Central de Acessibilidade inclui tema claro e escuro, alto contraste, escala de texto, espaçamento entre letras, redução de movimento, leitura simplificada, simulações de visão de cores, diferenciação de curvas por traços e marcadores, descrição acessível do gráfico e navegação por teclado.
+
+As simulações disponíveis são protanopia, deuteranopia, tritanopia e acromatopsia. A diferenciação de objetos não depende exclusivamente de cor.
+
+## PWA
+
+O OrbisV pode funcionar como aplicativo web instalável quando servido por HTTPS ou `localhost`. O projeto possui manifesto, Service Worker, ícones convencionais e `maskable`, cache do app shell e atualização versionada dos arquivos principais.
+
+## Executar localmente
+
+O projeto é estático. Um modo simples de executar é:
 
 ```bash
 python -m http.server 8000
 ```
 
-Depois abra `http://localhost:8000` no navegador. Também pode ser publicado diretamente em hospedagem estática ou GitHub Pages.
+Depois, abra `http://localhost:8000` no navegador.
 
 ## Testes
 
@@ -50,25 +93,4 @@ Com Node.js instalado:
 npm test
 ```
 
-Os testes verificam o parser, gerenciamento de objetos, notação matemática, estrutura da interface, ausência de execução dinâmica insegura e os principais contratos da nova arquitetura.
-
-## Revisão PWA e acessibilidade de cores — V3
-
-Esta entrega inclui uma auditoria específica de PWA e acessibilidade visual. O projeto agora possui `sw.js`, registro de Service Worker, manifest com `id`/`scope`, ícones `maskable`, Apple Touch Icon 180×180 e cache offline do app shell.
-
-Os temas claro, escuro e alto contraste passaram a possuir paletas próprias também para superfícies, destaques, estados de erro/aviso e teclado matemático. As cores do gráfico são adaptadas ao tema ativo.
-
-As simulações de protanopia, deuteranopia, tritanopia e acromatopsia deixaram de usar simples `hue-rotate()`/`saturate()` e passaram a utilizar matrizes SVG específicas. Padrões de linha e marcadores geométricos oferecem diferenciação adicional sem depender somente de cor.
-
-Consulte `AUDITORIA_PWA_ACESSIBILIDADE.md` para os detalhes e as cores adotadas.
-
-## Correção V4.1 — coerência do PWA
-
-A versão 4.1 corrige mistura de arquivos entre releases causada pelo cache do Service Worker. CSS e JavaScript críticos agora usam URLs versionadas e estratégia network-first, o Service Worker usa `updateViaCache: none`, o cache foi incrementado e há recarga única quando um novo controlador assume. Isso evita carregar um `ui.js` antigo junto do `index.html` novo.
-
-## V4.2 — identificadores matemáticos automáticos
-- O editor reconhece automaticamente identificadores matemáticos usuais sem exigir configuração manual de "variáveis ativas".
-- Letras latinas simples (`a`–`z`), formas indexadas como `x1`/`x_1` e letras gregas comuns são aceitas como parâmetros.
-- Justaposições da literatura, como `xy`, `nt` e `ab`, são interpretadas como multiplicação implícita.
-- `π`, `e`, `τ` e `φ` continuam reservadas como constantes; nomes de funções continuam reservados.
-- Parâmetros livres recebem valor inicial automático `1` para que a expressão continue calculável até a futura interface de parâmetros/sliders.
+A suíte verifica o motor matemático 2D, objetos, notação, catálogo de modelos, interface, PWA, acessibilidade, cache e principais contratos de interação.

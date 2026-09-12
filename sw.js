@@ -1,8 +1,8 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v4.8-20260912`;
-const BUILD = '4.8.0';
+const CACHE_NAME = `${CACHE_PREFIX}v5.0-20260912`;
+const BUILD = '5.0.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -24,7 +24,11 @@ const APP_SHELL = [
   './assets/orbisv-v-symbol.png',
   './assets/orbisv-v-symbol-light.png',
   './assets/orbisv-wordmark-official.png',
-  './assets/orbisv-logo-official.png'
+  './assets/orbisv-wordmark-transparent.png',
+  './assets/orbisv-logo-official.png',
+  './assets/orbisv-logo-transparent.png',
+  './assets/orbisv-logo-horizontal.png',
+  './assets/orbisv-logo-symbol.png'
 ];
 
 self.addEventListener('install', (event) => {

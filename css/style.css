@@ -270,3 +270,77 @@ html.high-contrast .math-editor-actions{background:var(--surface);box-shadow:non
 @media (min-width:761px){.topbar .brand-block .brand-logo{display:block!important}.topbar .brand-block .brand-compact{display:none!important}}
 @media (max-width:760px){.topbar .brand-block .brand-logo{display:none!important}.topbar .brand-block .brand-compact{display:flex!important}}
 @media (max-width:900px) and (orientation:landscape){.topbar .brand-block .brand-logo{display:none!important}.topbar .brand-block .brand-compact{display:flex!important}}
+
+/* ===== Tela inicial / menu Projeto ===== */
+.project-home{width:min(980px,calc(100vw - 28px));max-height:min(800px,calc(100dvh - 28px));overflow:auto}
+.project-home-head{margin-bottom:10px}
+.project-home-layout{display:grid;grid-template-columns:minmax(260px,.88fr) minmax(360px,1.12fr);gap:18px;align-items:start}
+.project-home-hero{display:flex;flex-direction:column;gap:12px;min-width:0}
+.project-home-lead{margin:0;color:var(--muted);font-size:11px;line-height:1.65}
+.project-continue{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:58px;padding:12px 14px;border:1px solid var(--btn-primary-border);border-radius:13px;background:var(--btn-primary-bg);color:var(--btn-primary-text);cursor:pointer;text-align:left;box-shadow:0 8px 22px rgba(0,0,0,.10)}
+.project-continue strong{font-size:13px}.project-continue span{font-size:9px;opacity:.86}.project-continue:hover{border-color:var(--btn-primary-hover-border);filter:saturate(1.03) brightness(1.02)}
+.project-first-run{padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 35%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--cyan) 6%,var(--surface));display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.project-first-run strong{font-size:12px}.project-first-run p{margin:0;color:var(--muted);font-size:10px;line-height:1.5}
+.project-home-menu{display:flex;flex-direction:column;gap:10px;min-width:0}
+.project-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.project-menu-card{min-height:78px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--text);cursor:pointer;text-align:left;transition:.15s ease}
+.project-menu-card:hover{background:var(--surface-3);border-color:var(--line-strong);transform:translateY(-1px)}
+.project-menu-card strong,.project-menu-card span{display:block}.project-menu-card strong{font-size:11px}.project-menu-card span{margin-top:4px;color:var(--muted);font-size:9px;line-height:1.35}
+.project-feature-strip{display:flex;flex-wrap:wrap;gap:5px}.project-feature-strip span{padding:5px 8px;border:1px solid var(--line);border-radius:999px;background:var(--panel-tint);color:var(--muted);font-size:8px}
+.project-home .official-brand-signature{margin-bottom:0}.project-home .official-brand-signature img{max-height:185px}
+
+/* ===== Tour guiado ===== */
+.tour-layer{position:fixed;inset:0;z-index:900;pointer-events:none}
+.tour-focus{position:fixed;z-index:901;border:2px solid var(--cyan);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,5,12,.70),0 0 0 5px color-mix(in srgb,var(--cyan) 18%,transparent),0 10px 35px rgba(0,0,0,.24);transition:left .22s ease,top .22s ease,width .22s ease,height .22s ease;border-color:var(--cyan);pointer-events:none}
+.tour-card{position:fixed;z-index:902;width:min(390px,calc(100vw - 24px));padding:15px;border:1px solid var(--line-strong);border-radius:16px;background:linear-gradient(180deg,var(--surface-2),var(--surface));color:var(--text);box-shadow:var(--shadow);pointer-events:auto}
+.tour-card h2{margin:5px 0 7px;font-size:16px}.tour-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.tour-progress{display:flex;align-items:center;gap:9px;margin-bottom:8px;color:var(--muted-2);font-size:8px}.tour-progress-track{height:4px;flex:1;border-radius:999px;background:var(--surface-3);overflow:hidden}.tour-progress-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .2s ease}
+.tour-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}.tour-actions>div{display:flex;gap:6px}.tour-actions .primary-inline,.tour-actions .secondary-btn{min-width:78px}
+body.tour-active{overflow:hidden}
+html[data-theme="light"] .tour-focus{box-shadow:0 0 0 9999px rgba(28,45,62,.46),0 0 0 5px color-mix(in srgb,var(--cyan) 18%,transparent),0 10px 35px rgba(32,56,80,.18)}
+html.high-contrast .tour-focus{box-shadow:0 0 0 9999px rgba(0,0,0,.78);border-width:3px}
+html[data-theme="light"].high-contrast .tour-focus{box-shadow:0 0 0 9999px rgba(255,255,255,.82);border-color:var(--cyan)}
+
+@media(max-width:760px){
+  .project-home{height:100dvh;max-height:none;border-radius:0;padding:12px;overflow:auto}
+  .project-home-layout{grid-template-columns:1fr;gap:12px}
+  .project-home .official-brand-signature img{max-height:130px}
+  .project-menu-grid{grid-template-columns:1fr 1fr;gap:7px}.project-menu-card{min-height:70px;padding:10px}
+  .project-home-lead{font-size:10px}.project-feature-strip{display:none}
+  .tour-card{left:10px!important;right:10px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;top:auto!important;width:auto}
+  .tour-focus{border-radius:11px}
+}
+@media(max-width:420px){.project-menu-grid{grid-template-columns:1fr}.project-menu-card{min-height:62px}.project-home .official-brand-signature img{max-height:105px}}
+
+
+/* ===== Abertura animada oficial OrbisV ===== */
+.orbisv-intro{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(80,128,255,.18),transparent 32%),linear-gradient(180deg,#0a1830,#030914 72%);color:#e9f7ff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+.orbisv-intro.intro-exit{opacity:0;visibility:hidden;pointer-events:none}
+.orbisv-intro-grid{position:absolute;inset:0;pointer-events:none;opacity:.28;background:linear-gradient(rgba(99,149,255,.08) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,rgba(99,149,255,.08) 1px,transparent 1px) 0 0/72px 72px;mask-image:radial-gradient(circle at 50% 50%,black 28%,transparent 84%)}
+.orbisv-intro-logo-stage{position:relative;width:min(860px,86vw);aspect-ratio:1916/821;display:grid;place-items:center;margin-top:-24px}
+.orbisv-intro-final,.orbisv-intro-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.orbisv-intro-final{opacity:0;filter:drop-shadow(0 0 16px rgba(80,225,255,.16)) drop-shadow(0 0 30px rgba(206,90,255,.10))}
+.orbisv-intro-layer{pointer-events:none;background-image:url("../assets/orbisv-logo-official.png");background-repeat:no-repeat;background-position:center;background-size:contain}
+.orbisv-intro-layer.intro-orbit{clip-path:polygon(0 0,31% 0,31% 100%,0 100%);opacity:0}
+.orbisv-intro-layer.intro-word{clip-path:polygon(22% 0,70% 0,70% 100%,22% 100%);opacity:0}
+.orbisv-intro-layer.intro-vmark{clip-path:polygon(66% 0,100% 0,100% 100%,66% 100%);opacity:0}
+.orbisv-intro-logo-stage.playing .intro-orbit{animation:orbisvIntroOrbit 8.4s cubic-bezier(.2,.8,.2,1) both}
+.orbisv-intro-logo-stage.playing .intro-word{animation:orbisvIntroWord 8.4s cubic-bezier(.2,.8,.2,1) both}
+.orbisv-intro-logo-stage.playing .intro-vmark{animation:orbisvIntroV 8.4s cubic-bezier(.2,.8,.2,1) both}
+.orbisv-intro-logo-stage.playing .orbisv-intro-final{animation:orbisvIntroFinal 8.4s ease both}
+.orbisv-intro-scan{position:absolute;inset:-8%;opacity:0;mix-blend-mode:screen;background:linear-gradient(105deg,transparent 0 44%,rgba(255,255,255,.10) 48%,rgba(91,235,255,.40) 50%,rgba(238,114,255,.22) 53%,transparent 58%);transform:translateX(-120%) skewX(-14deg)}
+.orbisv-intro-logo-stage.playing .orbisv-intro-scan{animation:orbisvIntroScan 8.4s ease both}
+.orbisv-intro-spark{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 18px #55e8ff,0 0 26px rgba(239,114,255,.48);opacity:0}
+.orbisv-intro-spark.s1{left:17%;top:29%}.orbisv-intro-spark.s2{left:22%;top:61%}.orbisv-intro-spark.s3{left:76%;top:29%}.orbisv-intro-spark.s4{left:82%;top:62%}.orbisv-intro-spark.s5{left:50%;top:22%}
+.orbisv-intro-logo-stage.playing .orbisv-intro-spark{animation:orbisvIntroSpark 8.4s ease both}
+.orbisv-intro-skip{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:2;min-height:40px;padding:8px 16px;border:1px solid rgba(96,210,255,.34);border-radius:12px;background:rgba(8,21,38,.72);color:#eafaff;font:700 12px Inter,system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;opacity:0;animation:orbisvIntroSkipIn .45s ease 1.25s forwards}
+.orbisv-intro-skip:hover{border-color:#55e8ff;background:rgba(20,41,68,.82)}
+@keyframes orbisvIntroOrbit{0%,5%{opacity:0;filter:blur(10px) brightness(.4);transform:scale(.94)}10%{opacity:.22}20%{opacity:1;filter:blur(0) brightness(1.06);transform:scale(1)}100%{opacity:1}}
+@keyframes orbisvIntroWord{0%,18%{opacity:0;filter:blur(12px);transform:translateX(-12px)}25%{opacity:.28}42%{opacity:1;filter:blur(0);transform:none}100%{opacity:1}}
+@keyframes orbisvIntroV{0%,38%{opacity:0;filter:blur(14px) brightness(.35);transform:scale(.94)}46%{opacity:.34}59%{opacity:1;filter:blur(0) brightness(1.10);transform:scale(1)}100%{opacity:1}}
+@keyframes orbisvIntroFinal{0%,58%{opacity:0}68%{opacity:.18}78%,100%{opacity:1}}
+@keyframes orbisvIntroScan{0%,52%{opacity:0;transform:translateX(-120%) skewX(-14deg)}57%{opacity:1}70%{opacity:.95;transform:translateX(115%) skewX(-14deg)}71%,100%{opacity:0;transform:translateX(115%) skewX(-14deg)}}
+@keyframes orbisvIntroSpark{0%,20%{opacity:0;transform:scale(.2)}30%{opacity:1;transform:scale(1)}55%{opacity:.8}72%,100%{opacity:0;transform:scale(.35) translateY(-14px)}}
+@keyframes orbisvIntroSkipIn{to{opacity:1}}
+@media(max-width:700px){.orbisv-intro-logo-stage{width:92vw;margin-top:-8px}.orbisv-intro-skip{right:14px;bottom:max(14px,env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){.orbisv-intro-grid,.orbisv-intro-scan,.orbisv-intro-spark{display:none}.orbisv-intro-logo-stage .orbisv-intro-layer{display:none}.orbisv-intro-final{opacity:1!important;animation:none!important}.orbisv-intro-skip{opacity:1;animation:none}}

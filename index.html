@@ -13,10 +13,22 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=4.8.0">
-  <link rel="stylesheet" href="css/style.css?v=4.8.0">
+  <link rel="manifest" href="manifest.webmanifest?v=5.0.0">
+  <link rel="stylesheet" href="css/style.css?v=5.0.0">
 </head>
 <body>
+  <div class="orbisv-intro" id="orbisvIntro" role="dialog" aria-modal="true" aria-label="Apresentação OrbisV">
+    <div class="orbisv-intro-grid" aria-hidden="true"></div>
+    <div class="orbisv-intro-logo-stage" id="orbisvIntroLogoStage">
+      <div class="orbisv-intro-layer intro-orbit" aria-hidden="true"></div>
+      <div class="orbisv-intro-layer intro-word" aria-hidden="true"></div>
+      <div class="orbisv-intro-layer intro-vmark" aria-hidden="true"></div>
+      <img class="orbisv-intro-final" src="assets/orbisv-logo-official.png" alt="OrbisV">
+      <div class="orbisv-intro-scan" aria-hidden="true"></div>
+      <i class="orbisv-intro-spark s1" aria-hidden="true"></i><i class="orbisv-intro-spark s2" aria-hidden="true"></i><i class="orbisv-intro-spark s3" aria-hidden="true"></i><i class="orbisv-intro-spark s4" aria-hidden="true"></i><i class="orbisv-intro-spark s5" aria-hidden="true"></i>
+    </div>
+    <button class="orbisv-intro-skip" id="orbisvIntroSkip" type="button">Entrar</button>
+  </div>
   <svg class="cvd-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
     <defs>
       <filter id="cvd-protanopia" color-interpolation-filters="sRGB">
@@ -231,18 +243,39 @@
       <div class="math-keyboard" id="mathKeyboard" aria-label="Teclado matemático OrbisV"></div>
     </section>
 
-    <section class="sheet-modal" id="projectSheet" role="dialog" aria-modal="true" aria-labelledby="projectTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">ARQUIVO</span><h2 id="projectTitle">Projeto OrbisV</h2></div></div><button class="icon-btn small" data-close-modal="projectSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-      <div class="official-brand-signature" aria-label="Identidade oficial OrbisV">
-        <img src="assets/orbisv-logo-official.png" data-dark-src="assets/orbisv-logo-official.png" data-light-src="assets/orbisv-logo-transparent.png" alt="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
+    <section class="sheet-modal wide project-home" id="projectSheet" role="dialog" aria-modal="true" aria-labelledby="projectTitle" hidden>
+      <div class="modal-head project-home-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">INÍCIO</span><h2 id="projectTitle">OrbisV</h2></div></div><button class="icon-btn small" data-close-modal="projectSheet" type="button" aria-label="Entrar no ambiente gráfico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="project-home-layout">
+        <section class="project-home-hero">
+          <div class="official-brand-signature" aria-label="Identidade oficial OrbisV">
+            <img src="assets/orbisv-logo-official.png" data-dark-src="assets/orbisv-logo-official.png" data-light-src="assets/orbisv-logo-transparent.png" alt="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
+          </div>
+          <p class="project-home-lead">Visualize, explore e compreenda matemática em um ambiente gráfico interativo, acessível e orientado pela notação da literatura.</p>
+          <button class="project-continue" id="continueProjectBtn" type="button"><strong id="continueProjectLabel">Entrar no OrbisV</strong><span id="projectSessionSummary">Nenhum objeto na cena atual</span></button>
+          <div class="project-first-run" id="firstRunCard" hidden>
+            <span class="micro-label">PRIMEIRO ACESSO</span>
+            <strong>Conheça o OrbisV antes de começar</strong>
+            <p>Um tour curto apresenta os modos matemáticos, gráfico, editor, objetos, histórico, modelos e recursos de acessibilidade.</p>
+            <button class="primary-inline" id="firstRunTourBtn" type="button">Iniciar tour guiado</button>
+          </div>
+        </section>
+        <section class="project-home-menu" aria-label="Menu inicial do OrbisV">
+          <div class="project-menu-grid">
+            <button class="project-menu-card" id="newProjectBtn" type="button"><strong>Novo gráfico</strong><span>Iniciar uma cena vazia</span></button>
+            <button class="project-menu-card" id="openProjectBtn" type="button"><strong>Abrir projeto</strong><span>Importar um arquivo .orbisv</span></button>
+            <button class="project-menu-card" id="saveProjectBtn" type="button"><strong>Salvar projeto</strong><span>Guardar objetos, histórico e visualização</span></button>
+            <button class="project-menu-card" id="openExportBtn" type="button"><strong>Exportar</strong><span>PNG, SVG, PDF ou CSV</span></button>
+            <button class="project-menu-card" id="projectModelsBtn" type="button"><strong>Modelos matemáticos</strong><span>Explorar a biblioteca de modelos pré-prontos</span></button>
+            <button class="project-menu-card" id="projectA11yBtn" type="button"><strong>Acessibilidade</strong><span>Tema, contraste, visão de cores e leitura</span></button>
+            <button class="project-menu-card" id="startTourBtn" type="button"><strong>Tour do OrbisV</strong><span>Rever as principais funcionalidades</span></button>
+            <button class="project-menu-card" id="projectVisualBtn" type="button"><strong>Visualização</strong><span>Grade, eixos, coordenadas e snap</span></button>
+          </div>
+          <div class="project-feature-strip" aria-label="Recursos principais">
+            <span>Notação matemática visual</span><span>Objetos e histórico</span><span>47 modelos</span><span>PWA e acessibilidade</span>
+          </div>
+          <div class="autosave-status"><span>Salvamento automático</span><strong id="autosaveStatus">Ativo</strong></div>
+        </section>
       </div>
-      <div class="action-list">
-        <button class="action-row" id="newProjectBtn" type="button"><span>Novo gráfico</span><small>Começar uma cena vazia</small></button>
-        <button class="action-row" id="openProjectBtn" type="button"><span>Abrir projeto</span><small>Importar arquivo .orbisv</small></button>
-        <button class="action-row" id="saveProjectBtn" type="button"><span>Salvar projeto</span><small>Baixar estado completo da cena</small></button>
-        <button class="action-row" id="openExportBtn" type="button"><span>Exportar</span><small>PNG, SVG, PDF ou CSV</small></button>
-      </div>
-      <div class="autosave-status"><span>Salvamento automático</span><strong id="autosaveStatus">Ativo</strong></div>
     </section>
 
     <section class="sheet-modal" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="exportTitle" hidden>
@@ -310,15 +343,29 @@
   <!-- Menu contextual é transitório, não modal: fica fora de .modal-layer para receber ponteiro/toque. -->
   <div class="context-menu" id="objectContextMenu" role="menu" aria-label="Ações do objeto" hidden></div>
 
+  <div class="tour-layer" id="tourLayer" hidden aria-live="polite">
+    <div class="tour-focus" id="tourFocus" aria-hidden="true"></div>
+    <section class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourText">
+      <div class="tour-progress"><span id="tourStepLabel">1 de 1</span><div class="tour-progress-track"><span id="tourProgressBar"></span></div></div>
+      <span class="micro-label">TOUR ORBISV</span>
+      <h2 id="tourTitle">Conheça o OrbisV</h2>
+      <p id="tourText"></p>
+      <div class="tour-actions">
+        <button class="text-btn" id="tourSkipBtn" type="button">Pular tour</button>
+        <div><button class="secondary-btn" id="tourPrevBtn" type="button">Anterior</button><button class="primary-inline" id="tourNextBtn" type="button">Próximo</button></div>
+      </div>
+    </section>
+  </div>
+
   <input id="projectFileInput" type="file" accept=".orbisv,application/json" hidden>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=4.8.0"></script>
-  <script src="js/graphObjects.js?v=4.8.0"></script>
-  <script src="js/graphEngine.js?v=4.8.0"></script>
-  <script src="js/models.js?v=4.8.0"></script>
-  <script src="js/ui.js?v=4.8.0"></script>
-  <script src="js/main.js?v=4.8.0"></script>
+  <script src="js/mathEngine.js?v=5.0.0"></script>
+  <script src="js/graphObjects.js?v=5.0.0"></script>
+  <script src="js/graphEngine.js?v=5.0.0"></script>
+  <script src="js/models.js?v=5.0.0"></script>
+  <script src="js/ui.js?v=5.0.0"></script>
+  <script src="js/main.js?v=5.0.0"></script>
 </body>
 </html>
