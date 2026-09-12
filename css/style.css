@@ -314,33 +314,34 @@ html[data-theme="light"].high-contrast .tour-focus{box-shadow:0 0 0 9999px rgba(
 
 
 /* ===== Abertura animada oficial OrbisV ===== */
-.orbisv-intro{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(80,128,255,.18),transparent 32%),linear-gradient(180deg,#0a1830,#030914 72%);color:#e9f7ff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+.orbisv-intro{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 23% 38%,rgba(43,121,255,.13),transparent 31%),radial-gradient(circle at 78% 38%,rgba(208,73,255,.08),transparent 28%),linear-gradient(180deg,#071225,#020611 75%);color:#e9f7ff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
 .orbisv-intro.intro-exit{opacity:0;visibility:hidden;pointer-events:none}
-.orbisv-intro-grid{position:absolute;inset:0;pointer-events:none;opacity:.28;background:linear-gradient(rgba(99,149,255,.08) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,rgba(99,149,255,.08) 1px,transparent 1px) 0 0/72px 72px;mask-image:radial-gradient(circle at 50% 50%,black 28%,transparent 84%)}
-.orbisv-intro-logo-stage{position:relative;width:min(860px,86vw);aspect-ratio:1916/821;display:grid;place-items:center;margin-top:-24px}
-.orbisv-intro-final,.orbisv-intro-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.orbisv-intro-final{opacity:0;filter:drop-shadow(0 0 16px rgba(80,225,255,.16)) drop-shadow(0 0 30px rgba(206,90,255,.10))}
-.orbisv-intro-layer{pointer-events:none;background-image:url("../assets/orbisv-logo-official.png");background-repeat:no-repeat;background-position:center;background-size:contain}
-.orbisv-intro-layer.intro-orbit{clip-path:polygon(0 0,31% 0,31% 100%,0 100%);opacity:0}
-.orbisv-intro-layer.intro-word{clip-path:polygon(22% 0,70% 0,70% 100%,22% 100%);opacity:0}
-.orbisv-intro-layer.intro-vmark{clip-path:polygon(66% 0,100% 0,100% 100%,66% 100%);opacity:0}
-.orbisv-intro-logo-stage.playing .intro-orbit{animation:orbisvIntroOrbit 8.4s cubic-bezier(.2,.8,.2,1) both}
-.orbisv-intro-logo-stage.playing .intro-word{animation:orbisvIntroWord 8.4s cubic-bezier(.2,.8,.2,1) both}
-.orbisv-intro-logo-stage.playing .intro-vmark{animation:orbisvIntroV 8.4s cubic-bezier(.2,.8,.2,1) both}
-.orbisv-intro-logo-stage.playing .orbisv-intro-final{animation:orbisvIntroFinal 8.4s ease both}
-.orbisv-intro-scan{position:absolute;inset:-8%;opacity:0;mix-blend-mode:screen;background:linear-gradient(105deg,transparent 0 44%,rgba(255,255,255,.10) 48%,rgba(91,235,255,.40) 50%,rgba(238,114,255,.22) 53%,transparent 58%);transform:translateX(-120%) skewX(-14deg)}
-.orbisv-intro-logo-stage.playing .orbisv-intro-scan{animation:orbisvIntroScan 8.4s ease both}
-.orbisv-intro-spark{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 18px #55e8ff,0 0 26px rgba(239,114,255,.48);opacity:0}
-.orbisv-intro-spark.s1{left:17%;top:29%}.orbisv-intro-spark.s2{left:22%;top:61%}.orbisv-intro-spark.s3{left:76%;top:29%}.orbisv-intro-spark.s4{left:82%;top:62%}.orbisv-intro-spark.s5{left:50%;top:22%}
-.orbisv-intro-logo-stage.playing .orbisv-intro-spark{animation:orbisvIntroSpark 8.4s ease both}
-.orbisv-intro-skip{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:2;min-height:40px;padding:8px 16px;border:1px solid rgba(96,210,255,.34);border-radius:12px;background:rgba(8,21,38,.72);color:#eafaff;font:700 12px Inter,system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;opacity:0;animation:orbisvIntroSkipIn .45s ease 1.25s forwards}
+.orbisv-intro-grid{position:absolute;inset:0;pointer-events:none;opacity:.55;background:linear-gradient(rgba(100,164,255,.045) 1px,transparent 1px) 0 0/52px 52px,linear-gradient(90deg,rgba(100,164,255,.045) 1px,transparent 1px) 0 0/52px 52px;mask-image:radial-gradient(circle at 50% 46%,#000 15%,transparent 77%)}
+.orbisv-intro-logo-stage{position:relative;width:min(920px,85vw);aspect-ratio:1916/821;display:grid;place-items:center;margin-top:-18px;isolation:isolate}
+.orbisv-intro-final{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:1;filter:drop-shadow(0 0 12px rgba(88,220,255,.16)) drop-shadow(0 0 22px rgba(239,111,255,.10));z-index:2}
+.orbisv-intro-logo-glow{position:absolute;pointer-events:none;opacity:0;filter:blur(24px);mix-blend-mode:screen;z-index:1}
+.orbisv-intro-logo-glow.glow-cyan{left:3%;top:14%;width:38%;height:62%;background:radial-gradient(circle,rgba(88,220,255,.34),rgba(88,220,255,.11) 42%,transparent 72%)}
+.orbisv-intro-logo-glow.glow-violet{right:1%;top:15%;width:34%;height:64%;background:radial-gradient(circle,rgba(239,111,255,.24),rgba(157,125,255,.13) 42%,transparent 72%)}
+.orbisv-intro-logo-stage.playing .glow-cyan{animation:orbisvIntroGlowCyan 6.4s ease-in-out both}
+.orbisv-intro-logo-stage.playing .glow-violet{animation:orbisvIntroGlowViolet 6.4s ease-in-out both}
+.orbisv-intro-scan{position:absolute;inset:-10%;background:linear-gradient(100deg,transparent 0 43%,rgba(90,224,255,0) 46%,rgba(255,255,255,.58) 50%,rgba(235,104,255,.30) 54%,transparent 59%);mix-blend-mode:screen;transform:translateX(-125%) skewX(-14deg);opacity:0;pointer-events:none;z-index:4}
+.orbisv-intro-logo-stage.playing .orbisv-intro-scan{animation:orbisvIntroScanStatic 6.4s ease-in-out both}
+.orbisv-intro-orbit-pulse{position:absolute;left:4.8%;top:17%;width:34%;height:56%;border:1.5px solid rgba(89,220,255,.28);border-radius:50%;transform:rotate(-22deg) scale(.8);filter:drop-shadow(0 0 8px rgba(89,220,255,.18));opacity:0;z-index:3}
+.orbisv-intro-logo-stage.playing .orbisv-intro-orbit-pulse{animation:orbisvIntroOrbitPulseStatic 6.4s ease-in-out both}
+.orbisv-intro-vertex-pulse{position:absolute;right:10.2%;bottom:22%;width:18px;height:18px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 0 rgba(91,222,255,.5),0 0 18px rgba(238,100,255,.55);opacity:0;z-index:5}
+.orbisv-intro-logo-stage.playing .orbisv-intro-vertex-pulse{animation:orbisvIntroVertexStatic 6.4s ease-in-out both}
+.orbisv-intro-spark{position:absolute;width:5px;height:5px;border-radius:50%;background:white;box-shadow:0 0 12px #65e5ff;opacity:0;z-index:5}
+.orbisv-intro-spark.s1{left:12%;top:31%}.orbisv-intro-spark.s2{left:20%;top:65%}.orbisv-intro-spark.s3{left:42%;top:43%}.orbisv-intro-spark.s4{left:58%;top:36%}.orbisv-intro-spark.s5{left:83%;top:30%}.orbisv-intro-spark.s6{left:89%;top:63%}
+.orbisv-intro-logo-stage.playing .orbisv-intro-spark{animation:orbisvIntroSparkStatic 6.4s linear both}
+.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s1{animation-delay:.25s}.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s2{animation-delay:.55s}.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s3{animation-delay:1.35s}.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s4{animation-delay:1.8s}.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s5{animation-delay:2.65s}.orbisv-intro-logo-stage.playing .orbisv-intro-spark.s6{animation-delay:3s}
+.orbisv-intro-skip{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:6;min-height:40px;padding:8px 16px;border:1px solid rgba(96,210,255,.34);border-radius:12px;background:rgba(8,21,38,.72);color:#eafaff;font:700 12px Inter,system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;opacity:0;animation:orbisvIntroSkipIn .45s ease 1.25s forwards}
 .orbisv-intro-skip:hover{border-color:#55e8ff;background:rgba(20,41,68,.82)}
-@keyframes orbisvIntroOrbit{0%,5%{opacity:0;filter:blur(10px) brightness(.4);transform:scale(.94)}10%{opacity:.22}20%{opacity:1;filter:blur(0) brightness(1.06);transform:scale(1)}100%{opacity:1}}
-@keyframes orbisvIntroWord{0%,18%{opacity:0;filter:blur(12px);transform:translateX(-12px)}25%{opacity:.28}42%{opacity:1;filter:blur(0);transform:none}100%{opacity:1}}
-@keyframes orbisvIntroV{0%,38%{opacity:0;filter:blur(14px) brightness(.35);transform:scale(.94)}46%{opacity:.34}59%{opacity:1;filter:blur(0) brightness(1.10);transform:scale(1)}100%{opacity:1}}
-@keyframes orbisvIntroFinal{0%,58%{opacity:0}68%{opacity:.18}78%,100%{opacity:1}}
-@keyframes orbisvIntroScan{0%,52%{opacity:0;transform:translateX(-120%) skewX(-14deg)}57%{opacity:1}70%{opacity:.95;transform:translateX(115%) skewX(-14deg)}71%,100%{opacity:0;transform:translateX(115%) skewX(-14deg)}}
-@keyframes orbisvIntroSpark{0%,20%{opacity:0;transform:scale(.2)}30%{opacity:1;transform:scale(1)}55%{opacity:.8}72%,100%{opacity:0;transform:scale(.35) translateY(-14px)}}
+@keyframes orbisvIntroGlowCyan{0%,8%{opacity:0;transform:scale(.78)}15%{opacity:.68;transform:scale(1)}30%{opacity:.18;transform:scale(1.08)}44%,100%{opacity:0;transform:scale(1.12)}}
+@keyframes orbisvIntroGlowViolet{0%,34%{opacity:0;transform:scale(.78)}46%{opacity:.58;transform:scale(1)}62%{opacity:.16;transform:scale(1.08)}78%,100%{opacity:0;transform:scale(1.12)}}
+@keyframes orbisvIntroScanStatic{0%,58%{transform:translateX(-125%) skewX(-14deg);opacity:0}62%{opacity:1}76%{transform:translateX(125%) skewX(-14deg);opacity:.85}100%{transform:translateX(125%) skewX(-14deg);opacity:0}}
+@keyframes orbisvIntroOrbitPulseStatic{0%,7%{opacity:0;transform:rotate(-22deg) scale(.65)}13%{opacity:.6}29%{opacity:.18;transform:rotate(-22deg) scale(1.03)}38%,100%{opacity:0}}
+@keyframes orbisvIntroVertexStatic{0%,49%{opacity:0;box-shadow:0 0 0 0 rgba(91,222,255,.5),0 0 18px rgba(238,100,255,.55)}55%{opacity:1}66%{opacity:.7;box-shadow:0 0 0 16px rgba(91,222,255,0),0 0 25px rgba(238,100,255,.55)}78%,100%{opacity:0}}
+@keyframes orbisvIntroSparkStatic{0%,12%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1)}40%{opacity:.8}68%,100%{opacity:0;transform:scale(.4) translateY(-14px)}}
 @keyframes orbisvIntroSkipIn{to{opacity:1}}
 @media(max-width:700px){.orbisv-intro-logo-stage{width:92vw;margin-top:-8px}.orbisv-intro-skip{right:14px;bottom:max(14px,env(safe-area-inset-bottom))}}
-@media(prefers-reduced-motion:reduce){.orbisv-intro-grid,.orbisv-intro-scan,.orbisv-intro-spark{display:none}.orbisv-intro-logo-stage .orbisv-intro-layer{display:none}.orbisv-intro-final{opacity:1!important;animation:none!important}.orbisv-intro-skip{opacity:1;animation:none}}
+@media(prefers-reduced-motion:reduce){.orbisv-intro-grid,.orbisv-intro-scan,.orbisv-intro-spark,.orbisv-intro-logo-glow,.orbisv-intro-orbit-pulse,.orbisv-intro-vertex-pulse{display:none}.orbisv-intro-final{opacity:1!important;animation:none!important}.orbisv-intro-skip{opacity:1;animation:none}}

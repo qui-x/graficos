@@ -1,6 +1,6 @@
 {
   "name": "orbisv",
-  "version": "1.0.0-test.5.0",
+  "version": "1.0.0-test.5.1",
   "private": true,
   "description": "OrbisV — PWA, acessibilidade e identidade visual refinadas para claro/escuro.",
   "scripts": {
