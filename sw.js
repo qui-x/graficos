@@ -1,14 +1,15 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v4.2-20260912`;
-const BUILD = '4.2.0';
+const CACHE_NAME = `${CACHE_PREFIX}v4.3-20260912`;
+const BUILD = '4.3.0';
 const APP_SHELL = [
   './',
   './index.html',
   `./manifest.webmanifest?v=${BUILD}`,
   `./css/style.css?v=${BUILD}`,
   `./js/mathEngine.js?v=${BUILD}`,
+  `./js/models.js?v=${BUILD}`,
   `./js/graphObjects.js?v=${BUILD}`,
   `./js/graphEngine.js?v=${BUILD}`,
   `./js/ui.js?v=${BUILD}`,

@@ -192,3 +192,20 @@ html.high-contrast .math-key.function,
 html.high-contrast .math-key.variable{color:var(--text);background:var(--surface-2);border-color:var(--line-strong)}
 html.high-contrast .math-key.equals,
 html.high-contrast .primary-btn{background:var(--cyan);color:var(--on-accent);border-color:var(--cyan);box-shadow:none}
+
+/* ===== Biblioteca matemática de modelos ===== */
+.models-modal{display:flex;flex-direction:column;overflow:hidden}
+.models-toolbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(180px,.8fr);gap:8px;margin-bottom:8px}
+.models-search{min-height:40px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 11px;outline:none}
+.models-search:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(70,230,255,.10)}
+.models-summary{font-size:10px;color:var(--muted);padding:1px 2px 9px}
+.models-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;overflow:auto;padding:1px 2px 4px;min-height:0}
+.model-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:13px;background:var(--card-tint);padding:12px;min-width:0}
+.model-card-head{display:flex;flex-direction:column;gap:4px}.model-card h3{font-size:12px;margin:0;color:var(--text)}
+.model-category{font-size:8px;color:var(--cyan);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.model-formula{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:17px;color:var(--text);padding:8px 9px;border:1px solid rgba(128,160,190,.16);border-radius:9px;background:var(--panel-tint);overflow:auto;white-space:nowrap}
+.model-card p{font-size:9px;line-height:1.45;color:var(--muted);margin:0;flex:1}.model-use{align-self:flex-end;min-width:108px}
+.models-open-btn{margin-bottom:10px;border-style:dashed;color:var(--cyan)}
+.context-menu button:disabled{opacity:.38;cursor:not-allowed}
+.context-menu button:not(:disabled):active{transform:translateY(1px)}
+@media(max-width:760px){.models-modal{height:min(84dvh,760px)}.models-toolbar{grid-template-columns:1fr}.models-grid{grid-template-columns:1fr}.model-card{padding:11px}.model-formula{font-size:16px}}
