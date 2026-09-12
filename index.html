@@ -13,8 +13,8 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=5.3.0">
-  <link rel="stylesheet" href="css/style.css?v=5.3.0">
+  <link rel="manifest" href="manifest.webmanifest?v=5.4.0">
+  <link rel="stylesheet" href="css/style.css?v=5.4.0">
 </head>
 <body>
   <div class="orbisv-intro" id="orbisvIntro" role="dialog" aria-modal="true" aria-label="Apresentação OrbisV">
@@ -226,16 +226,9 @@
         <button class="primary-inline" id="mathSaveBtn" type="button">Salvar</button>
       </div>
       <div class="math-stage">
+        <div class="math-stage-label"><span>Expressão</span><small id="mathKeyboardHint">Digite pelo teclado físico ou use o teclado OrbisV.</small></div>
         <div class="math-display" id="mathDisplay" tabindex="0" inputmode="none" role="textbox" aria-multiline="false" aria-label="Expressão matemática"></div>
         <div class="math-source-hint" id="mathValidation" aria-live="polite">Expressão válida</div>
-      </div>
-      <div class="math-editor-actions">
-        <button class="icon-btn small" id="mathUndoBtn" type="button" aria-label="Desfazer edição"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H4v5M4.5 11A8 8 0 1 1 7 18"/></svg></button>
-        <button class="icon-btn small" id="mathRedoBtn" type="button" aria-label="Refazer edição"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7h5v5m-.5-1A8 8 0 1 0 17 18"/></svg></button>
-        <button class="mini-btn" id="mathCursorLeftBtn" type="button" aria-label="Mover cursor para esquerda">←</button>
-        <button class="mini-btn" id="mathCursorRightBtn" type="button" aria-label="Mover cursor para direita">→</button>
-        <button class="mini-btn" id="mathBackspaceBtn" type="button">Apagar</button>
-        <button class="mini-btn" id="mathClearBtn" type="button">Limpar</button>
       </div>
       <div class="math-keyboard-tabs" role="tablist" aria-label="Categorias do teclado matemático">
         <button class="math-key-tab active" data-key-tab="basic" type="button">Calculadora</button>
@@ -363,11 +356,11 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=5.3.0"></script>
-  <script src="js/graphObjects.js?v=5.3.0"></script>
-  <script src="js/graphEngine.js?v=5.3.0"></script>
-  <script src="js/models.js?v=5.3.0"></script>
-  <script src="js/ui.js?v=5.3.0"></script>
-  <script src="js/main.js?v=5.3.0"></script>
+  <script src="js/mathEngine.js?v=5.4.0"></script>
+  <script src="js/graphObjects.js?v=5.4.0"></script>
+  <script src="js/graphEngine.js?v=5.4.0"></script>
+  <script src="js/models.js?v=5.4.0"></script>
+  <script src="js/ui.js?v=5.4.0"></script>
+  <script src="js/main.js?v=5.4.0"></script>
 </body>
 </html>

@@ -146,7 +146,15 @@
         if(expr[i]==='^'){
           let end=i+1, rendered='';
           if(expr[end]==='('){let depth=1;end+=1;let body='';while(end<expr.length&&depth>0){const ch=expr[end];if(ch==='('){depth+=1;body+=ch;}else if(ch===')'){depth-=1;if(depth>0)body+=ch;}else body+=ch;end+=1;}rendered=[...body].map((ch)=>this.superscriptMap(ch)).join('');}
-          else {while(end<expr.length && /[A-Za-z0-9.+\-]/.test(expr[end])) end+=1;const body=expr.slice(i+1,end)||' ';rendered=[...body].map((ch)=>this.superscriptMap(ch)).join('');}
+          else {
+            const bodyStart=end;
+            if(expr[end]==='+'||expr[end]==='-')end+=1;
+            if(/[0-9.]/.test(expr[end]||'')){while(end<expr.length&&/[0-9.]/.test(expr[end]))end+=1;}
+            else if(/[A-Za-zÀ-ÿ]/.test(expr[end]||'')){while(end<expr.length&&/[A-Za-zÀ-ÿ0-9]/.test(expr[end]))end+=1;}
+            else if(end===bodyStart)end+=1;
+            const body=expr.slice(i+1,end)||' ';
+            rendered=[...body].map((ch)=>this.superscriptMap(ch)).join('');
+          }
           push(rendered||'⁽⁾',i,end,'sup');i=end;continue;
         }
         if(expr[i]==='*'){push('×',i,i+1,'op');i+=1;continue;}
@@ -275,22 +283,65 @@
 
     openMathEditor(path,type,vars,label){const value=String(this.getPath(this.drafts[this.activeMode],path)??'');this.mathState={path,type,vars,label,expr:value,cursor:value.length,undo:[],redo:[],keyTab:'basic'};this.$.mathContext.textContent=type==='number'?'VALOR NUMÉRICO':'NOTAÇÃO MATEMÁTICA';this.$.mathTitle.textContent=label;this.openModal('mathEditorModal');document.querySelector('.math-keyboard-tabs').hidden=type==='number';this.renderMathKeyboard();this.renderMathEditor();this.$.mathDisplay.focus();},
     bindMathEditor(){
-      document.querySelectorAll('.math-key-tab').forEach(b=>b.addEventListener('click',()=>{if(!this.mathState)return;this.mathState.keyTab=b.dataset.keyTab;document.querySelectorAll('.math-key-tab').forEach(x=>x.classList.toggle('active',x===b));this.renderMathKeyboard();}));
-      idListen('mathCancelBtn','click',()=>this.closeModal('mathEditorModal'));this.$.mathSave.addEventListener('click',()=>this.saveMathEditor());idListen('mathUndoBtn','click',()=>this.mathUndo());idListen('mathRedoBtn','click',()=>this.mathRedo());idListen('mathCursorLeftBtn','click',()=>{if(this.mathState){this.mathState.cursor=Math.max(0,this.mathState.cursor-1);this.renderMathEditor();}});idListen('mathCursorRightBtn','click',()=>{if(this.mathState){this.mathState.cursor=Math.min(this.mathState.expr.length,this.mathState.cursor+1);this.renderMathEditor();}});idListen('mathBackspaceBtn','click',()=>this.mathBackspace());idListen('mathClearBtn','click',()=>{this.pushMathUndo();this.mathState.expr='';this.mathState.cursor=0;this.renderMathEditor();});
-      this.$.mathKeyboard.addEventListener('click',(e)=>{const b=e.target.closest('button');if(!b||b.disabled)return;const action=b.dataset.action;if(action==='clear'){this.pushMathUndo();this.mathState.expr='';this.mathState.cursor=0;this.renderMathEditor();return;}if(action==='backspace'){this.mathBackspace();return;}if(action==='apply'){this.saveMathEditor();return;}if(b.dataset.token!==undefined)this.insertMathToken(b.dataset.token,b.dataset.kind||'text');});
-      this.$.mathDisplay.addEventListener('keydown',(e)=>{if(!this.mathState)return;if(e.key==='Escape'){e.preventDefault();this.closeModal('mathEditorModal');return;}if(e.key==='Enter'){e.preventDefault();this.saveMathEditor();return;}if(e.key==='ArrowLeft'){e.preventDefault();this.mathState.cursor=Math.max(0,this.mathState.cursor-1);this.renderMathEditor();return;}if(e.key==='ArrowRight'){e.preventDefault();this.mathState.cursor=Math.min(this.mathState.expr.length,this.mathState.cursor+1);this.renderMathEditor();return;}if(e.key==='Backspace'){e.preventDefault();this.mathBackspace();return;}if(e.ctrlKey||e.metaKey)return;if(e.key.length===1&&/[0-9A-Za-zÀ-ÿ+\-*/^().,!π×÷ ]/.test(e.key)){e.preventDefault();this.insertMathToken(e.key,'text');}});
-      this.$.mathDisplay.addEventListener('click',(e)=>{if(!this.mathState)return;const unit=e.target.closest('.math-unit');if(!unit){this.$.mathDisplay.focus();return;}const start=Number(unit.dataset.start||0),end=Number(unit.dataset.end||start);const rect=unit.getBoundingClientRect();const pos=(e.clientX-rect.left)<(rect.width/2)?start:end;this.mathState.cursor=Math.max(0,Math.min(this.mathState.expr.length,pos));this.renderMathEditor();this.$.mathDisplay.focus();});
+      document.querySelectorAll('.math-key-tab').forEach(b=>b.addEventListener('click',()=>{if(!this.mathState)return;this.mathState.keyTab=b.dataset.keyTab;document.querySelectorAll('.math-key-tab').forEach(x=>x.classList.toggle('active',x===b));this.renderMathKeyboard();this.focusMathEditor();}));
+      idListen('mathCancelBtn','click',()=>this.closeModal('mathEditorModal'));
+      this.$.mathSave.addEventListener('click',()=>this.saveMathEditor());
+      this.$.mathKeyboard.addEventListener('pointerdown',(e)=>{if(e.target.closest('button'))e.preventDefault();});
+      this.$.mathKeyboard.addEventListener('click',(e)=>{
+        const b=e.target.closest('button');if(!b||b.disabled||!this.mathState)return;
+        const action=b.dataset.action;
+        if(action==='clear'){this.mathClear();}
+        else if(action==='backspace'){this.mathBackspace();}
+        else if(action==='delete-forward'){this.mathDeleteForward();}
+        else if(action==='undo'){this.mathUndo();}
+        else if(action==='redo'){this.mathRedo();}
+        else if(action==='cursor-left'){this.moveMathCursor(-1);}
+        else if(action==='cursor-right'){this.moveMathCursor(1);}
+        else if(action==='cursor-home'){this.mathState.cursor=0;this.renderMathEditor();}
+        else if(action==='cursor-end'){this.mathState.cursor=this.mathState.expr.length;this.renderMathEditor();}
+        else if(action==='apply'){this.saveMathEditor();return;}
+        else if(b.dataset.token!==undefined)this.insertMathToken(b.dataset.token,b.dataset.kind||'text');
+        this.focusMathEditor();
+      });
+      this.$.mathDisplay.addEventListener('keydown',(e)=>this.handleMathKeyboardEvent(e));
+      this.$.mathDisplay.addEventListener('click',(e)=>{if(!this.mathState)return;const unit=e.target.closest('.math-unit');if(!unit){this.focusMathEditor();return;}const start=Number(unit.dataset.start||0),end=Number(unit.dataset.end||start);const rect=unit.getBoundingClientRect();const pos=(e.clientX-rect.left)<(rect.width/2)?start:end;this.mathState.cursor=Math.max(0,Math.min(this.mathState.expr.length,pos));this.renderMathEditor();this.focusMathEditor();});
     },
+    focusMathEditor(){requestAnimationFrame(()=>this.$.mathDisplay?.focus({preventScroll:true}));},
+    handleMathKeyboardEvent(e){
+      const s=this.mathState;if(!s)return;
+      const mod=e.ctrlKey||e.metaKey;
+      if(e.key==='Escape'){e.preventDefault();this.closeModal('mathEditorModal');return;}
+      if(e.key==='Enter'){e.preventDefault();this.saveMathEditor();return;}
+      if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?this.mathRedo():this.mathUndo();return;}
+      if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();this.mathRedo();return;}
+      if(e.key==='ArrowLeft'){e.preventDefault();this.moveMathCursor(-1);return;}
+      if(e.key==='ArrowRight'){e.preventDefault();this.moveMathCursor(1);return;}
+      if(e.key==='Home'){e.preventDefault();s.cursor=0;this.renderMathEditor();return;}
+      if(e.key==='End'){e.preventDefault();s.cursor=s.expr.length;this.renderMathEditor();return;}
+      if(e.key==='Backspace'){e.preventDefault();this.mathBackspace();return;}
+      if(e.key==='Delete'){e.preventDefault();this.mathDeleteForward();return;}
+      if(mod)return;
+      if(e.key.length===1&&/[0-9A-Za-zÀ-ÿ+\-*/^().,!π×÷ ]/.test(e.key)){e.preventDefault();this.insertMathToken(e.key,'text');}
+    },
+    moveMathCursor(delta){if(!this.mathState)return;this.mathState.cursor=Math.max(0,Math.min(this.mathState.expr.length,this.mathState.cursor+delta));this.renderMathEditor();},
     renderMathKeyboard(){
       if(!this.mathState)return;
       const numeric=this.mathState.type==='number',tab=this.mathState.keyTab,vars=this.mathState.vars.split(',').filter(Boolean);
-      const key=(label,token='',kind='text',cls='',action='')=>`<button class="math-key ${cls}" type="button"${action?` data-action="${action}"`:` data-token="${this.escape(token||label)}" data-kind="${kind}"`}>${label}</button>`;
+      const key=(label,token='',kind='text',cls='',action='',aria='')=>`<button class="math-key ${cls}" type="button"${aria?` aria-label="${this.escape(aria)}"`:''}${action?` data-action="${action}"`:` data-token="${this.escape(token||label)}" data-kind="${kind}"`}>${label}</button>`;
+      const command=[
+        key('<span class="key-main">↶</span><small>Desfazer</small>','','text','command','undo','Desfazer'),
+        key('<span class="key-main">↷</span><small>Refazer</small>','','text','command','redo','Refazer'),
+        key('<span class="key-main">←</span><small>Cursor</small>','','text','command','cursor-left','Mover cursor para esquerda'),
+        key('<span class="key-main">→</span><small>Cursor</small>','','text','command','cursor-right','Mover cursor para direita'),
+        key('<span class="key-main">⌫</span><small>Apagar</small>','','text','command danger-soft','backspace','Apagar caractere anterior'),
+        key('<span class="key-main">Del</span><small>À frente</small>','','text','command','delete-forward','Apagar caractere seguinte')
+      ].join('');
       const core=[
-        key('AC','','text','utility','clear'),key('(', '(','text','utility'),key(')',')','text','utility'),key('÷','/','text','operator'),
+        key('AC','','text','utility clear-key','clear','Limpar expressão'),key('(', '(','text','utility'),key(')',')','text','utility'),key('÷','/','text','operator'),
         key('7','7','text','number'),key('8','8','text','number'),key('9','9','text','number'),key('×','*','text','operator'),
         key('4','4','text','number'),key('5','5','text','number'),key('6','6','text','number'),key('−','-','text','operator'),
         key('1','1','text','number'),key('2','2','text','number'),key('3','3','text','number'),key('+','+','text','operator'),
-        key('0','0','text','number'),key(',','.','text','number'),key('DEL','','text','utility','backspace'),key('=','','text','equals','apply')
+        key('0','0','text','number'),key(',','.','text','number'),key('<span class="key-main">⌫</span><small>Apagar</small>','','text','utility backspace-key','backspace','Apagar caractere anterior'),key('=','','text','equals','apply','Salvar expressão')
       ].join('');
       let scientific='',note='';
       if(numeric){
@@ -318,13 +369,15 @@
       }else{
         const disabled=(label)=>`<button class="math-key function" type="button" disabled aria-disabled="true">${label}</button>`;
         scientific=[disabled('d/dx'),disabled('∫'),disabled('lim'),disabled('Σ'),disabled('Π'),disabled('∞'),disabled('≤'),disabled('≥'),disabled('≠'),disabled('∂')].join('');
-        note='<div class="math-pad-note">Os operadores de cálculo já fazem parte do teclado visual. A execução será conectada quando definirmos o motor após este primeiro teste.</div>';
+        note='<div class="math-pad-note">Os operadores de cálculo avançado serão ativados junto ao motor simbólico. Os controles de edição e o teclado físico já funcionam neste campo.</div>';
       }
-      this.$.mathKeyboard.innerHTML=`<div class="math-calculator-shell">${scientific?`<div class="math-scientific-pad">${scientific}</div>`:''}${note}<div class="math-calculator-pad">${core}</div></div>`;
+      this.$.mathKeyboard.innerHTML=`<div class="math-calculator-shell"><div class="math-command-pad" aria-label="Controles de edição">${command}</div>${scientific?`<div class="math-scientific-pad">${scientific}</div>`:''}${note}<div class="math-calculator-pad">${core}</div><div class="math-keyboard-help"><span><kbd>Enter</kbd> salvar</span><span><kbd>Backspace</kbd> apagar</span><span><kbd>Delete</kbd> apagar à frente</span><span><kbd>← →</kbd> mover cursor</span><span><kbd>Ctrl+Z</kbd> desfazer</span></div></div>`;
     },
     pushMathUndo(){if(!this.mathState)return;this.mathState.undo.push({expr:this.mathState.expr,cursor:this.mathState.cursor});if(this.mathState.undo.length>80)this.mathState.undo.shift();this.mathState.redo=[];},
     insertMathToken(token,kind){const s=this.mathState;if(!s)return;this.pushMathUndo();let insert=token,cursorOffset=String(token).length;if(kind==='func'){insert=`${token}()`;cursorOffset=token.length+1;}else if(kind==='sqrt'){insert='sqrt()';cursorOffset=5;}else if(kind==='abs'){insert='abs()';cursorOffset=4;}else if(kind==='power'){insert='^()';cursorOffset=2;}else if(kind==='fraction'){if(s.expr&&s.cursor===s.expr.length){s.expr=`(${s.expr})/()`;s.cursor=s.expr.length-1;this.renderMathEditor();return;}insert='/()';cursorOffset=2;}else if(kind==='square'){insert='^2';cursorOffset=2;}insert=insert.replace('×','*').replace('÷','/').replace('−','-').replace('π','pi').replace(',','.');s.expr=s.expr.slice(0,s.cursor)+insert+s.expr.slice(s.cursor);s.cursor+=cursorOffset;this.renderMathEditor();},
     mathBackspace(){const s=this.mathState;if(!s||s.cursor<=0)return;this.pushMathUndo();s.expr=s.expr.slice(0,s.cursor-1)+s.expr.slice(s.cursor);s.cursor-=1;this.renderMathEditor();},
+    mathDeleteForward(){const s=this.mathState;if(!s||s.cursor>=s.expr.length)return;this.pushMathUndo();s.expr=s.expr.slice(0,s.cursor)+s.expr.slice(s.cursor+1);this.renderMathEditor();},
+    mathClear(){const s=this.mathState;if(!s||!s.expr)return;this.pushMathUndo();s.expr='';s.cursor=0;this.renderMathEditor();},
     mathUndo(){const s=this.mathState,entry=s?.undo.pop();if(!entry)return;s.redo.push({expr:s.expr,cursor:s.cursor});s.expr=entry.expr;s.cursor=entry.cursor;this.renderMathEditor();},mathRedo(){const s=this.mathState,entry=s?.redo.pop();if(!entry)return;s.undo.push({expr:s.expr,cursor:s.cursor});s.expr=entry.expr;s.cursor=entry.cursor;this.renderMathEditor();},
     renderMathEditor(){const s=this.mathState;if(!s)return;const vars=this.varsMap(s.vars);if(!s.expr){this.$.mathDisplay.innerHTML='<span class="math-placeholder">Construa a expressão com o teclado OrbisV</span>';this.$.mathDisplay.setAttribute('aria-label','Editor matemático vazio');this.$.mathValidation.textContent='Expressão vazia';this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;return;}this.$.mathDisplay.innerHTML=this.renderEditableMath(s.expr,s.cursor);this.$.mathDisplay.setAttribute('aria-label',`Expressão matemática: ${MathEngine.toAccessibleText(s.expr)}`);try{const identifiers=MathEngine.identifierNames?.(s.expr)||[];const contextVars=new Set(Object.keys(vars));const parameters=identifiers.filter((name)=>!contextVars.has(name));if(s.type==='number'&&parameters.length)throw new Error(`Este campo aceita apenas valores numéricos e constantes. Identificador encontrado: ${parameters[0]}.`);MathEngine.toMathML(s.expr,vars);const paramNote=parameters.length?` · parâmetro${parameters.length>1?'s':''} automático${parameters.length>1?'s':''}: ${parameters.map((name)=>`${name}=${MathEngine.standardIdentifierDefault}`).join(', ')}`:'';this.$.mathValidation.textContent=`Expressão válida${paramNote}`;this.$.mathValidation.className='math-source-hint';this.$.mathSave.disabled=false;}catch(e){this.$.mathValidation.textContent=e.message;this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;}},
     saveMathEditor(){if(!this.mathState||this.$.mathSave.disabled)return;const s=this.mathState;const normalized=MathEngine.normalize(s.expr);this.setPath(this.drafts[this.activeMode],s.path,normalized);this.closeModal('mathEditorModal');this.mathState=null;this.renderModeForm();},

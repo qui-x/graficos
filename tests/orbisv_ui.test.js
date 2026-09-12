@@ -20,7 +20,7 @@ if (!html.includes('class="mobile-nav"')) throw new Error('mobile navigation mis
 for (const asset of ['assets/orbisv-wordmark-official.png','assets/orbisv-v-symbol.png','assets/orbisv-v-64.png']) {
   if (!html.includes(asset)) throw new Error(`official brand asset not wired: ${asset}`);
 }
-if (!ui.includes('math-calculator-pad') || !ui.includes("key('7'") || !ui.includes("key('=','','text','equals','apply')")) throw new Error('calculator-style mobile keypad missing');
+if (!ui.includes('math-calculator-pad') || !ui.includes("key('7'") || !ui.includes("'equals','apply'")) throw new Error('calculator-style mobile keypad missing');
 
 for (const mode of ['function','parametric','vector','geometry','washers','curve3d','line3d']) {
   if (!html.includes(`data-mode="${mode}"`)) throw new Error(`missing mode: ${mode}`);
