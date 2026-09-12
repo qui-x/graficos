@@ -18,7 +18,13 @@
   --btn-key-function-text:#dcecff;--btn-key-function-border:var(--line);--btn-key-function-bg:linear-gradient(180deg,rgba(33,49,77,.96),rgba(17,29,47,.98));
   --btn-key-variable-text:#8ff2ff;--btn-key-variable-border:rgba(70,230,255,.32);--btn-key-variable-bg:linear-gradient(180deg,rgba(33,49,77,.96),rgba(17,29,47,.98));
   --btn-key-equals-text:#02121a;--btn-key-equals-border:rgba(118,241,255,.7);--btn-key-equals-bg:linear-gradient(135deg,#62efff,#8291ff 62%,#cb79ff);--btn-key-equals-shadow:0 5px 18px rgba(70,230,255,.18);
+  --brand-frame-bg:rgba(3,11,22,.28);--brand-frame-border:rgba(77,232,255,.12);--brand-frame-shadow:0 6px 18px rgba(0,0,0,.14);
+  --brand-wordmark-filter:drop-shadow(0 0 10px rgba(77,232,255,.12));--brand-symbol-filter:drop-shadow(0 0 8px rgba(70,230,255,.2));
+  --brand-signature-bg:rgba(2,11,27,.96);--brand-signature-border:rgba(92,132,188,.2);
+  --math-modal-mobile-bg:linear-gradient(180deg,#071322,#030914);--math-editor-actions-bg:rgba(4,11,20,.5);
+  --math-scientific-pad-bg:rgba(4,11,20,.28);--math-calculator-pad-bg:linear-gradient(180deg,rgba(10,23,38,.94),rgba(5,13,23,.98));
 }
+
 
 html[data-theme="light"]{
   --bg:#f4f8fc;--surface:#ffffff;--surface-2:#f8fbfe;--surface-3:#eaf1f7;--glass:rgba(255,255,255,.94);
@@ -39,7 +45,13 @@ html[data-theme="light"]{
   --btn-key-function-text:#21354b;--btn-key-function-border:#c4d2df;--btn-key-function-bg:linear-gradient(180deg,#eef3f8,#e2eaf2);
   --btn-key-variable-text:#005b76;--btn-key-variable-border:#8db9c6;--btn-key-variable-bg:linear-gradient(180deg,#eef6f9,#dfeaf0);
   --btn-key-equals-text:#ffffff;--btn-key-equals-border:#005b76;--btn-key-equals-bg:linear-gradient(135deg,#006c87,#315dcb 62%,#6b45c6);--btn-key-equals-shadow:0 5px 16px rgba(49,93,203,.18);
+  --brand-frame-bg:linear-gradient(180deg,rgba(255,255,255,.74),rgba(244,248,252,.98));--brand-frame-border:rgba(128,152,173,.30);--brand-frame-shadow:0 8px 18px rgba(32,56,80,.08);
+  --brand-wordmark-filter:drop-shadow(0 2px 8px rgba(49,93,203,.12));--brand-symbol-filter:drop-shadow(0 2px 8px rgba(49,93,203,.12));
+  --brand-signature-bg:linear-gradient(180deg,#f8fbfe,#eef4f9);--brand-signature-border:rgba(128,152,173,.28);
+  --math-modal-mobile-bg:linear-gradient(180deg,#ffffff,#f4f8fc);--math-editor-actions-bg:#f5f9fc;
+  --math-scientific-pad-bg:#f5f9fc;--math-calculator-pad-bg:linear-gradient(180deg,#f8fbfe,#edf3f8);
 }
+
 
 html.high-contrast{
   --bg:#000000;--surface:#000000;--surface-2:#06111c;--surface-3:#0d1f30;--glass:rgba(0,0,0,.96);
@@ -56,7 +68,10 @@ html.high-contrast{
   --btn-key-function-text:var(--text);--btn-key-function-border:var(--line-strong);--btn-key-function-bg:var(--surface-2);
   --btn-key-variable-text:var(--text);--btn-key-variable-border:var(--line-strong);--btn-key-variable-bg:var(--surface-2);
   --btn-key-equals-text:var(--on-accent);--btn-key-equals-border:var(--cyan);--btn-key-equals-bg:var(--cyan);--btn-key-equals-shadow:none;
+  --brand-frame-bg:var(--surface);--brand-frame-border:var(--line-strong);--brand-frame-shadow:none;--brand-wordmark-filter:none;--brand-symbol-filter:none;
+  --brand-signature-bg:var(--surface);--brand-signature-border:var(--line-strong);--math-modal-mobile-bg:var(--surface);--math-editor-actions-bg:var(--surface);--math-scientific-pad-bg:var(--surface);--math-calculator-pad-bg:var(--surface);
 }
+
 
 html[data-theme="light"].high-contrast{
   --bg:#ffffff;--surface:#ffffff;--surface-2:#ffffff;--surface-3:#eef2f5;--glass:rgba(255,255,255,.98);
@@ -73,7 +88,10 @@ html[data-theme="light"].high-contrast{
   --btn-key-function-text:var(--text);--btn-key-function-border:var(--line-strong);--btn-key-function-bg:#ffffff;
   --btn-key-variable-text:var(--text);--btn-key-variable-border:var(--line-strong);--btn-key-variable-bg:#ffffff;
   --btn-key-equals-text:var(--on-accent);--btn-key-equals-border:var(--cyan);--btn-key-equals-bg:var(--cyan);--btn-key-equals-shadow:none;
+  --brand-frame-bg:var(--surface);--brand-frame-border:var(--line-strong);--brand-frame-shadow:none;--brand-wordmark-filter:none;--brand-symbol-filter:none;
+  --brand-signature-bg:var(--surface);--brand-signature-border:var(--line-strong);--math-modal-mobile-bg:var(--surface);--math-editor-actions-bg:var(--surface);--math-scientific-pad-bg:var(--surface);--math-calculator-pad-bg:var(--surface);
 }
+
 
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:calc(16px * var(--font-scale));letter-spacing:var(--letter-space);-webkit-font-smoothing:antialiased}button,input,select,textarea{font:inherit}button{color:inherit}button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}.hidden,[hidden]{display:none!important}.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.skip-link{position:fixed;left:12px;top:-60px;z-index:999;background:var(--cyan);color:var(--on-accent);padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:800}.skip-link:focus{top:12px}
 .app-shell{position:fixed;inset:0;display:flex;flex-direction:column;background:radial-gradient(circle at 28% -12%,rgba(80,130,220,.17),transparent 32%),linear-gradient(160deg,var(--surface),var(--bg) 52%);overflow:hidden}.topbar{height:var(--topbar-h);flex:0 0 var(--topbar-h);display:flex;align-items:center;justify-content:space-between;padding:7px 14px 7px 16px;border-bottom:1px solid var(--line);background:var(--topbar-bg);backdrop-filter:blur(18px);z-index:30}.brand-block{height:58px;display:flex;align-items:center;min-width:0}.brand-logo{display:block;width:228px;height:58px;object-fit:contain;object-position:left center}.brand-compact{display:none;align-items:center;gap:8px;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:22px}.brand-compact img{width:38px;height:38px}.top-actions{display:flex;align-items:center;gap:7px}.icon-btn,.header-btn,.graph-tool,.mini-btn,.text-btn,.secondary-btn,.danger-btn,.primary-inline,.rail-toggle,.mobile-nav-btn,.mode-btn,.inspector-tab,.math-key-tab,.math-key,.action-row,.export-card,.secondary-wide{border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease,opacity .15s ease}.icon-btn:hover,.header-btn:hover,.graph-tool:hover,.mini-btn:hover,.text-btn:hover,.secondary-btn:hover,.mode-btn:hover,.action-row:hover,.export-card:hover,.secondary-wide:hover{border-color:var(--line-strong);background:var(--surface-3)}.icon-btn{width:40px;height:40px;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;padding:0}.icon-btn.small{width:34px;height:34px;border-radius:10px}.icon-btn svg,.header-btn svg,.graph-tool svg,.mode-btn svg,.mobile-nav-btn svg,.rail-toggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.icon-btn:disabled,.mini-btn:disabled{opacity:.35;cursor:not-allowed}.header-btn{height:40px;border-radius:11px;padding:0 11px;display:flex;gap:7px;align-items:center}.header-btn svg{width:18px;height:18px}
@@ -97,24 +115,24 @@ body.simple-reading .brand-logo{display:none}body.simple-reading .brand-compact{
    ORBISV — IDENTIDADE OFICIAL + TECLADO CALCULADORA MOBILE
    A marca abaixo usa recortes diretos da arte aprovada.
    ========================================================= */
-.brand-block{height:64px;display:flex;align-items:center;min-width:0;overflow:hidden}
-.brand-logo{display:block;width:min(315px,28vw);height:64px;object-fit:contain;object-position:left center;border-radius:8px}
+.brand-block{height:64px;display:flex;align-items:center;min-width:0;overflow:hidden;padding:3px 0}
+.brand-logo{display:block;width:min(315px,28vw);height:58px;object-fit:contain;object-position:left center;border-radius:0;background:transparent;border:0;box-shadow:none;filter:var(--brand-wordmark-filter)}
 .brand-compact{display:none;align-items:center;justify-content:flex-start;min-width:48px;height:48px}
-.brand-compact .brand-v-symbol{display:block;width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(70,230,255,.2))}
-html[data-theme="light"] .official-v-mark{content:url("../assets/orbisv-v-symbol-light.png")}
-html[data-theme="light"] .brand-v-symbol,html[data-theme="light"] .modal-brand-mark,html[data-theme="light"] .graph-empty .official-v-mark{filter:drop-shadow(0 0 6px rgba(49,93,203,.12))}
-html[data-theme="light"].high-contrast .official-v-mark{content:url("../assets/orbisv-v-symbol-light.png")}
+.brand-compact .brand-v-symbol{display:block;width:48px;height:48px;object-fit:contain;filter:var(--brand-symbol-filter)}
+html[data-theme="light"] .brand-logo{background:transparent;border:0;box-shadow:none;padding:0}
+html[data-theme="light"].high-contrast .brand-logo{background:transparent;border:0;box-shadow:none;padding:0}
+html[data-theme="light"] .brand-v-symbol,html[data-theme="light"] .modal-brand-mark,html[data-theme="light"] .graph-empty .official-v-mark{filter:var(--brand-symbol-filter)}
 html[data-theme="light"].high-contrast .brand-v-symbol,html[data-theme="light"].high-contrast .modal-brand-mark,html[data-theme="light"].high-contrast .graph-empty .official-v-mark{filter:none}
 .modal-heading-with-mark,.math-modal-brand{display:flex;align-items:center;gap:10px;min-width:0}
-.modal-brand-mark{width:36px;height:36px;object-fit:contain;flex:0 0 36px;filter:drop-shadow(0 0 8px rgba(70,230,255,.22))}
+.modal-brand-mark{width:36px;height:36px;object-fit:contain;flex:0 0 36px;filter:var(--brand-symbol-filter)}
 .math-modal-brand{justify-content:center}
 .graph-empty img{width:78px;height:78px;object-fit:contain;opacity:.92;filter:drop-shadow(0 0 16px rgba(70,230,255,.18))}
 
 /* Teclado matemático: aparência previsível de calculadora científica. */
 .math-keyboard{display:block;padding:10px 12px 14px;overflow:auto}
 .math-calculator-shell{width:min(100%,620px);margin:0 auto;display:flex;flex-direction:column;gap:8px}
-.math-scientific-pad{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:7px;border:1px solid var(--line);border-radius:13px;background:rgba(4,11,20,.28)}
-.math-calculator-pad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(10,23,38,.94),rgba(5,13,23,.98));box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.math-scientific-pad{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:7px;border:1px solid var(--line);border-radius:13px;background:var(--math-scientific-pad-bg)}
+.math-calculator-pad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--math-calculator-pad-bg);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
 .math-key{min-height:48px;border-radius:11px;background:linear-gradient(180deg,var(--surface-3),var(--surface-2));font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:17px;font-weight:650;box-shadow:0 2px 7px rgba(0,0,0,.14)}
 .math-key.number{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:19px;font-weight:700;color:var(--btn-key-number-text);border-color:var(--btn-key-number-border);background:var(--btn-key-number-bg)}
 .math-key.operator{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:21px;color:var(--btn-key-operator-text);border-color:var(--btn-key-operator-border);background:var(--btn-key-operator-bg)}
@@ -136,7 +154,7 @@ html[data-theme="light"].high-contrast .brand-v-symbol,html[data-theme="light"].
 @media(max-width:760px){
   .brand-compact{display:flex}
   .brand-compact .brand-v-symbol{width:46px;height:46px}
-  .math-modal{background:linear-gradient(180deg,#071322,#030914)}
+  .math-modal{background:var(--math-modal-mobile-bg)}
   .math-modal-head{min-height:61px;padding:7px 10px}
   .math-modal-brand{gap:6px}
   .math-modal-brand .modal-brand-mark{width:31px;height:31px;flex-basis:31px}
@@ -144,7 +162,7 @@ html[data-theme="light"].high-contrast .brand-v-symbol,html[data-theme="light"].
   .math-modal-brand .micro-label{font-size:7px}
   .math-stage{flex:1 1 auto;min-height:110px;max-height:31dvh;padding:12px 10px}
   .math-display{min-height:64px;font-size:clamp(25px,8vw,38px)}
-  .math-editor-actions{padding:6px 8px;gap:4px;background:rgba(4,11,20,.5)}
+  .math-editor-actions{padding:6px 8px;gap:4px;background:var(--math-editor-actions-bg)}
   .math-editor-actions .mini-btn{min-height:32px;padding:3px 8px}
   .math-keyboard-tabs{padding:0 8px;background:var(--keyboard-tabs-bg)}
   .math-key-tab{padding:8px 4px;font-size:10px}
@@ -169,8 +187,8 @@ html[data-theme="light"].high-contrast .brand-v-symbol,html[data-theme="light"].
   .math-key.function{font-size:12px;min-height:39px}
   .math-editor-actions .mini-btn{font-size:9px;padding:3px 6px}
 }
-.official-brand-signature{margin:0 0 12px;padding:8px;border:1px solid rgba(92,132,188,.2);border-radius:13px;background:#020b1b;overflow:hidden}
-.official-brand-signature img{display:block;width:100%;max-height:145px;object-fit:contain;border-radius:8px}
+.official-brand-signature{margin:0 0 12px;padding:0;border:0;border-radius:0;background:transparent;overflow:visible}
+.official-brand-signature img{display:block;width:100%;max-height:145px;object-fit:contain;border-radius:0;background:transparent;filter:var(--brand-wordmark-filter)}
 @media(max-width:760px){.official-brand-signature{padding:6px;margin-bottom:10px}.official-brand-signature img{max-height:118px}}
 
 
@@ -219,9 +237,6 @@ html.high-contrast .segmented button.active{outline:2px solid var(--cyan);outlin
 html.high-contrast .object-card.selected{outline:2px solid var(--cyan);outline-offset:-2px;background:var(--surface-3)}
 
 /* ===== Teclado e ações: paletas explícitas por tema ===== */
-html[data-theme="light"] .math-scientific-pad{background:#f5f9fc}
-html[data-theme="light"] .math-calculator-pad{background:linear-gradient(180deg,#f8fbfe,#edf3f8);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
-html[data-theme="light"] .math-editor-actions{background:#f5f9fc}
 html[data-theme="light"] .math-cursor{background:var(--cyan);box-shadow:0 0 0 1px rgba(16,32,51,.10),0 0 10px rgba(0,108,135,.18)}
 html[data-theme="light"] .math-cursor-handle{background:var(--cyan);box-shadow:0 0 0 2px rgba(255,255,255,.95),0 2px 8px rgba(0,108,135,.14)}
 html[data-theme="light"].high-contrast .math-cursor-handle{box-shadow:0 0 0 2px var(--surface)}
@@ -246,3 +261,12 @@ html.high-contrast .math-editor-actions{background:var(--surface);box-shadow:non
 .context-menu button:disabled{opacity:.38;cursor:not-allowed}
 .context-menu button:not(:disabled):active{transform:translateY(1px)}
 @media(max-width:760px){.models-modal{height:min(84dvh,760px)}.models-toolbar{grid-template-columns:1fr}.models-grid{grid-template-columns:1fr}.model-card{padding:11px}.model-formula{font-size:16px}}
+
+@media (min-width:761px){.brand-logo{display:block!important}.brand-compact{display:none!important}}
+@media (max-width:760px){.brand-logo{display:none!important}.brand-compact{display:flex!important}}
+@media (max-width:900px) and (orientation:landscape){.brand-logo{display:none!important}.brand-compact{display:flex!important}}
+
+.topbar .brand-block{overflow:hidden}
+@media (min-width:761px){.topbar .brand-block .brand-logo{display:block!important}.topbar .brand-block .brand-compact{display:none!important}}
+@media (max-width:760px){.topbar .brand-block .brand-logo{display:none!important}.topbar .brand-block .brand-compact{display:flex!important}}
+@media (max-width:900px) and (orientation:landscape){.topbar .brand-block .brand-logo{display:none!important}.topbar .brand-block .brand-compact{display:flex!important}}

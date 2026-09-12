@@ -13,8 +13,8 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=4.6.0">
-  <link rel="stylesheet" href="css/style.css?v=4.6.0">
+  <link rel="manifest" href="manifest.webmanifest?v=4.8.0">
+  <link rel="stylesheet" href="css/style.css?v=4.8.0">
 </head>
 <body>
   <svg class="cvd-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
@@ -37,9 +37,9 @@
   <main class="app-shell" id="appShell">
     <header class="topbar">
       <div class="brand-block" aria-label="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
-        <img class="brand-logo" src="assets/orbisv-wordmark-official.png" alt="OrbisV — Visualize · Explore · Descubra">
+        <img class="brand-logo" src="assets/orbisv-wordmark-official.png" data-dark-src="assets/orbisv-wordmark-official.png" data-light-src="assets/orbisv-wordmark-transparent.png" alt="OrbisV — Visualize · Explore · Descubra">
         <div class="brand-compact" aria-label="OrbisV">
-          <img class="brand-v-symbol official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+          <img class="brand-v-symbol official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true">
           <span class="sr-only">OrbisV</span>
         </div>
       </div>
@@ -99,7 +99,7 @@
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="graphCanvas" tabindex="0" role="img" aria-describedby="graphHelp" aria-label="Plano cartesiano interativo"></canvas>
           <div class="graph-empty" id="emptyState">
-            <img class="official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+            <img class="official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true">
             <strong>Construa sua visualização</strong>
             <span>Adicione uma função, vetor ou objeto geométrico.</span>
           </div>
@@ -198,7 +198,7 @@
 
   <div class="modal-layer" id="modalLayer" aria-live="polite">
     <section class="sheet-modal" id="moreModesSheet" role="dialog" aria-modal="true" aria-labelledby="moreModesTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">ORBISV</span><h2 id="moreModesTitle">Todos os modos</h2></div></div><button class="icon-btn small" data-close-modal="moreModesSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">ORBISV</span><h2 id="moreModesTitle">Todos os modos</h2></div></div><button class="icon-btn small" data-close-modal="moreModesSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="mode-grid" id="modeGrid"></div>
     </section>
 
@@ -206,7 +206,7 @@
       <div class="math-modal-head">
         <button class="text-btn" id="mathCancelBtn" type="button">Cancelar</button>
         <div class="math-modal-brand">
-          <img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+          <img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true">
           <div><span class="micro-label" id="mathEditorContext">EXPRESSÃO</span><h2 id="mathEditorTitle">Editor matemático</h2></div>
         </div>
         <button class="primary-inline" id="mathSaveBtn" type="button">Salvar</button>
@@ -232,9 +232,9 @@
     </section>
 
     <section class="sheet-modal" id="projectSheet" role="dialog" aria-modal="true" aria-labelledby="projectTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">ARQUIVO</span><h2 id="projectTitle">Projeto OrbisV</h2></div></div><button class="icon-btn small" data-close-modal="projectSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">ARQUIVO</span><h2 id="projectTitle">Projeto OrbisV</h2></div></div><button class="icon-btn small" data-close-modal="projectSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="official-brand-signature" aria-label="Identidade oficial OrbisV">
-        <img src="assets/orbisv-logo-official.png" alt="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
+        <img src="assets/orbisv-logo-official.png" data-dark-src="assets/orbisv-logo-official.png" data-light-src="assets/orbisv-logo-transparent.png" alt="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
       </div>
       <div class="action-list">
         <button class="action-row" id="newProjectBtn" type="button"><span>Novo gráfico</span><small>Começar uma cena vazia</small></button>
@@ -246,7 +246,7 @@
     </section>
 
     <section class="sheet-modal" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="exportTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">SAÍDA</span><h2 id="exportTitle">Exportar</h2></div></div><button class="icon-btn small" data-close-modal="exportSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">SAÍDA</span><h2 id="exportTitle">Exportar</h2></div></div><button class="icon-btn small" data-close-modal="exportSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="export-grid">
         <button class="export-card" data-export="png" type="button"><strong>PNG</strong><span>Imagem em alta resolução</span></button>
         <button class="export-card" data-export="svg" type="button"><strong>SVG</strong><span>Gráfico vetorial</span></button>
@@ -256,7 +256,7 @@
     </section>
 
     <section class="sheet-modal wide" id="a11ySheet" role="dialog" aria-modal="true" aria-labelledby="a11yTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">PREFERÊNCIAS</span><h2 id="a11yTitle">Central de acessibilidade</h2></div></div><button class="icon-btn small" data-close-modal="a11ySheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">PREFERÊNCIAS</span><h2 id="a11yTitle">Central de acessibilidade</h2></div></div><button class="icon-btn small" data-close-modal="a11ySheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="settings-sections">
         <section class="settings-card"><h3>Aparência</h3>
           <div class="setting-row"><span>Tema</span><div class="segmented"><button data-theme-choice="dark" type="button">Escuro</button><button data-theme-choice="light" type="button">Claro</button></div></div>
@@ -281,7 +281,7 @@
     </section>
 
     <section class="sheet-modal" id="visualizationSheet" role="dialog" aria-modal="true" aria-labelledby="visualTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">GRÁFICO</span><h2 id="visualTitle">Visualização</h2></div></div><button class="icon-btn small" data-close-modal="visualizationSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">GRÁFICO</span><h2 id="visualTitle">Visualização</h2></div></div><button class="icon-btn small" data-close-modal="visualizationSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="settings-card compact">
         <label class="setting-row"><span>Grade principal</span><input id="visGridToggle" type="checkbox" checked></label>
         <label class="setting-row"><span>Grade secundária</span><input id="visMinorGridToggle" type="checkbox" checked></label>
@@ -295,7 +295,7 @@
     </section>
 
     <section class="sheet-modal wide models-modal" id="modelsSheet" role="dialog" aria-modal="true" aria-labelledby="modelsTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">BIBLIOTECA MATEMÁTICA</span><h2 id="modelsTitle">Modelos pré-prontos</h2></div></div><button class="icon-btn small" data-close-modal="modelsSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">BIBLIOTECA MATEMÁTICA</span><h2 id="modelsTitle">Modelos pré-prontos</h2></div></div><button class="icon-btn small" data-close-modal="modelsSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="models-toolbar"><input id="modelsSearch" class="models-search" type="search" placeholder="Buscar função, curva ou construção" autocomplete="off"><select id="modelsCategory" class="select-field" aria-label="Categoria dos modelos"><option value="all">Todas as categorias</option></select></div>
       <div class="models-summary" id="modelsSummary"></div>
       <div class="models-grid" id="modelsGrid"></div>
@@ -314,11 +314,11 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=4.6.0"></script>
-  <script src="js/graphObjects.js?v=4.6.0"></script>
-  <script src="js/graphEngine.js?v=4.6.0"></script>
-  <script src="js/models.js?v=4.6.0"></script>
-  <script src="js/ui.js?v=4.6.0"></script>
-  <script src="js/main.js?v=4.6.0"></script>
+  <script src="js/mathEngine.js?v=4.8.0"></script>
+  <script src="js/graphObjects.js?v=4.8.0"></script>
+  <script src="js/graphEngine.js?v=4.8.0"></script>
+  <script src="js/models.js?v=4.8.0"></script>
+  <script src="js/ui.js?v=4.8.0"></script>
+  <script src="js/main.js?v=4.8.0"></script>
 </body>
 </html>
