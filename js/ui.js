@@ -203,13 +203,15 @@
         {id:'delete',label:'Excluir',disabled:o.locked,cls:'danger'}
       ];
       menu.innerHTML='';
-      actions.forEach(a=>{const b=document.createElement('button');b.type='button';b.textContent=a.label;b.dataset.objectAction=a.id;b.dataset.objectId=String(o.id);if(a.cls)b.classList.add(a.cls);b.disabled=Boolean(a.disabled);menu.appendChild(b);});
-      menu.onclick=(e)=>{const b=e.target.closest('[data-object-action]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();const action=b.dataset.objectAction,id=Number(b.dataset.objectId);this.closeObjectMenu();this.performObjectAction(action,id);};
+      actions.forEach(a=>{const b=document.createElement('button');b.type='button';b.textContent=a.label;b.dataset.objectAction=a.id;b.dataset.objectId=String(o.id);b.setAttribute('role','menuitem');if(a.cls)b.classList.add(a.cls);b.disabled=Boolean(a.disabled);menu.appendChild(b);});
+      if(this._objectMenuClick)menu.removeEventListener('click',this._objectMenuClick);
+      this._objectMenuClick=(e)=>{const b=e.target.closest('[data-object-action]');if(!b||b.disabled||!menu.contains(b))return;e.preventDefault();e.stopPropagation();const action=b.dataset.objectAction,id=Number(b.dataset.objectId);this.closeObjectMenu();void this.performObjectAction(action,id);};
+      menu.addEventListener('click',this._objectMenuClick);
       const r=anchor.getBoundingClientRect(),mw=Math.min(250,innerWidth-16);menu.style.width=`${mw}px`;menu.style.left=`${Math.min(innerWidth-mw-8,Math.max(8,r.right-mw))}px`;menu.style.top='0px';menu.hidden=false;
       const mh=menu.getBoundingClientRect().height||310;menu.style.top=`${Math.min(innerHeight-mh-8,Math.max(8,r.bottom+5))}px`;
       setTimeout(()=>{this._closeMenu=(e)=>{if(!menu.contains(e.target)&&e.target!==anchor)this.closeObjectMenu();};document.addEventListener('pointerdown',this._closeMenu,true);},0);
     },
-    closeObjectMenu(){const menu=this.$.contextMenu;if(menu){menu.hidden=true;menu.onclick=null;}if(this._closeMenu){document.removeEventListener('pointerdown',this._closeMenu,true);this._closeMenu=null;}},
+    closeObjectMenu(){const menu=this.$.contextMenu;if(menu){menu.hidden=true;if(this._objectMenuClick){menu.removeEventListener('click',this._objectMenuClick);this._objectMenuClick=null;}}if(this._closeMenu){document.removeEventListener('pointerdown',this._closeMenu,true);this._closeMenu=null;}},
     async performObjectAction(action,id){
       const o=this.objects.getById(id);if(!o){this.showToast('O objeto não está mais disponível.',true);return;}
       if(action==='edit'){this.beginEdit(o);return;}

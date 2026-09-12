@@ -13,8 +13,8 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=4.3.0">
-  <link rel="stylesheet" href="css/style.css?v=4.3.0">
+  <link rel="manifest" href="manifest.webmanifest?v=4.4.0">
+  <link rel="stylesheet" href="css/style.css?v=4.4.0">
 </head>
 <body>
   <svg class="cvd-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
@@ -294,8 +294,6 @@
       </div>
     </section>
 
-    <div class="context-menu" id="objectContextMenu" role="menu" hidden></div>
-
     <section class="sheet-modal wide models-modal" id="modelsSheet" role="dialog" aria-modal="true" aria-labelledby="modelsTitle" hidden>
       <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">BIBLIOTECA MATEMÁTICA</span><h2 id="modelsTitle">Modelos pré-prontos</h2></div></div><button class="icon-btn small" data-close-modal="modelsSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <div class="models-toolbar"><input id="modelsSearch" class="models-search" type="search" placeholder="Buscar função, curva ou construção" autocomplete="off"><select id="modelsCategory" class="select-field" aria-label="Categoria dos modelos"><option value="all">Todas as categorias</option></select></div>
@@ -309,15 +307,18 @@
     </section>
   </div>
 
+  <!-- Menu contextual é transitório, não modal: fica fora de .modal-layer para receber ponteiro/toque. -->
+  <div class="context-menu" id="objectContextMenu" role="menu" aria-label="Ações do objeto" hidden></div>
+
   <input id="projectFileInput" type="file" accept=".orbisv,application/json" hidden>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=4.3.0"></script>
-  <script src="js/graphObjects.js?v=4.3.0"></script>
-  <script src="js/graphEngine.js?v=4.3.0"></script>
-  <script src="js/models.js?v=4.3.0"></script>
-  <script src="js/ui.js?v=4.3.0"></script>
-  <script src="js/main.js?v=4.3.0"></script>
+  <script src="js/mathEngine.js?v=4.4.0"></script>
+  <script src="js/graphObjects.js?v=4.4.0"></script>
+  <script src="js/graphEngine.js?v=4.4.0"></script>
+  <script src="js/models.js?v=4.4.0"></script>
+  <script src="js/ui.js?v=4.4.0"></script>
+  <script src="js/main.js?v=4.4.0"></script>
 </body>
 </html>

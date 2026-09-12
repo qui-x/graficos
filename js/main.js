@@ -14,13 +14,13 @@
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js?v=4.3.0', { scope: './', updateViaCache: 'none' });
+        const registration = await navigator.serviceWorker.register('./sw.js?v=4.4.0', { scope: './', updateViaCache: 'none' });
         registration.update().catch(()=>{});
         let reloadedForUpdate = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (reloadedForUpdate || sessionStorage.getItem('orbisv-sw-reloaded-v4.3.0') === '1') return;
+          if (reloadedForUpdate || sessionStorage.getItem('orbisv-sw-reloaded-v4.4.0') === '1') return;
           reloadedForUpdate = true;
-          sessionStorage.setItem('orbisv-sw-reloaded-v4.3.0','1');
+          sessionStorage.setItem('orbisv-sw-reloaded-v4.4.0','1');
           location.reload();
         });
       } catch (error) {
