@@ -1,41 +1,78 @@
-const CACHE_NAME = 'calc-grafica-v26';
+'use strict';
+
+const CACHE_PREFIX = 'orbisv-shell-';
+const CACHE_NAME = `${CACHE_PREFIX}v3-20260912`;
 const APP_SHELL = [
   './',
   './index.html',
+  './manifest.webmanifest',
   './css/style.css',
   './js/mathEngine.js',
   './js/graphObjects.js',
   './js/graphEngine.js',
   './js/ui.js',
   './js/main.js',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './assets/orbisv-v-32.png',
+  './assets/orbisv-v-64.png',
+  './assets/orbisv-v-180.png',
+  './assets/orbisv-v-192.png',
+  './assets/orbisv-v-512.png',
+  './assets/orbisv-v-maskable-192.png',
+  './assets/orbisv-v-maskable-512.png',
+  './assets/orbisv-v-symbol.png',
+  './assets/orbisv-wordmark-official.png',
+  './assets/orbisv-logo-official.png'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
 
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    return (await caches.match(request)) || (await caches.match('./index.html')) || Response.error();
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cached = await caches.match(request);
+  const network = fetch(request).then(async (response) => {
+    if (response && response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+  return cached || (await network) || Response.error();
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        return response;
-      }).catch(() => caches.match('./index.html')))
-    );
+  if (url.origin !== self.location.origin) return;
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
+    return;
   }
+  event.respondWith(staleWhileRevalidate(request));
 });

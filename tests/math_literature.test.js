@@ -1,0 +1,16 @@
+const fs = require('fs');
+const vm = require('vm');
+const path = require('path');
+const src = fs.readFileSync(path.resolve(__dirname,'../js/mathEngine.js'),'utf8');
+const sandbox = { window: {}, console };
+vm.createContext(sandbox); vm.runInContext(src, sandbox);
+const M = sandbox.window.MathEngine;
+const near = (a,b,e=1e-9) => Math.abs(a-b) < e;
+if (!near(M.evalExpr('2pi',{x:0}), 2*Math.PI)) throw new Error('implicit multiplication 2pi failed');
+if (!near(M.evalExpr('3(x+1)',{x:2}), 9)) throw new Error('implicit multiplication with group failed');
+if (!near(M.evalExpr('sen(pi/2)',{}), 1)) throw new Error('Portuguese trig alias failed');
+const fraction = M.toMathML('sqrt(x^2+1)/2',{x:0});
+if (!fraction.includes('<mfrac>') || !fraction.includes('<msqrt>') || !fraction.includes('<msup>')) throw new Error('literature notation MathML failed');
+const juxtaposed = M.toMathML('2*pi*x',{x:0});
+if (juxtaposed.includes('>×<')) throw new Error('symbolic multiplication should render by juxtaposition');
+console.log('math literature notation OK');

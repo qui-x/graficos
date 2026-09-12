@@ -1,25 +1,20 @@
 (function () {
   'use strict';
-
-  // Cada inicialização começa uma sessão nova: área gráfica e histórico não são restaurados.
-  try {
-    localStorage.removeItem('graphCalcSessionV2');
-    localStorage.removeItem('graphCalcHistoryV2');
-  } catch (_) {}
-
+  const canvas = document.getElementById('graphCanvas');
   const objects = new GraphObjects();
-  const engine = new GraphEngine(document.getElementById('graphCanvas'), objects);
+  const engine = new GraphEngine(canvas, objects);
   AppUI.init(objects, engine);
-  engine.center();
+  if (!objects.items.length) engine.center();
+  else engine.requestRender();
   const recalibrate = () => { engine.resize(); engine.requestRender(); };
   requestAnimationFrame(() => requestAnimationFrame(recalibrate));
-  setTimeout(recalibrate, 100);
+  setTimeout(recalibrate, 120);
+  document.addEventListener('fullscreenchange', recalibrate);
 
-  // Registro do Service Worker para funcionamento como PWA.
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch((error) => {
-        console.warn('Falha ao registrar o Service Worker:', error);
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch((error) => {
+        console.warn('OrbisV: não foi possível registrar o service worker.', error);
       });
     }, { once: true });
   }

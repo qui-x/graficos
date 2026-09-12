@@ -1,68 +1,63 @@
-# Calculadora Gráfica Independente
+# OrbisV — identidade oficial + teclado mobile calculadora
 
-Aplicativo web estático para álgebra e geometria analítica, com foco em entrada matemática, múltiplos objetos e visualização interativa.
+**Visualize · Explore · Descubra**  
+**Matemática em qualquer dimensão**
 
-## Recursos atuais
+Esta versão consolida a nova arquitetura visual e funcional do OrbisV para o primeiro teste em navegador. O foco desta entrega é validar a experiência de uso, a edição matemática, o gerenciamento da cena e a responsividade antes de fechar o motor 3D e as rotinas simbólicas avançadas.
 
-- Funções `y = f(x)` e curvas paramétricas `x(t), y(t)`.
-- Vetores no plano com norma, produto escalar e produto vetorial 2D.
-- Retas, círculos, elipses e pontos.
-- Múltiplos objetos com visibilidade, edição e exclusão.
-- Desfazer/refazer (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`).
-- Persistência da sessão no `localStorage`.
-- Histórico de expressões com recuperação do objeto completo quando disponível.
-- Parser matemático seguro, sem execução dinâmica de JavaScript.
-- Funções adicionais: `log2`, `log1p`, `sign` e constantes `tau` e `phi`.
-- Mensagens de erro orientativas em português.
-- Preview matemático com KaTeX.
-- Validação visual dos campos de expressão.
-- Zoom, pan, coordenadas e zoom por gesto de pinça em dispositivos de toque.
-- Exportação para PNG e SVG.
-- Grade e eixos com escala adaptativa.
-- Interface responsiva e controles recolhíveis.
-- Acessibilidade por teclado, `aria-label`, `aria-describedby` e `aria-live`.
+## O que já está integrado
 
-## Estrutura
+- Identidade OrbisV baseada diretamente na arte aprovada: `assets/orbisv-brand-master.png` preserva o arquivo mestre, `orbisv-wordmark-official.png` é o recorte oficial para cabeçalho e `orbisv-v-symbol.png` é o V parabólico usado como símbolo representativo, favicon e ícone do app.
+- Layout adaptativo: mobile com navegação inferior e bottom sheet, landscape/tablet com painel à direita e desktop com barra de modos recolhível.
+- Modos: Função, Paramétrica, Vetor, Geometria, Discos/Anéis, Curva 3D e Reta 3D.
+- Funções, curvas paramétricas, vetores, pontos, retas, círculos, elipses e polígonos desenháveis no plano.
+- Discos/Anéis com cálculo numérico de volume e perfil 2D para eixos x ou y.
+- Curva 3D e Reta 3D já possuem interface preparada; o motor 3D será fechado depois do primeiro teste.
+- Editor Matemático OrbisV em modal próprio, sem abrir o teclado nativo no mobile por padrão.
+- Teclado mobile reorganizado como calculadora científica: bloco superior de funções matemáticas e teclado numérico principal em grade 4×5, com AC, parênteses, operadores, DEL e tecla `=` para confirmar.
+- Notação matemática visual em MathML: frações, raízes, expoentes, multiplicação implícita e funções em convenção PT-BR.
+- Entrada compatível com `2x`, `3(x+1)`, `2pi`, `sen(x)`, `tg(x)`, raízes e potências.
+- Objetos: editar ao tocar, mostrar/ocultar, bloquear, duplicar, ordenar, seleção múltipla e ações em lote.
+- Histórico real de ações com desfazer/refazer.
+- Autosave local com versões atual, anterior e de recuperação; migração da sessão antiga quando disponível.
+- Arquivo de projeto `.orbisv` com cena, câmera, histórico e modo atual.
+- Exportações PNG, SVG, CSV e impressão/PDF.
+- Ferramentas do gráfico: recentrar, grade, eixos, ajustar à tela e modo Inspecionar.
+- Pontos notáveis numéricos para funções e análise inicial.
+- Central de acessibilidade: tema, alto contraste, escala de fonte, espaçamento, redução de movimento, leitura simplificada, simulação de visão de cores, padrões de linha, marcadores, descrição do gráfico e navegação por teclado.
+- Sem dependências CDN para a interface ou a renderização matemática principal.
+- Sem `eval` e sem `new Function` no parser matemático.
 
-```text
-graph-calculator/
-├── index.html
-├── css/style.css
-├── js/mathEngine.js
-├── js/graphObjects.js
-├── js/graphEngine.js
-├── js/ui.js
-├── js/main.js
-├── tests/mathEngine.test.js
-├── tests/graphObjects.test.js
-├── tests/smoke.test.js
-├── package.json
-├── README.md
-└── CONTRIBUTING.md
-```
+## Escopo deliberadamente reservado para o ciclo após o primeiro teste
+
+O layout e os formulários 3D estão prontos, mas o motor de renderização espacial, a câmera 3D final, as rotinas simbólicas completas e o cursor matemático estrutural avançado serão definidos após o feedback deste primeiro teste. Isso evita cristalizar decisões de motor antes de validar a nova experiência de uso.
 
 ## Executar
 
-Abra `index.html` em um navegador moderno ou publique a pasta em um servidor estático.
+O projeto é estático. Para teste local, prefira um servidor HTTP simples:
 
-O KaTeX é carregado via CDN. O motor de cálculo, objetos e gráficos são implementados localmente.
+```bash
+python -m http.server 8000
+```
+
+Depois abra `http://localhost:8000` no navegador. Também pode ser publicado diretamente em hospedagem estática ou GitHub Pages.
 
 ## Testes
+
+Com Node.js instalado:
 
 ```bash
 npm test
 ```
 
-Os testes atuais cobrem o parser matemático, gerenciamento de objetos, persistência e verificações estáticas de segurança.
+Os testes verificam o parser, gerenciamento de objetos, notação matemática, estrutura da interface, ausência de execução dinâmica insegura e os principais contratos da nova arquitetura.
 
-## Observação sobre a entrada matemática
+## Revisão PWA e acessibilidade de cores — V3
 
-A interface atual mantém o campo textual com preview KaTeX porque isso preserva compatibilidade com o parser seguro existente. Uma migração futura para MathQuill/MathLive pode ser feita como camada de edição, mantendo o mesmo `MathEngine` por trás.
+Esta entrega inclui uma auditoria específica de PWA e acessibilidade visual. O projeto agora possui `sw.js`, registro de Service Worker, manifest com `id`/`scope`, ícones `maskable`, Apple Touch Icon 180×180 e cache offline do app shell.
 
-## Extensão 3D
+Os temas claro, escuro e alto contraste passaram a possuir paletas próprias também para superfícies, destaques, estados de erro/aviso e teclado matemático. As cores do gráfico são adaptadas ao tema ativo.
 
-A aplicação suporta superfícies `z=f(x,y)`, curvas paramétricas 3D `(x(t),y(t),z(t))` e retas 3D entre dois pontos. A cena usa projeção ortográfica, rotação por arraste no canvas, zoom por roda/pinça e reset de orientação.
+As simulações de protanopia, deuteranopia, tritanopia e acromatopsia deixaram de usar simples `hue-rotate()`/`saturate()` e passaram a utilizar matrizes SVG específicas. Padrões de linha e marcadores geométricos oferecem diferenciação adicional sem depender somente de cor.
 
-
-### Variável independente da função
-Na aba Função, escolha `x` para `y=f(x)` ou `y` para `x=f(y)`. O mesmo contexto é usado para validação e desenho.
+Consulte `AUDITORIA_PWA_ACESSIBILIDADE.md` para os detalhes e as cores adotadas.

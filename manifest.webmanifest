@@ -1,16 +1,41 @@
 {
-  "name": "Calculadora Gráfica",
-  "short_name": "CalcGráfica",
-  "description": "Calculadora gráfica para álgebra, vetores e geometria analítica.",
+  "id": "./",
+  "name": "OrbisV",
+  "short_name": "OrbisV",
+  "description": "Visualize · Explore · Descubra — Matemática em qualquer dimensão.",
   "lang": "pt-BR",
-  "start_url": "./index.html",
+  "dir": "ltr",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#10151d",
-  "theme_color": "#10151d",
+  "background_color": "#020b1b",
+  "theme_color": "#07111e",
+  "categories": ["education", "utilities"],
   "icons": [
-    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "assets/orbisv-v-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/orbisv-v-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/orbisv-v-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/orbisv-v-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

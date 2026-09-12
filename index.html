@@ -1,272 +1,310 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark" data-color-vision="none">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10151d">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" id="themeColorMeta" content="#07111e">
+  <meta name="color-scheme" content="dark light">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Calculadora Gráfica">
+  <meta name="apple-mobile-web-app-title" content="OrbisV">
+  <title>OrbisV — Visualize · Explore · Descubra</title>
+  <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
+  <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <title>Calculadora Gráfica</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <main class="app-shell">
+  <svg class="cvd-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="cvd-protanopia" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="cvd-deuteranopia" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="cvd-tritanopia" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="cvd-achromatopsia" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/>
+      </filter>
+    </defs>
+  </svg>
+  <a class="skip-link" href="#graphCanvas">Ir para o gráfico</a>
+  <main class="app-shell" id="appShell">
     <header class="topbar">
-      <div>
-        <div class="eyebrow">ÁLGEBRA E GEOMETRIA</div>
-        <h1>Calculadora Gráfica</h1>
-        <p>Funções, curvas paramétricas, vetores e geometria analítica 2D/3D em um único espaço.</p>
+      <div class="brand-block" aria-label="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
+        <img class="brand-logo" src="assets/orbisv-wordmark-official.png" alt="OrbisV — Visualize · Explore · Descubra">
+        <div class="brand-compact" aria-label="OrbisV">
+          <img class="brand-v-symbol" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+          <span class="sr-only">OrbisV</span>
+        </div>
       </div>
-      <div class="top-actions">
-        <button class="icon-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z" fill="currentColor"/></svg>
+      <div class="top-actions" aria-label="Ações do aplicativo">
+        <button class="icon-btn" id="undoBtn" type="button" title="Desfazer" aria-label="Desfazer" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H4v5M4.5 11A8 8 0 1 1 7 18"/></svg>
         </button>
-        <button class="icon-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Y ou Ctrl+Shift+Z)" aria-label="Refazer" disabled>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1l5 5-5 5V7c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6h2c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8z" fill="currentColor"/></svg>
+        <button class="icon-btn" id="redoBtn" type="button" title="Refazer" aria-label="Refazer" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7h5v5m-.5-1A8 8 0 1 0 17 18"/></svg>
         </button>
-        <button class="action-btn install-btn hidden" id="installBtn" type="button" title="Instalar aplicativo" aria-label="Instalar aplicativo">
-          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M11 3h2v10.2l3.5-3.5 1.4 1.4L12 17l-5.9-5.9 1.4-1.4 3.5 3.5V3zM5 19h14v2H5z" fill="currentColor"/></svg><span>Instalar</span>
+        <button class="header-btn" id="projectBtn" type="button" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6l2 2h8v10H4z"/></svg><span>Projeto</span>
         </button>
-        <button class="action-btn collapse-btn" id="collapseControlsBtn" type="button" title="Ocultar controles" aria-label="Ocultar controles" aria-pressed="false">
-          <svg class="collapse-icon-left" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-            <path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/>
-          </svg>
-          <svg class="collapse-icon-right hidden" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-            <path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/>
-          </svg>
-          <span class="collapse-text sr-only">Ocultar controles</span>
+        <button class="icon-btn" id="a11yBtn" type="button" title="Central de acessibilidade" aria-label="Central de acessibilidade" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M5 8.5h14M12 8.5v11M8.5 20l3.5-6 3.5 6M8 10l-2 5M16 10l2 5"/></svg>
         </button>
-        <button class="icon-btn" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Ativar tela cheia">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" fill="currentColor"/></svg>
+        <button class="icon-btn" id="settingsBtn" type="button" title="Visualização" aria-label="Configurações de visualização" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M4.9 5.6 7 6.8l2-1.1.2-2.4h5.6l.2 2.4 2 1.1 2.1-1.2 2.8 4.8-2.1 1.2v2.3l2.1 1.2-2.8 4.8-2.1-1.2-2 1.1-.2 2.4H9.2L9 19.8l-2-1.1-2.1 1.2-2.8-4.8 2.1-1.2v-2.3l-2.1-1.2z"/></svg>
         </button>
-        <button class="action-btn" id="exportBtn" type="button" title="Exportar PNG" aria-label="Exportar PNG">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-8 2h16v2H4v-2z" fill="currentColor"/></svg><span>PNG</span>
-        </button>
-        <button class="action-btn" id="exportSvgBtn" type="button" title="Exportar SVG" aria-label="Exportar SVG">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v10.17l3.59-3.58L17 11l-5 5-5-5 1.41-1.41L10 13.17V3h2zm-7 16h14v2H5v-2z" fill="currentColor"/></svg><span>SVG</span>
+        <button class="icon-btn desktop-only" id="fullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
         </button>
       </div>
     </header>
 
-    <section class="workspace">
-      <aside class="panel controls-panel" aria-label="Controles de entrada">
-        <div class="tabs" role="tablist" aria-label="Tipo de objeto gráfico">
-          <button class="tab active" role="tab" aria-selected="true" aria-controls="panel-function" data-tab="function">Função</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-parametric" data-tab="parametric">Paramétrica</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-vector" data-tab="vector">Vetor</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-geometry" data-tab="geometry">Geometria</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-surface" data-tab="surface">Superfície</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-curve3d" data-tab="curve3d">Curva 3D</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-line3d" data-tab="line3d">Reta 3D</button>
+    <section class="workspace" id="workspace">
+      <aside class="mode-rail" id="modeRail" aria-label="Modos matemáticos">
+        <div class="mode-list" role="navigation">
+          <button class="mode-btn active" data-mode="function" type="button" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c4-9 6-9 9 0s5 9 9-2"/></svg><span>Função</span>
+          </button>
+          <button class="mode-btn" data-mode="parametric" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17c2-8 4-10 7-5s4 6 7-5"/><path d="M6 7h4M14 17h4"/></svg><span>Paramétrica</span>
+          </button>
+          <button class="mode-btn" data-mode="vector" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 18 6M13 6h5v5"/></svg><span>Vetor</span>
+          </button>
+          <button class="mode-btn" data-mode="geometry" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M12 6h8M16 2v8"/></svg><span>Geometria</span>
+          </button>
+          <button class="mode-btn" data-mode="washers" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v9c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><ellipse cx="12" cy="7" rx="3" ry="1.2"/></svg><span>Discos/Anéis</span>
+          </button>
+          <button class="mode-btn" data-mode="curve3d" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c3-10 7-13 10-7s4 5 6-4"/><path d="M4 20h16M5 19V5"/></svg><span>Curva 3D</span>
+          </button>
+          <button class="mode-btn" data-mode="line3d" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19 19 5M14 5h5v5"/><path d="M4 19h6M4 19v-6"/></svg><span>Reta 3D</span>
+          </button>
         </div>
-
-        <div class="global-math-tools" aria-label="Ferramentas matemáticas">
-          <button class="math-tools-btn" id="globalMathBtn" type="button" aria-haspopup="true" aria-expanded="false">Σ Símbolos matemáticos</button>
-          <div class="math-menu hidden global-math-menu" id="globalMathMenu"></div>
-        </div>
-
-        <section class="variables-config" aria-labelledby="variablesConfigTitle">
-          <div class="variables-config-head">
-            <div>
-              <div class="section-kicker">ESCOPO DA EXPRESSÃO</div>
-              <h2 id="variablesConfigTitle">Variáveis e identificadores</h2>
-              <p class="section-help">Escolha quais letras podem ser usadas nas expressões. Ex.: <strong>x, y, z, t, a, b</strong>.</p>
-            </div>
-            <button class="secondary-btn variables-reset-btn" id="resetVariablesBtn" type="button" title="Restaurar variáveis padrão">Padrão</button>
-          </div>
-          <div class="variable-presets" role="group" aria-label="Variáveis padrão">
-            <label class="variable-check"><input type="checkbox" class="variable-option" value="x" checked><span>x</span></label>
-            <label class="variable-check"><input type="checkbox" class="variable-option" value="y" checked><span>y</span></label>
-            <label class="variable-check"><input type="checkbox" class="variable-option" value="z" checked><span>z</span></label>
-            <label class="variable-check"><input type="checkbox" class="variable-option" value="t" checked><span>t</span></label>
-          </div>
-          <div class="custom-vars-row">
-            <label class="field-label" for="customVariables">Outros identificadores</label>
-            <input id="customVariables" class="numeric-input variables-input" type="text" value="" placeholder="Ex.: a, b, c" autocomplete="off" spellcheck="false" aria-describedby="variablesHelp">
-          </div>
-          <div id="variablesHelp" class="field-help">Use nomes simples separados por vírgula. Funções e constantes reservadas não podem ser usadas como variáveis.</div>
-          <div id="variablesSummary" class="variables-summary" aria-live="polite">Variáveis ativas: x, y, z, t</div>
-        </section>
-
-        <div class="tab-content">
-          <section class="tab-panel active" id="panel-function" data-panel="function" role="tabpanel">
-            <div class="function-context-row">
-              <div>
-                <label class="field-label" for="functionVariable">Variável independente</label>
-                <select id="functionVariable" class="select-input" aria-label="Variável independente da função">
-                  <option value="x">x — desenhar y = f(x)</option>
-                  <option value="y">y — desenhar x = f(y)</option>
-                </select>
-              </div>
-              <div class="function-equation-hint" id="functionEquationHint" aria-live="polite">y = f(x)</div>
-            </div>
-            <label class="field-label" for="functionExpr">Expressão da função</label>
-            <div class="math-editor">
-              <input id="functionExpr" class="math-input" type="text" aria-describedby="functionPreview" value="sen(x)" placeholder="Ex.: x² + √(x+1)" autocomplete="off" spellcheck="false">
-              <button class="clear-field-btn" type="button" data-clear="functionExpr" aria-label="Limpar expressão da função" title="Limpar">C</button>
-              <button class="dropdown-btn" type="button" data-menu="math-menu-function" aria-label="Abrir símbolos matemáticos">▼</button>
-              <div class="math-menu hidden" id="math-menu-function"></div>
-            </div>
-            <div class="math-preview" id="functionPreview" aria-live="polite" aria-label="Pré-visualização matemática da função"></div>
-            <div class="quick-grid math-keypad" data-target="functionExpr" aria-label="Teclado matemático rápido">
-              <button type="button" data-token="sen(" aria-label="Seno">sen</button><button type="button" data-token="cos(" aria-label="Cosseno">cos</button><button type="button" data-token="tan(" aria-label="Tangente">tan</button>
-              <button type="button" data-token="sqrt(" aria-label="Raiz quadrada">√</button><button type="button" data-token="^2" aria-label="Quadrado"><span class="math-power">x<sup>2</sup></span></button><button type="button" data-token="^3" aria-label="Cubo"><span class="math-power">x<sup>3</sup></span></button>
-              <button type="button" data-token="pi" aria-label="Pi">π</button><button type="button" data-token="e" aria-label="Constante de Euler"><i>e</i></button><button type="button" data-token="/" aria-label="Divisão">÷</button>
-            </div>
-            <button class="primary-btn" id="addFunctionBtn" type="button">Adicionar curva</button>
-          </section>
-
-          <section class="tab-panel" id="panel-parametric" data-panel="parametric" role="tabpanel" hidden>
-            <div class="two-col">
-              <div><label class="field-label" for="paramX">x(t)</label><div class="math-editor"><input id="paramX" class="math-input" type="text" aria-describedby="paramPreview" value="cos(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramX" aria-label="Limpar x(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-x" aria-label="Abrir símbolos matemáticos para x(t)">▼</button><div class="math-menu hidden" id="math-menu-param-x"></div></div></div>
-              <div><label class="field-label" for="paramY">y(t)</label><div class="math-editor"><input id="paramY" class="math-input" type="text" aria-describedby="paramPreview" value="sen(t)" autocomplete="off" spellcheck="false"><button class="clear-field-btn" type="button" data-clear="paramY" aria-label="Limpar y(t)" title="Limpar">C</button><button class="dropdown-btn" type="button" data-menu="math-menu-param-y" aria-label="Abrir símbolos matemáticos para y(t)">▼</button><div class="math-menu hidden" id="math-menu-param-y"></div></div></div>
-            </div>
-            <div class="two-col">
-              <div><label class="field-label" for="tMin">t mín.</label><input id="tMin" class="numeric-input" type="text" value="0"></div>
-              <div><label class="field-label" for="tMax">t máx.</label><input id="tMax" class="numeric-input" type="text" value="2*pi"></div>
-            </div>
-            <div class="math-preview" id="paramPreview" aria-live="polite" aria-label="Pré-visualização matemática da curva paramétrica"></div>
-            <button class="primary-btn" id="addParamBtn" type="button">Adicionar curva paramétrica</button>
-          </section>
-
-          <section class="tab-panel" id="panel-vector" data-panel="vector" role="tabpanel" hidden>
-            <section class="vector-variable-box" aria-labelledby="vectorVariablesTitle">
-              <div class="section-kicker">VARIÁVEIS NOS CAMPOS DO VETOR</div>
-              <h2 id="vectorVariablesTitle">Use variáveis e parâmetros</h2>
-              <p class="section-help">Os campos aceitam números ou expressões. Ex.: <strong>a</strong>, <strong>a+3</strong>, <strong>2·b</strong>.</p>
-              <div class="parameter-create">
-                <input id="parameterName" class="numeric-input" type="text" maxlength="24" placeholder="Nome (ex.: a)" autocomplete="off" spellcheck="false" aria-label="Nome do parâmetro">
-                <input id="parameterValue" class="numeric-input" type="text" maxlength="80" placeholder="Valor (ex.: 2 ou π/2)" autocomplete="off" spellcheck="false" aria-label="Valor do parâmetro">
-                <button class="secondary-btn" id="addParameterBtn" type="button">Adicionar parâmetro</button>
-              </div>
-              <div id="parameterList" class="parameter-list" aria-live="polite"></div>
-              <div id="vectorVariableHelp" class="variables-summary">Variáveis disponíveis: x, y, z, t</div>
-            </section>
-            <div class="vector-mode-row">
-              <label class="field-label" for="vectorType">Representação</label>
-              <select id="vectorType" class="select-input" aria-label="Tipo de representação vetorial">
-                <option value="vector">Vetor (com seta)</option>
-                <option value="segment">Segmento (ligar pontos)</option>
-              </select>
-            </div>
-            <div class="vector-endpoint">
-              <div class="field-label endpoint-title">Ponto inicial P₁</div>
-              <div class="three-col vector-coords">
-                <label>x₁<input id="vx1" class="numeric-input expression-input" type="text" value="0"></label>
-                <label>y₁<input id="vy1" class="numeric-input expression-input" type="text" value="0"></label>
-                <label>z₁<input id="vz1" class="numeric-input expression-input" type="text" value="0"></label>
-              </div>
-            </div>
-            <div class="vector-endpoint">
-              <div class="field-label endpoint-title">Ponto final P₂</div>
-              <div class="three-col vector-coords">
-                <label>x₂<input id="vx2" class="numeric-input expression-input" type="text" value="3"></label>
-                <label>y₂<input id="vy2" class="numeric-input expression-input" type="text" value="4"></label>
-                <label>z₂<input id="vz2" class="numeric-input expression-input" type="text" value="0"></label>
-              </div>
-            </div>
-            <div class="vector-result" id="vectorResult" aria-live="polite">v = (3, 4, 0) · ‖v‖ = 5</div>
-            <button class="primary-btn" id="addVectorBtn" type="button">Adicionar vetor</button>
-            <div class="vector-ops">
-              <div class="field-label">Segundo vetor (para produto)</div>
-              <div class="three-col vector-coords">
-                <label>x<input id="v2x" class="numeric-input expression-input" type="text" value="1" aria-label="Segundo vetor x"></label>
-                <label>y<input id="v2y" class="numeric-input expression-input" type="text" value="0" aria-label="Segundo vetor y"></label>
-                <label>z<input id="v2z" class="numeric-input expression-input" type="text" value="0" aria-label="Segundo vetor z"></label>
-              </div>
-              <div class="inline-actions"><button class="secondary-btn" id="dotBtn" type="button">Produto escalar</button><button class="secondary-btn" id="crossBtn" type="button">Produto vetorial</button></div>
-              <div class="vector-result" id="vectorOpsResult"></div>
-            </div>
-          </section>
-
-          <section class="tab-panel" id="panel-geometry" data-panel="geometry" role="tabpanel" hidden>
-            <label class="field-label" for="geometryType">Tipo geométrico</label>
-            <select id="geometryType" class="select-input">
-              <option value="line">Reta ax + by + c = 0</option>
-              <option value="circle">Círculo</option>
-              <option value="ellipse">Elipse</option>
-              <option value="point">Ponto</option>
-            </select>
-            <div id="geometryFields"></div>
-            <div class="math-preview" id="geometryPreview" aria-live="polite" aria-label="Pré-visualização matemática da geometria"></div>
-            <button class="primary-btn" id="addGeometryBtn" type="button">Adicionar objeto geométrico</button>
-          </section>
-
-          <section class="tab-panel" id="panel-surface" data-panel="surface" role="tabpanel" hidden>
-            <label class="field-label" for="surfaceExpr">z = f(x, y)</label>
-            <div class="math-editor">
-              <input id="surfaceExpr" class="math-input" type="text" value="x² + y²" placeholder="Ex.: x² + y²" autocomplete="off" spellcheck="false" aria-describedby="surfacePreview">
-              <button class="clear-field-btn" type="button" data-clear="surfaceExpr" aria-label="Limpar superfície" title="Limpar">C</button>
-            </div>
-            <div class="math-preview" id="surfacePreview" aria-live="polite" aria-label="Pré-visualização da superfície"></div>
-            <div class="two-col">
-              <label class="field-label" for="surfaceRange">Faixa</label><input id="surfaceRange" class="numeric-input" type="text" value="5">
-            </div>
-            <button class="primary-btn" id="addSurfaceBtn" type="button">Adicionar superfície</button>
-          </section>
-
-          <section class="tab-panel" id="panel-curve3d" data-panel="curve3d" role="tabpanel" hidden>
-            <div class="two-col">
-              <div><label class="field-label" for="curve3dX">x(t)</label><input id="curve3dX" class="math-input" type="text" value="cos(t)" placeholder="cos(t)"></div>
-              <div><label class="field-label" for="curve3dY">y(t)</label><input id="curve3dY" class="math-input" type="text" value="sen(t)" placeholder="sen(t)"></div>
-              <div><label class="field-label" for="curve3dZ">z(t)</label><input id="curve3dZ" class="math-input" type="text" value="t" placeholder="t"></div>
-            </div>
-            <div class="two-col">
-              <div><label class="field-label" for="curve3dTMin">t mín.</label><input id="curve3dTMin" class="numeric-input" type="text" value="0"></div>
-              <div><label class="field-label" for="curve3dTMax">t máx.</label><input id="curve3dTMax" class="numeric-input" type="text" value="2*pi"></div>
-            </div>
-            <div class="math-preview" id="curve3dPreview" aria-live="polite" aria-label="Pré-visualização da curva 3D"></div>
-            <button class="primary-btn" id="addCurve3DBtn" type="button">Adicionar curva 3D</button>
-          </section>
-
-          <section class="tab-panel" id="panel-line3d" data-panel="line3d" role="tabpanel" hidden>
-            <div class="field-label">Ponto inicial (x₁, y₁, z₁)</div>
-            <div class="three-col"><input id="line3dX1" class="numeric-input" type="text" value="0" aria-label="x1"><input id="line3dY1" class="numeric-input" type="text" value="0" aria-label="y1"><input id="line3dZ1" class="numeric-input" type="text" value="0" aria-label="z1"></div>
-            <div class="field-label">Ponto final (x₂, y₂, z₂)</div>
-            <div class="three-col"><input id="line3dX2" class="numeric-input" type="text" value="3" aria-label="x2"><input id="line3dY2" class="numeric-input" type="text" value="3" aria-label="y2"><input id="line3dZ2" class="numeric-input" type="text" value="3" aria-label="z2"></div>
-            <div class="math-preview" id="line3dPreview" aria-live="polite" aria-label="Pré-visualização da reta 3D"></div>
-            <button class="primary-btn" id="addLine3DBtn" type="button">Adicionar reta 3D</button>
-          </section>
-        </div>
-
-        <div class="section-divider"></div>
-        <div class="panel-title-row"><h2>Objetos</h2><button class="text-btn" id="clearObjectsBtn" type="button">Limpar tudo</button></div>
-        <div id="objectsList" class="objects-list" aria-live="polite"></div>
-
-        <div class="section-divider"></div>
-        <div class="panel-title-row"><h2>Histórico</h2><button class="text-btn" id="clearHistoryBtn" type="button">Limpar</button></div>
-        <div id="historyList" class="history-list"></div>
+        <button class="rail-toggle" id="railToggleBtn" type="button" aria-pressed="false" title="Recolher barra de modos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><span>Recolher</span>
+        </button>
       </aside>
 
-      <section class="panel graph-panel">
-        <div class="graph-toolbar">
-          <div class="toolbar-group">
-            <button class="tool-btn" id="resetViewBtn" type="button">Recentrar</button>
-            <button class="tool-btn" id="gridBtn" type="button" aria-pressed="true">Grade</button>
-            <button class="tool-btn" id="axesBtn" type="button" aria-pressed="true">Eixos</button>
-            <button class="tool-btn" id="reset3DBtn" type="button" title="Reiniciar orientação 3D">Orientação 3D</button>
-          </div>
-          <div class="coordinate-readout" id="coordinateReadout" aria-live="polite" aria-atomic="true">x: 0 · y: 0</div>
-        </div>
-        <button class="show-controls-btn hidden" id="showControlsBtn" type="button" aria-label="Mostrar controles" title="Mostrar controles"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8.6 7.4L10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg><span>Mostrar controles</span></button>
+      <section class="graph-panel" aria-label="Área gráfica">
         <div class="canvas-wrap" id="canvasWrap">
-          <canvas id="graphCanvas" tabindex="0" role="img" aria-label="Plano cartesiano interativo. Use as setas para mover e os sinais de mais e menos para controlar o zoom." aria-describedby="graphHelp"></canvas>
-          <div class="canvas-overlay" id="emptyState">Adicione uma função, vetor ou objeto geométrico.</div>
+          <canvas id="graphCanvas" tabindex="0" role="img" aria-describedby="graphHelp" aria-label="Plano cartesiano interativo"></canvas>
+          <div class="graph-empty" id="emptyState">
+            <img src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+            <strong>Construa sua visualização</strong>
+            <span>Adicione uma função, vetor ou objeto geométrico.</span>
+          </div>
+
+          <div class="floating-toolbar" role="toolbar" aria-label="Ferramentas do gráfico">
+            <button class="graph-tool" id="resetViewBtn" type="button" title="Recentrar" aria-label="Recentrar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+            </button>
+            <button class="graph-tool active" id="gridBtn" type="button" title="Grade" aria-label="Alternar grade" aria-pressed="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 16h16M10 4v16M16 4v16"/></svg>
+            </button>
+            <button class="graph-tool active" id="axesBtn" type="button" title="Eixos" aria-label="Alternar eixos" aria-pressed="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18h16M18 16l2 2-2 2M7 21V4M5 6l2-2 2 2"/></svg>
+            </button>
+            <button class="graph-tool" id="fitViewBtn" type="button" title="Ajustar à tela" aria-label="Ajustar objetos à tela">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"/><path d="M8 12h8"/></svg>
+            </button>
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <button class="graph-tool" id="inspectBtn" type="button" title="Inspecionar" aria-label="Modo inspecionar" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5M10.5 7v7M7 10.5h7"/></svg>
+            </button>
+          </div>
+
+          <div class="coordinate-chip" id="coordinateReadout" aria-live="polite" hidden>x = 0 · y = 0</div>
+          <div class="inspect-card" id="inspectCard" hidden></div>
+          <div class="selection-badge" id="selectionBadge" hidden></div>
         </div>
-        <div id="graphHelp" class="sr-only">Use o mouse ou toque para mover o plano. Use a roda do mouse ou gesto de pinça para zoom. O valor das coordenadas aparece ao mover o ponteiro.</div><div id="toast" class="toast" role="status" aria-live="polite"></div><div class="statusbar">
-          <span id="statusText">Pronto</span>
-          <span>Arraste para mover · roda para zoom · arraste em 3D para girar · passe o cursor para coordenadas</span>
-        </div>
+        <div id="graphHelp" class="sr-only">Arraste para mover o plano, use pinça ou roda para zoom. No modo Inspecionar, mova o ponteiro ou o dedo sobre o gráfico para comparar valores.</div>
       </section>
+
+      <aside class="inspector-panel" id="inspectorPanel" aria-label="Painel de edição">
+        <div class="sheet-handle" id="sheetHandle" aria-hidden="true"></div>
+        <div class="inspector-head">
+          <div>
+            <span class="micro-label" id="currentModeLabel">FUNÇÃO</span>
+            <h2 id="currentModeTitle">Nova função</h2>
+          </div>
+          <button class="icon-btn small mobile-sheet-expand" id="sheetExpandBtn" type="button" aria-label="Alternar altura do painel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg>
+          </button>
+        </div>
+        <div class="inspector-tabs" role="tablist" aria-label="Conteúdo do painel">
+          <button class="inspector-tab active" data-inspector-tab="entry" type="button" role="tab" aria-selected="true">Entrada</button>
+          <button class="inspector-tab" data-inspector-tab="objects" type="button" role="tab" aria-selected="false">Objetos <span id="objectCountBadge">0</span></button>
+          <button class="inspector-tab" data-inspector-tab="history" type="button" role="tab" aria-selected="false">Histórico</button>
+        </div>
+
+        <div class="inspector-body">
+          <section class="inspector-view active" id="entryView" data-inspector-view="entry">
+            <div id="modeForm"></div>
+          </section>
+          <section class="inspector-view" id="objectsView" data-inspector-view="objects" hidden>
+            <div class="view-toolbar">
+              <button class="text-btn" id="selectObjectsBtn" type="button">Selecionar</button>
+              <button class="text-btn danger-text" id="clearObjectsBtn" type="button">Limpar cena</button>
+            </div>
+            <div class="multi-actions" id="multiActions" hidden>
+              <span id="multiCount">0 selecionados</span>
+              <div>
+                <button class="mini-btn" id="multiHideBtn" type="button">Ocultar</button>
+                <button class="mini-btn" id="multiDuplicateBtn" type="button">Duplicar</button>
+                <button class="mini-btn danger" id="multiDeleteBtn" type="button">Excluir</button>
+              </div>
+            </div>
+            <div id="objectsList" class="objects-list" aria-live="polite"></div>
+          </section>
+          <section class="inspector-view" id="historyView" data-inspector-view="history" hidden>
+            <div class="view-toolbar">
+              <div class="history-actions">
+                <button class="mini-btn" id="historyUndoBtn" type="button">Desfazer</button>
+                <button class="mini-btn" id="historyRedoBtn" type="button">Refazer</button>
+              </div>
+              <button class="text-btn" id="clearHistoryBtn" type="button">Limpar registro</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </div>
+      </aside>
     </section>
+
+    <nav class="mobile-nav" aria-label="Modos principais">
+      <button class="mobile-nav-btn active" data-mode="function" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c4-9 6-9 9 0s5 9 9-2"/></svg><span>Função</span>
+      </button>
+      <button class="mobile-nav-btn" data-mode="parametric" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17c2-8 4-10 7-5s4 6 7-5"/></svg><span>Param.</span>
+      </button>
+      <button class="mobile-nav-btn" data-mode="vector" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 18 6M13 6h5v5"/></svg><span>Vetor</span>
+      </button>
+      <button class="mobile-nav-btn" id="moreModesBtn" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg><span>Mais</span>
+      </button>
+    </nav>
   </main>
+
+  <div class="modal-layer" id="modalLayer" aria-live="polite">
+    <section class="sheet-modal" id="moreModesSheet" role="dialog" aria-modal="true" aria-labelledby="moreModesTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">ORBISV</span><h2 id="moreModesTitle">Todos os modos</h2></div></div><button class="icon-btn small" data-close-modal="moreModesSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="mode-grid" id="modeGrid"></div>
+    </section>
+
+    <section class="sheet-modal math-modal" id="mathEditorModal" role="dialog" aria-modal="true" aria-labelledby="mathEditorTitle" hidden>
+      <div class="math-modal-head">
+        <button class="text-btn" id="mathCancelBtn" type="button">Cancelar</button>
+        <div class="math-modal-brand">
+          <img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true">
+          <div><span class="micro-label" id="mathEditorContext">EXPRESSÃO</span><h2 id="mathEditorTitle">Editor matemático</h2></div>
+        </div>
+        <button class="primary-inline" id="mathSaveBtn" type="button">Salvar</button>
+      </div>
+      <div class="math-stage">
+        <div class="math-display" id="mathDisplay" tabindex="0" inputmode="none" role="textbox" aria-multiline="false" aria-label="Expressão matemática"></div>
+        <div class="math-source-hint" id="mathValidation" aria-live="polite">Expressão válida</div>
+      </div>
+      <div class="math-editor-actions">
+        <button class="icon-btn small" id="mathUndoBtn" type="button" aria-label="Desfazer edição"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H4v5M4.5 11A8 8 0 1 1 7 18"/></svg></button>
+        <button class="icon-btn small" id="mathRedoBtn" type="button" aria-label="Refazer edição"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7h5v5m-.5-1A8 8 0 1 0 17 18"/></svg></button>
+        <button class="mini-btn" id="mathCursorLeftBtn" type="button" aria-label="Mover cursor para esquerda">←</button>
+        <button class="mini-btn" id="mathCursorRightBtn" type="button" aria-label="Mover cursor para direita">→</button>
+        <button class="mini-btn" id="mathBackspaceBtn" type="button">Apagar</button>
+        <button class="mini-btn" id="mathClearBtn" type="button">Limpar</button>
+      </div>
+      <div class="math-keyboard-tabs" role="tablist" aria-label="Categorias do teclado matemático">
+        <button class="math-key-tab active" data-key-tab="basic" type="button">Calculadora</button>
+        <button class="math-key-tab" data-key-tab="functions" type="button">Funções</button>
+        <button class="math-key-tab" data-key-tab="calculus" type="button">Cálculo</button>
+      </div>
+      <div class="math-keyboard" id="mathKeyboard" aria-label="Teclado matemático OrbisV"></div>
+    </section>
+
+    <section class="sheet-modal" id="projectSheet" role="dialog" aria-modal="true" aria-labelledby="projectTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">ARQUIVO</span><h2 id="projectTitle">Projeto OrbisV</h2></div></div><button class="icon-btn small" data-close-modal="projectSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="official-brand-signature" aria-label="Identidade oficial OrbisV">
+        <img src="assets/orbisv-logo-official.png" alt="OrbisV — Visualize · Explore · Descubra — Matemática em qualquer dimensão">
+      </div>
+      <div class="action-list">
+        <button class="action-row" id="newProjectBtn" type="button"><span>Novo gráfico</span><small>Começar uma cena vazia</small></button>
+        <button class="action-row" id="openProjectBtn" type="button"><span>Abrir projeto</span><small>Importar arquivo .orbisv</small></button>
+        <button class="action-row" id="saveProjectBtn" type="button"><span>Salvar projeto</span><small>Baixar estado completo da cena</small></button>
+        <button class="action-row" id="openExportBtn" type="button"><span>Exportar</span><small>PNG, SVG, PDF ou CSV</small></button>
+      </div>
+      <div class="autosave-status"><span>Salvamento automático</span><strong id="autosaveStatus">Ativo</strong></div>
+    </section>
+
+    <section class="sheet-modal" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="exportTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">SAÍDA</span><h2 id="exportTitle">Exportar</h2></div></div><button class="icon-btn small" data-close-modal="exportSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="export-grid">
+        <button class="export-card" data-export="png" type="button"><strong>PNG</strong><span>Imagem em alta resolução</span></button>
+        <button class="export-card" data-export="svg" type="button"><strong>SVG</strong><span>Gráfico vetorial</span></button>
+        <button class="export-card" data-export="pdf" type="button"><strong>PDF</strong><span>Relatório matemático via impressão</span></button>
+        <button class="export-card" data-export="csv" type="button"><strong>CSV</strong><span>Tabela de valores compatível com Excel</span></button>
+      </div>
+    </section>
+
+    <section class="sheet-modal wide" id="a11ySheet" role="dialog" aria-modal="true" aria-labelledby="a11yTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">PREFERÊNCIAS</span><h2 id="a11yTitle">Central de acessibilidade</h2></div></div><button class="icon-btn small" data-close-modal="a11ySheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="settings-sections">
+        <section class="settings-card"><h3>Aparência</h3>
+          <div class="setting-row"><span>Tema</span><div class="segmented"><button data-theme-choice="dark" type="button">Escuro</button><button data-theme-choice="light" type="button">Claro</button></div></div>
+          <label class="setting-row"><span>Alto contraste</span><input type="checkbox" id="highContrastToggle"></label>
+          <div class="setting-row"><span>Tamanho do texto</span><div class="stepper"><button id="fontDownBtn" type="button">A−</button><output id="fontScaleOut">100%</output><button id="fontUpBtn" type="button">A+</button></div></div>
+          <label class="setting-row"><span>Espaçamento entre letras</span><input type="checkbox" id="letterSpacingToggle"></label>
+          <label class="setting-row"><span>Reduzir animações</span><input type="checkbox" id="reduceMotionToggle"></label>
+          <label class="setting-row"><span>Leitura simplificada</span><input type="checkbox" id="simpleReadingToggle"></label>
+        </section>
+        <section class="settings-card"><h3>Visão de cores</h3>
+          <label class="stacked-setting"><span>Simulação de visão de cores</span><select id="colorVisionSelect"><option value="none">Sem simulação</option><option value="protanopia">Protanopia</option><option value="deuteranopia">Deuteranopia</option><option value="tritanopia">Tritanopia</option><option value="achromatopsia">Acromatopsia</option></select><small class="field-help">A simulação altera apenas a visualização do aplicativo; traços e marcadores continuam disponíveis para não depender somente da cor.</small></label>
+          <label class="setting-row"><span>Diferenciar curvas por traço</span><input type="checkbox" id="linePatternToggle" checked></label>
+          <label class="setting-row"><span>Marcadores distintos</span><input type="checkbox" id="markerToggle" checked></label>
+        </section>
+        <section class="settings-card"><h3>Recursos do gráfico</h3>
+          <label class="setting-row"><span>Descrição acessível do gráfico</span><input type="checkbox" id="graphDescriptionToggle" checked></label>
+          <label class="setting-row"><span>Navegação por teclado</span><input type="checkbox" id="keyboardNavToggle" checked></label>
+          <label class="setting-row"><span>Usar teclado do dispositivo no editor</span><input type="checkbox" id="nativeKeyboardToggle"></label>
+          <button class="secondary-wide" id="restoreA11yBtn" type="button">Restaurar padrões de acessibilidade</button>
+        </section>
+      </div>
+    </section>
+
+    <section class="sheet-modal" id="visualizationSheet" role="dialog" aria-modal="true" aria-labelledby="visualTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark" src="assets/orbisv-v-symbol.png" alt="" aria-hidden="true"><div><span class="micro-label">GRÁFICO</span><h2 id="visualTitle">Visualização</h2></div></div><button class="icon-btn small" data-close-modal="visualizationSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="settings-card compact">
+        <label class="setting-row"><span>Grade principal</span><input id="visGridToggle" type="checkbox" checked></label>
+        <label class="setting-row"><span>Grade secundária</span><input id="visMinorGridToggle" type="checkbox" checked></label>
+        <label class="setting-row"><span>Eixos</span><input id="visAxesToggle" type="checkbox" checked></label>
+        <label class="setting-row"><span>Números nos eixos</span><input id="visLabelsToggle" type="checkbox" checked></label>
+        <label class="setting-row"><span>Escala proporcional</span><input id="equalScaleToggle" type="checkbox" checked></label>
+        <label class="setting-row"><span>Coordenadas temporárias</span><input id="coordsToggle" type="checkbox" checked></label>
+        <label class="stacked-setting"><span>Snap matemático</span><select id="snapSelect"><option value="off">Desativado</option><option value="integer">Inteiros</option><option value="grid">Grade</option><option value="notable">Pontos notáveis</option></select></label>
+        <button class="secondary-wide" id="restoreViewBtn" type="button">Restaurar visualização</button>
+      </div>
+    </section>
+
+    <div class="context-menu" id="objectContextMenu" role="menu" hidden></div>
+
+    <section class="confirm-dialog" id="confirmDialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+      <h2 id="confirmTitle">Confirmar ação</h2><p id="confirmText"></p>
+      <div class="dialog-actions"><button class="secondary-btn" id="confirmCancelBtn" type="button">Cancelar</button><button class="danger-btn" id="confirmOkBtn" type="button">Confirmar</button></div>
+    </section>
+  </div>
+
+  <input id="projectFileInput" type="file" accept=".orbisv,application/json" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
   <script src="js/mathEngine.js"></script>
   <script src="js/graphObjects.js"></script>
