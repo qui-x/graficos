@@ -10,7 +10,7 @@ const graph = fs.readFileSync(path.join(root, 'js/graphEngine.js'), 'utf8');
 for (const id of [
   'appShell','graphCanvas','modeRail','inspectorPanel','modeForm','objectsList','historyList',
   'moreModesBtn','mathEditorModal','mathDisplay','mathKeyboard','a11ySheet',
-  'visualizationSheet','projectSheet','exportSheet','objectContextMenu','confirmDialog'
+  'visualizationSheet','projectSheet','exportSheet','objectContextMenu','confirmDialog','visPointValuesToggle'
 ]) {
   if (!html.includes(`id="${id}"`)) throw new Error(`missing required UI id: ${id}`);
 }
@@ -44,3 +44,6 @@ if (!math.includes('<mfrac>') || !math.includes('<msqrt>') || !math.includes('<m
 if (!graph.includes('fitToObjects') || !graph.includes('inspectMode')) throw new Error('graph fit/inspection tools missing');
 if (/[\u{1F300}-\u{1FAFF}]/u.test(html + ui + css)) throw new Error('emoji found in project UI');
 console.log('OrbisV UI architecture OK');
+
+if (!html.includes('Valores dos pontos')) throw new Error('point values toggle missing');
+if (!graph.includes('showPointValues') || !graph.includes('drawPointValueLabel')) throw new Error('point values on graph missing');

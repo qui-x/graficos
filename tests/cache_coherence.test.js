@@ -4,10 +4,10 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const main=fs.readFileSync(path.join(root,'js/main.js'),'utf8');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 function ok(c,m){if(!c)throw new Error(m);}
-for(const f of ['style.css','mathEngine.js','models.js','graphObjects.js','graphEngine.js','ui.js','main.js']) ok(html.includes(`${f}?v=5.6.0`),`version missing for ${f}`);
-ok(/register\('\.\/sw\.js\?v=5\.6\.0'/.test(main),'versioned sw registration missing');
+for(const f of ['style.css','mathEngine.js','models.js','graphObjects.js','graphEngine.js','ui.js','main.js']) ok(html.includes(`${f}?v=5.7.0`),`version missing for ${f}`);
+ok(/register\('\.\/sw\.js\?v=5\.7\.0'/.test(main),'versioned sw registration missing');
 ok(/updateViaCache:\s*'none'/.test(main),'updateViaCache none missing');
-ok(/v5\.6-20260912/.test(sw),'cache version not bumped');
+ok(/v5\.7-20260912/.test(sw),'cache version not bumped');
 ok(/models\.js/.test(sw),'models catalog missing from app shell');
 ok(/const isCode =/.test(sw),'network-first code rule missing');
 console.log('PWA cache coherence OK');
