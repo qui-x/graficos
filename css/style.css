@@ -345,3 +345,32 @@ html[data-theme="light"].high-contrast .tour-focus{box-shadow:0 0 0 9999px rgba(
 @keyframes orbisvIntroSkipIn{to{opacity:1}}
 @media(max-width:700px){.orbisv-intro-logo-stage{width:92vw;margin-top:-8px}.orbisv-intro-skip{right:14px;bottom:max(14px,env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){.orbisv-intro-grid,.orbisv-intro-scan,.orbisv-intro-spark,.orbisv-intro-logo-glow,.orbisv-intro-orbit-pulse,.orbisv-intro-vertex-pulse{display:none}.orbisv-intro-final{opacity:1!important;animation:none!important}.orbisv-intro-skip{opacity:1;animation:none}}
+
+
+/* ===== Tooltip dos pontos do gráfico ===== */
+.point-tooltip{
+  position:absolute;
+  z-index:18;
+  min-width:118px;
+  max-width:min(280px,calc(100% - 20px));
+  padding:8px 10px;
+  border:1px solid var(--line-strong);
+  border-radius:10px;
+  background:var(--glass);
+  color:var(--text);
+  box-shadow:0 12px 30px rgba(0,0,0,.24);
+  backdrop-filter:blur(14px);
+  pointer-events:none;
+  transform:translate(10px,-50%);
+  font-size:11px;
+  line-height:1.35;
+  opacity:0;
+  transition:opacity .12s ease;
+}
+.point-tooltip.visible{opacity:1}
+.point-tooltip .point-tooltip-title{display:block;color:var(--cyan);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.point-tooltip .point-tooltip-coords{display:block;font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;font-weight:700;color:var(--text)}
+.point-tooltip .point-tooltip-meta{display:block;margin-top:3px;color:var(--muted);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="light"] .point-tooltip{background:rgba(255,255,255,.96);box-shadow:0 12px 28px rgba(32,56,80,.16)}
+html.high-contrast .point-tooltip{background:var(--surface);border-width:2px;box-shadow:none}
+@media(max-width:760px){.point-tooltip{font-size:10px;padding:7px 9px;transform:translate(8px,-50%)}}
