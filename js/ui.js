@@ -112,6 +112,54 @@
     renderMath(expr,vars={}){if(!expr)return'';try{return MathEngine.toMathML(expr,vars);}catch{return`<span>${this.escape(this.pretty(expr))}</span>`;}},
     varsMap(vars){const map={};String(vars||'').split(',').filter(Boolean).forEach(v=>map[v.trim()]=0);return map;},
     pretty(s){return String(s).replace(/\bsin\b/g,'sen').replace(/\btan\b/g,'tg').replace(/\bpi\b/g,'π').replace(/sqrt\(/g,'√(').replace(/\*/g,'×').replace(/-/g,'−').replace(/\^2\b/g,'²').replace(/\^3\b/g,'³');},
+    escapeMathText(s){return String(s).replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
+    superscriptMap(ch){return ({'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ','=':'⁼'})[ch]||ch;},
+    tokenizeEditableMath(expr){
+      const out=[];let i=0;
+      const push=(text,start,end,cls='')=>out.push({text,start,end,cls});
+      while(i<expr.length){
+        const start=i;
+        const next=expr.slice(i);
+        if(/^sqrt/.test(next)){push('√',i,i+4,'fn');i+=4;continue;}
+        if(/^sin/.test(next)){push('sen',i,i+3,'fn');i+=3;continue;}
+        if(/^tan/.test(next)){push('tg',i,i+3,'fn');i+=3;continue;}
+        if(/^cos/.test(next)){push('cos',i,i+3,'fn');i+=3;continue;}
+        if(/^log/.test(next)){push('log',i,i+3,'fn');i+=3;continue;}
+        if(/^ln/.test(next)){push('ln',i,i+2,'fn');i+=2;continue;}
+        if(/^abs/.test(next)){push('abs',i,i+3,'fn');i+=3;continue;}
+        if(/^pi/.test(next)){push('π',i,i+2,'const');i+=2;continue;}
+        if(/^phi/.test(next)){push('φ',i,i+3,'const');i+=3;continue;}
+        if(/^tau/.test(next)){push('τ',i,i+3,'const');i+=3;continue;}
+        if(expr[i]==='^'){
+          let end=i+1, rendered='';
+          if(expr[end]==='('){let depth=1;end+=1;let body='';while(end<expr.length&&depth>0){const ch=expr[end];if(ch==='('){depth+=1;body+=ch;}else if(ch===')'){depth-=1;if(depth>0)body+=ch;}else body+=ch;end+=1;}rendered=[...body].map((ch)=>this.superscriptMap(ch)).join('');}
+          else {while(end<expr.length && /[A-Za-z0-9.+\-]/.test(expr[end])) end+=1;const body=expr.slice(i+1,end)||' ';rendered=[...body].map((ch)=>this.superscriptMap(ch)).join('');}
+          push(rendered||'⁽⁾',i,end,'sup');i=end;continue;
+        }
+        if(expr[i]==='*'){push('×',i,i+1,'op');i+=1;continue;}
+        if(expr[i]==='/'){push('÷',i,i+1,'op');i+=1;continue;}
+        if(expr[i]==='-'){push('−',i,i+1,'op');i+=1;continue;}
+        if(expr[i]==='+'){push('+',i,i+1,'op');i+=1;continue;}
+        if(expr[i]===','){push(',',i,i+1,'comma');i+=1;continue;}
+        if(expr[i]==='.') {push(',',i,i+1,'comma');i+=1;continue;}
+        if(/[0-9]/.test(expr[i])){let end=i+1;while(end<expr.length&&/[0-9.]/.test(expr[end]))end+=1;push(expr.slice(i,end).replace(/\./g,','),i,end,'number');i=end;continue;}
+        if(/[A-Za-zÀ-ÿ]/.test(expr[i])){let end=i+1;while(end<expr.length&&/[A-Za-zÀ-ÿ0-9]/.test(expr[end]))end+=1;push(expr.slice(i,end),i,end,'var');i=end;continue;}
+        push(expr[i],i,i+1,'symbol');i+=1;
+      }
+      return out;
+    },
+    renderEditableMath(expr,cursor){
+      const pieces=this.tokenizeEditableMath(expr);const html=[];const cursorHtml='<span class="math-cursor" aria-hidden="true"><span class="math-cursor-handle"></span></span>';
+      if(cursor<=0)html.push(cursorHtml);
+      let placed=cursor<=0;
+      for(const part of pieces){
+        if(!placed && cursor<=part.start){html.push(cursorHtml);placed=true;}
+        html.push(`<span class="math-unit ${part.cls||''}" data-start="${part.start}" data-end="${part.end}">${this.escapeMathText(part.text)}</span>`);
+        if(!placed && cursor===part.end){html.push(cursorHtml);placed=true;}
+      }
+      if(!placed)html.push(cursorHtml);
+      return `<div class="math-editable" role="presentation">${html.join('')}</div>`;
+    },
 
     submitCurrent(){
       try{
@@ -157,6 +205,7 @@
       idListen('mathCancelBtn','click',()=>this.closeModal('mathEditorModal'));this.$.mathSave.addEventListener('click',()=>this.saveMathEditor());idListen('mathUndoBtn','click',()=>this.mathUndo());idListen('mathRedoBtn','click',()=>this.mathRedo());idListen('mathCursorLeftBtn','click',()=>{if(this.mathState){this.mathState.cursor=Math.max(0,this.mathState.cursor-1);this.renderMathEditor();}});idListen('mathCursorRightBtn','click',()=>{if(this.mathState){this.mathState.cursor=Math.min(this.mathState.expr.length,this.mathState.cursor+1);this.renderMathEditor();}});idListen('mathBackspaceBtn','click',()=>this.mathBackspace());idListen('mathClearBtn','click',()=>{this.pushMathUndo();this.mathState.expr='';this.mathState.cursor=0;this.renderMathEditor();});
       this.$.mathKeyboard.addEventListener('click',(e)=>{const b=e.target.closest('button');if(!b||b.disabled)return;const action=b.dataset.action;if(action==='clear'){this.pushMathUndo();this.mathState.expr='';this.mathState.cursor=0;this.renderMathEditor();return;}if(action==='backspace'){this.mathBackspace();return;}if(action==='apply'){this.saveMathEditor();return;}if(b.dataset.token!==undefined)this.insertMathToken(b.dataset.token,b.dataset.kind||'text');});
       this.$.mathDisplay.addEventListener('keydown',(e)=>{if(!this.mathState)return;if(e.key==='Escape'){e.preventDefault();this.closeModal('mathEditorModal');return;}if(e.key==='Enter'){e.preventDefault();this.saveMathEditor();return;}if(e.key==='ArrowLeft'){e.preventDefault();this.mathState.cursor=Math.max(0,this.mathState.cursor-1);this.renderMathEditor();return;}if(e.key==='ArrowRight'){e.preventDefault();this.mathState.cursor=Math.min(this.mathState.expr.length,this.mathState.cursor+1);this.renderMathEditor();return;}if(e.key==='Backspace'){e.preventDefault();this.mathBackspace();return;}if(e.ctrlKey||e.metaKey)return;if(e.key.length===1&&/[0-9A-Za-zÀ-ÿ+\-*/^().,!π×÷ ]/.test(e.key)){e.preventDefault();this.insertMathToken(e.key,'text');}});
+      this.$.mathDisplay.addEventListener('click',(e)=>{if(!this.mathState)return;const unit=e.target.closest('.math-unit');if(!unit){this.$.mathDisplay.focus();return;}const start=Number(unit.dataset.start||0),end=Number(unit.dataset.end||start);const rect=unit.getBoundingClientRect();const pos=(e.clientX-rect.left)<(rect.width/2)?start:end;this.mathState.cursor=Math.max(0,Math.min(this.mathState.expr.length,pos));this.renderMathEditor();this.$.mathDisplay.focus();});
     },
     renderMathKeyboard(){
       if(!this.mathState)return;
@@ -201,7 +250,7 @@
     insertMathToken(token,kind){const s=this.mathState;if(!s)return;this.pushMathUndo();let insert=token,cursorOffset=String(token).length;if(kind==='func'){insert=`${token}()`;cursorOffset=token.length+1;}else if(kind==='sqrt'){insert='sqrt()';cursorOffset=5;}else if(kind==='abs'){insert='abs()';cursorOffset=4;}else if(kind==='power'){insert='^()';cursorOffset=2;}else if(kind==='fraction'){if(s.expr&&s.cursor===s.expr.length){s.expr=`(${s.expr})/()`;s.cursor=s.expr.length-1;this.renderMathEditor();return;}insert='/()';cursorOffset=2;}else if(kind==='square'){insert='^2';cursorOffset=2;}insert=insert.replace('×','*').replace('÷','/').replace('−','-').replace('π','pi').replace(',','.');s.expr=s.expr.slice(0,s.cursor)+insert+s.expr.slice(s.cursor);s.cursor+=cursorOffset;this.renderMathEditor();},
     mathBackspace(){const s=this.mathState;if(!s||s.cursor<=0)return;this.pushMathUndo();s.expr=s.expr.slice(0,s.cursor-1)+s.expr.slice(s.cursor);s.cursor-=1;this.renderMathEditor();},
     mathUndo(){const s=this.mathState,entry=s?.undo.pop();if(!entry)return;s.redo.push({expr:s.expr,cursor:s.cursor});s.expr=entry.expr;s.cursor=entry.cursor;this.renderMathEditor();},mathRedo(){const s=this.mathState,entry=s?.redo.pop();if(!entry)return;s.undo.push({expr:s.expr,cursor:s.cursor});s.expr=entry.expr;s.cursor=entry.cursor;this.renderMathEditor();},
-    renderMathEditor(){const s=this.mathState;if(!s)return;const vars=this.varsMap(s.vars);if(!s.expr){this.$.mathDisplay.innerHTML='<span class="math-placeholder">Construa a expressão com o teclado OrbisV</span>';this.$.mathValidation.textContent='Expressão vazia';this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;return;}try{this.$.mathDisplay.innerHTML=MathEngine.toMathML(s.expr,vars);this.$.mathValidation.textContent=`Expressão válida · cursor ${s.cursor+1}/${s.expr.length+1}`;this.$.mathValidation.className='math-source-hint';this.$.mathSave.disabled=false;}catch(e){this.$.mathDisplay.innerHTML=`<span>${this.escape(this.pretty(s.expr))}</span>`;this.$.mathValidation.textContent=e.message;this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;}},
+    renderMathEditor(){const s=this.mathState;if(!s)return;const vars=this.varsMap(s.vars);if(!s.expr){this.$.mathDisplay.innerHTML='<span class="math-placeholder">Construa a expressão com o teclado OrbisV</span>';this.$.mathDisplay.setAttribute('aria-label','Editor matemático vazio');this.$.mathValidation.textContent='Expressão vazia';this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;return;}this.$.mathDisplay.innerHTML=this.renderEditableMath(s.expr,s.cursor);this.$.mathDisplay.setAttribute('aria-label',`Expressão matemática: ${MathEngine.toAccessibleText(s.expr)}`);try{MathEngine.toMathML(s.expr,vars);this.$.mathValidation.textContent=`Expressão válida · cursor ${s.cursor+1}/${s.expr.length+1}`;this.$.mathValidation.className='math-source-hint';this.$.mathSave.disabled=false;}catch(e){this.$.mathValidation.textContent=e.message;this.$.mathValidation.className='math-source-hint invalid';this.$.mathSave.disabled=true;}},
     saveMathEditor(){if(!this.mathState||this.$.mathSave.disabled)return;const s=this.mathState;const normalized=MathEngine.normalize(s.expr);this.setPath(this.drafts[this.activeMode],s.path,normalized);this.closeModal('mathEditorModal');this.mathState=null;this.renderModeForm();},
 
     buildMoreModes(){const grid=document.getElementById('modeGrid');grid.innerHTML=Object.entries(MODE_META).map(([id,m])=>`<button class="mode-btn" type="button" data-more-mode="${id}"><span class="micro-label">MODO</span><span>${m.label}</span></button>`).join('');grid.querySelectorAll('[data-more-mode]').forEach(b=>b.addEventListener('click',()=>this.setMode(b.dataset.moreMode)));},
