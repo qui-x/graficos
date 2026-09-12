@@ -29,15 +29,17 @@ for (const [size,purpose] of [[192,'any'],[512,'any'],[192,'maskable'],[512,'mas
 }
 ok(exists('assets/orbisv-v-180.png'), 'apple icon missing');
 ok(/apple-touch-icon[^>]+180x180/.test(html), 'apple 180 metadata missing');
-ok(/rel="manifest" href="manifest\.webmanifest"/.test(html), 'manifest link missing');
+ok(/rel="manifest" href="manifest\.webmanifest(?:\?v=[^"]+)?"/.test(html), 'manifest link missing');
 ok(/themeColorMeta/.test(html), 'dynamic theme-color meta missing');
 ok(exists('sw.js'), 'service worker missing');
-ok(/serviceWorker\.register\('\.\/sw\.js'/.test(main), 'service worker registration missing');
+ok(/serviceWorker\.register\('\.\/sw\.js(?:\?v=[^']+)?'/.test(main), 'service worker registration missing');
 ok(/self\.addEventListener\('install'/.test(sw) && /self\.addEventListener\('fetch'/.test(sw), 'service worker lifecycle missing');
 const shellMatch = sw.match(/const APP_SHELL = \[([\s\S]*?)\];/);
 ok(shellMatch, 'APP_SHELL missing');
-const shellFiles=[...shellMatch[1].matchAll(/'\.\/([^']*)'/g)].map(m=>m[1]).filter(Boolean);
+const shellFiles=[...shellMatch[1].matchAll(/(?:'|`)\.\/([^'`$]*)(?:[^'`]*)?(?:'|`)/g)].map(m=>m[1]).filter(Boolean).map(f=>f.split('?')[0]);
 for(const f of shellFiles) ok(exists(f), `precache file missing: ${f}`);
+ok(/updateViaCache:\s*'none'/.test(main), 'service worker updateViaCache none missing');
+ok(/const isCode =/.test(sw) && /request\.mode === 'navigate' \|\| isCode/.test(sw), 'code assets are not network-first');
 
 // Theme contrast audit (WCAG relative luminance; normal text target >= 4.5:1)
 function rgb(hex){hex=hex.replace('#','');return [0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255);}

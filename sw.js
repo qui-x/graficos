@@ -1,17 +1,18 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v3-20260912`;
+const CACHE_NAME = `${CACHE_PREFIX}v4.1-20260912`;
+const BUILD = '4.1.0';
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './css/style.css',
-  './js/mathEngine.js',
-  './js/graphObjects.js',
-  './js/graphEngine.js',
-  './js/ui.js',
-  './js/main.js',
+  `./manifest.webmanifest?v=${BUILD}`,
+  `./css/style.css?v=${BUILD}`,
+  `./js/mathEngine.js?v=${BUILD}`,
+  `./js/graphObjects.js?v=${BUILD}`,
+  `./js/graphEngine.js?v=${BUILD}`,
+  `./js/ui.js?v=${BUILD}`,
+  `./js/main.js?v=${BUILD}`,
   './assets/orbisv-v-32.png',
   './assets/orbisv-v-64.png',
   './assets/orbisv-v-180.png',
@@ -70,7 +71,8 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (request.mode === 'navigate') {
+  const isCode = /\.(?:js|css)$/.test(url.pathname) || url.pathname.endsWith('/manifest.webmanifest');
+  if (request.mode === 'navigate' || isCode) {
     event.respondWith(networkFirst(request));
     return;
   }

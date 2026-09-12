@@ -12,10 +12,20 @@
   document.addEventListener('fullscreenchange', recalibrate);
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch((error) => {
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('./sw.js?v=4.1.0', { scope: './', updateViaCache: 'none' });
+        registration.update().catch(()=>{});
+        let reloadedForUpdate = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloadedForUpdate || sessionStorage.getItem('orbisv-sw-reloaded-v4.1.0') === '1') return;
+          reloadedForUpdate = true;
+          sessionStorage.setItem('orbisv-sw-reloaded-v4.1.0','1');
+          location.reload();
+        });
+      } catch (error) {
         console.warn('OrbisV: não foi possível registrar o service worker.', error);
-      });
+      }
     }, { once: true });
   }
 })();

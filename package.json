@@ -1,9 +1,9 @@
 {
   "name": "orbisv",
-  "version": "1.0.0-test.3",
+  "version": "1.0.0-test.4.1",
   "private": true,
   "description": "OrbisV — PWA revisado, paletas acessíveis e simulação de visão de cores por matrizes.",
   "scripts": {
-    "test": "node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/math_literature.test.js && node tests/orbisv_ui.test.js && node tests/pwa_accessibility.test.js"
+    "test": "node tests/mathEngine.test.js && node tests/graphObjects.test.js && node tests/math_literature.test.js && node tests/orbisv_ui.test.js && node tests/pwa_accessibility.test.js && node tests/cache_coherence.test.js"
   }
 }

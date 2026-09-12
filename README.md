@@ -61,3 +61,7 @@ Os temas claro, escuro e alto contraste passaram a possuir paletas próprias tam
 As simulações de protanopia, deuteranopia, tritanopia e acromatopsia deixaram de usar simples `hue-rotate()`/`saturate()` e passaram a utilizar matrizes SVG específicas. Padrões de linha e marcadores geométricos oferecem diferenciação adicional sem depender somente de cor.
 
 Consulte `AUDITORIA_PWA_ACESSIBILIDADE.md` para os detalhes e as cores adotadas.
+
+## Correção V4.1 — coerência do PWA
+
+A versão 4.1 corrige mistura de arquivos entre releases causada pelo cache do Service Worker. CSS e JavaScript críticos agora usam URLs versionadas e estratégia network-first, o Service Worker usa `updateViaCache: none`, o cache foi incrementado e há recarga única quando um novo controlador assume. Isso evita carregar um `ui.js` antigo junto do `index.html` novo.
