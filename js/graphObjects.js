@@ -77,10 +77,10 @@
       this.commit(previous, item.locked ? 'Objeto bloqueado' : 'Objeto desbloqueado', this.describe(item), 'lock');
       return true;
     }
-    duplicate(id) {
+    duplicate(id, colorOverride = null) {
       const item = this.getById(id); if (!item) return null;
       const previous = this.snapshot();
-      const copy = clone(item); copy.id = nextId++; copy.locked = false; copy.name = item.name ? `${item.name} cópia` : '';
+      const copy = clone(item); copy.id = nextId++; copy.locked = false; copy.name = item.name ? `${item.name} cópia` : ''; if (colorOverride) copy.color = String(colorOverride);
       if (copy.data && Number.isFinite(copy.data.x)) copy.data.x += 0.4;
       if (copy.data && Number.isFinite(copy.data.y)) copy.data.y += 0.4;
       this.items.push(copy);

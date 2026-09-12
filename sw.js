@@ -1,8 +1,8 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v6.0-20260912`;
-const BUILD = '6.0.0';
+const CACHE_NAME = `${CACHE_PREFIX}v6.1-20260912`;
+const BUILD = '6.1.0';
 const APP_SHELL = [
   './',
   './index.html',
