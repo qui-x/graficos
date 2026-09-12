@@ -1,8 +1,8 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v4.4-20260912`;
-const BUILD = '4.4.0';
+const CACHE_NAME = `${CACHE_PREFIX}v4.6-20260912`;
+const BUILD = '4.6.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ const APP_SHELL = [
   './assets/orbisv-v-maskable-192.png',
   './assets/orbisv-v-maskable-512.png',
   './assets/orbisv-v-symbol.png',
+  './assets/orbisv-v-symbol-light.png',
   './assets/orbisv-wordmark-official.png',
   './assets/orbisv-logo-official.png'
 ];
