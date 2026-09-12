@@ -198,7 +198,7 @@
       this.updatePointTooltip(px,py,e.pointerType);
     }
     zoomAt(px, py, factor) {
-      const before = this.screenToWorld(px, py); this.scale = Math.max(5, Math.min(500, this.scale * factor)); const after = this.screenToWorld(px, py);
+      const before = this.screenToWorld(px, py); this.scale = Math.max(5, Math.min(1200, this.scale * factor)); const after = this.screenToWorld(px, py);
       this.offsetX += (after.x - before.x) * this.scale; this.offsetY -= (after.y - before.y) * this.scale; this.invalidateCache(); this.requestRender();
     }
 
@@ -242,8 +242,13 @@
     hidePointTooltip(){this.hoveredPoint=null;const el=this.pointTooltip;if(!el)return;el.classList.remove('visible');el.hidden=true;}
 
     gridStep() {
-      const targetPixels = 62; const raw = targetPixels / Math.max(this.scale, 1e-9); const exp = Math.floor(Math.log10(Math.max(raw, 1e-12))); const norm = raw / Math.pow(10, exp);
-      const factor = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10; return factor * Math.pow(10, exp);
+      const targetPixels = this.scale >= 800 ? 48 : this.scale >= 520 ? 54 : 62;
+      const raw = targetPixels / Math.max(this.scale, 1e-9);
+      const exp = Math.floor(Math.log10(Math.max(raw, 1e-12)));
+      const norm = raw / Math.pow(10, exp);
+      const factor = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+      const step = factor * Math.pow(10, exp);
+      return this.scale >= 950 ? Math.min(step, 0.1) : step;
     }
     formatGridLabel(value) {
       const abs = Math.abs(value); if (abs >= 10000 || (abs > 0 && abs < .001)) return value.toExponential(1).replace('.', ',');
@@ -311,9 +316,11 @@
       if(this.scale>=70)step=stepBase;
       if(this.scale>=145)step=stepBase/2;
       if(this.scale>=280)step=stepBase/5;
+      if(this.scale>=520)step=Math.min(step,0.2);
+      if(this.scale>=950)step=Math.min(step,0.1);
       step=Math.max(1e-10,step);
       const start=Math.ceil(b.xmin/step)*step,end=Math.floor(b.xmax/step)*step,out=[];
-      const maxPoints=72;
+      const maxPoints=this.scale>=950?240:this.scale>=520?160:72;
       for(let x=start;x<=end+step*1e-9 && out.length<maxPoints;x+=step){
         const normalized=Math.abs(x)<step*1e-9?0:Number(x.toPrecision(12));
         out.push(normalized);
@@ -325,8 +332,8 @@
       if(!global.AppUI?.a11yPrefs?.markers)return;
       const bounds=this.currentBounds(), xs=this.adaptiveFunctionMarkerXs(bounds);
       if(!xs.length)return;
-      const size=this.scale>=145?4.6:this.scale>=70?4.2:3.8;
-      const alpha=this.scale<36?.68:.92;
+      const size=this.scale>=950?3.2:this.scale>=520?3.6:this.scale>=145?4.2:this.scale>=70?4:3.8;
+      const alpha=this.scale<36?.68:this.scale>=950?.82:.92;
       for(const x of xs){
         if(x<domainMin||x>domainMax)continue;
         const y=fn({x}); if(!Number.isFinite(y)||Math.abs(y)>1e8)continue;
