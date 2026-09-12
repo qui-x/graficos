@@ -15,3 +15,6 @@ console.log('adaptive graph rendering OK');
 
 ok(graph.includes('Math.min(step,0.1)'),'grid step to 0.1 at maximum zoom missing');
 ok(graph.includes('Math.min(1200'),'extended zoom ceiling missing');
+
+ok(graph.includes('pointValuePolicy'),'point label declutter policy missing');
+ok(graph.includes('this.scale<170'),'minimum zoom threshold for point labels missing');

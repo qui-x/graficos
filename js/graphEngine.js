@@ -314,32 +314,51 @@
       const digits=this.scale>=950?3:this.scale>=520?2:this.scale>=145?2:1;
       return Number(n.toFixed(digits)).toLocaleString('pt-BR',{maximumFractionDigits:digits});
     }
-    drawPointValueLabel(obj,p,world,index=0,overrideText='') {
-      if(!this.showPointValues||!p||!world||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(world.x)||!Number.isFinite(world.y))return;
+    pointValuePolicy(kind='function') {
+      const visibleCount=Math.max(1,(this.objects?.visible||this.objects?.items?.filter(o=>o.visible)||[]).length);
+      const crowdFactor=visibleCount>=4?3:visibleCount>=3?2:1;
+      if(kind==='point') return { enabled:this.showPointValues, stride:1, force:true };
+      if(kind==='notable') return { enabled:this.showPointValues, stride:1, force:true };
+      if(this.scale<170) return { enabled:false, stride:Infinity, force:false };
+      let stride=this.scale>=950?1:this.scale>=520?2:this.scale>=320?4:6;
+      stride*=crowdFactor;
+      return { enabled:this.showPointValues, stride, force:false };
+    }
+    drawPointValueLabel(obj,p,world,index=0,overrideText='',options={}) {
+      if(!this.showPointValues||!p||!world||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(world.x)||!Number.isFinite(world.y))return false;
+      const force=Boolean(options.force);
+      const budget=Number.isFinite(this.pointLabelBudget)?this.pointLabelBudget:24;
+      const count=Number.isFinite(this.pointLabelCount)?this.pointLabelCount:0;
+      if(!force && count>=budget)return false;
       const text=overrideText||`(${this.formatPointValueNumber(world.x)}; ${this.formatPointValueNumber(world.y)})`;
       const c=this.ctx,color=this.objectColor(obj),{w,h}=this.size;
       const font=this.scale>=520?'600 11px system-ui':'600 10px system-ui';
       c.save(); c.font=font;
-      const padX=8,padY=5,labelH=(this.scale>=520?24:22);
+      const padX=8,labelH=(this.scale>=520?24:22);
       const labelW=Math.ceil(c.measureText(text).width)+padX*2;
       const placements=[{dx:12,dy:-labelH-10},{dx:12,dy:10},{dx:-labelW-12,dy:-labelH-10},{dx:-labelW-12,dy:10}];
       const start=Math.abs(index)%placements.length;
-      let chosen={x:p.x+placements[start].dx,y:p.y+placements[start].dy,w:labelW,h:labelH};
+      let chosen=null;
       const overlaps=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
       const boxes=this.pointLabelBoxes||(this.pointLabelBoxes=[]);
       for(let k=0;k<placements.length;k+=1){
         const pl=placements[(start+k)%placements.length];
         const candidate={x:Math.max(6,Math.min(w-labelW-6,p.x+pl.dx)),y:Math.max(6,Math.min(h-labelH-6,p.y+pl.dy)),w:labelW,h:labelH};
         if(!boxes.some(box=>overlaps(candidate,box))){chosen=candidate;break;}
-        if(k===0)chosen=candidate;
+      }
+      if(!chosen){
+        if(!force){ c.restore(); return false; }
+        chosen={x:Math.max(6,Math.min(w-labelW-6,p.x+12)),y:Math.max(6,Math.min(h-labelH-6,p.y-labelH-10)),w:labelW,h:labelH};
       }
       boxes.push(chosen);
+      this.pointLabelCount=(this.pointLabelCount||0)+1;
       c.globalAlpha=document.documentElement.dataset.theme==='light'?.96:.93;
       c.fillStyle=document.documentElement.dataset.theme==='light'?'rgba(255,255,255,.96)':'rgba(6,16,28,.93)';
       c.strokeStyle=color; c.lineWidth=1.15; c.setLineDash([]);
       this.roundRectPath(chosen.x,chosen.y,chosen.w,chosen.h,9); c.fill(); c.stroke();
       c.globalAlpha=1; c.fillStyle=color; c.textAlign='center'; c.textBaseline='middle';
       c.fillText(text,chosen.x+chosen.w/2,chosen.y+chosen.h/2+0.5); c.restore();
+      return true;
     }
 
     adaptiveFunctionMarkerXs(bounds) {
@@ -367,6 +386,7 @@
       if(!global.AppUI?.a11yPrefs?.markers)return;
       const bounds=this.currentBounds(), xs=this.adaptiveFunctionMarkerXs(bounds);
       if(!xs.length)return;
+      const policy=this.pointValuePolicy('function');
       const size=this.scale>=950?3.2:this.scale>=520?3.6:this.scale>=145?4.2:this.scale>=70?4:3.8;
       const alpha=this.scale<36?.68:this.scale>=950?.82:.92;
       let markerIndex=0;
@@ -375,8 +395,9 @@
         const y=fn({x}); if(!Number.isFinite(y)||Math.abs(y)>1e8)continue;
         const p=this.worldToScreen(x,y); if(p.x<-8||p.x>this.size.w+8||p.y<-8||p.y>this.size.h+8)continue;
         this.drawObjectMarker(obj,p,size,alpha);
-        this.drawPointValueLabel(obj,p,{x,y},markerIndex++);
+        if(policy.enabled && markerIndex % Math.max(1,policy.stride) === 0) this.drawPointValueLabel(obj,p,{x,y},markerIndex);
         this.registerHoverPoint(obj,p,{x,y},{kind:'ponto da função',label:'Ponto da função',expression:obj.data.expression});
+        markerIndex+=1;
       }
     }
 
@@ -432,7 +453,7 @@
       for(let i=0;i<=steps;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/steps,x=fx({t}),y=fy({t});if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>1e8||Math.abs(y)>1e8){started=false;continue;}const p=this.worldToScreen(x,y);if(!started){this.ctx.moveTo(p.x,p.y);started=true;}else this.ctx.lineTo(p.x,p.y);if(!markerPoint&&i>=steps*.48&&i<=steps*.52)markerPoint=p;}this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,markerPoint);
     }
     drawVector(obj) { const d=obj.data,a=this.worldToScreen(d.x1,d.y1),b=this.worldToScreen(d.x2,d.y2),color=this.objectColor(obj);this.lineStyle(obj,2.5);this.ctx.beginPath();this.ctx.moveTo(a.x,a.y);this.ctx.lineTo(b.x,b.y);this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,{x:(a.x+b.x)/2,y:(a.y+b.y)/2},4.5);const ang=Math.atan2(b.y-a.y,b.x-a.x),len=12;this.ctx.fillStyle=color;this.ctx.beginPath();this.ctx.moveTo(b.x,b.y);this.ctx.lineTo(b.x-len*Math.cos(ang-.55),b.y-len*Math.sin(ang-.55));this.ctx.lineTo(b.x-len*Math.cos(ang+.55),b.y-len*Math.sin(ang+.55));this.ctx.closePath();this.ctx.fill(); }
-    drawPoint(obj) { const p=this.worldToScreen(obj.data.x,obj.data.y),color=this.objectColor(obj);this.registerHoverPoint(obj,p,{x:obj.data.x,y:obj.data.y},{kind:'ponto',label:'Ponto'});if(global.AppUI?.a11yPrefs?.markers)this.drawObjectMarker(obj,p,obj.id===this.selectedId?6:5);else{this.ctx.save();this.ctx.fillStyle=color;this.ctx.shadowColor=obj.id===this.selectedId?color:'transparent';this.ctx.shadowBlur=obj.id===this.selectedId?8:0;this.ctx.beginPath();this.ctx.arc(p.x,p.y,obj.id===this.selectedId?5.5:4,0,Math.PI*2);this.ctx.fill();this.ctx.restore(); }this.drawPointValueLabel(obj,p,{x:obj.data.x,y:obj.data.y},0); }
+    drawPoint(obj) { const p=this.worldToScreen(obj.data.x,obj.data.y),color=this.objectColor(obj);this.registerHoverPoint(obj,p,{x:obj.data.x,y:obj.data.y},{kind:'ponto',label:'Ponto'});if(global.AppUI?.a11yPrefs?.markers)this.drawObjectMarker(obj,p,obj.id===this.selectedId?6:5);else{this.ctx.save();this.ctx.fillStyle=color;this.ctx.shadowColor=obj.id===this.selectedId?color:'transparent';this.ctx.shadowBlur=obj.id===this.selectedId?8:0;this.ctx.beginPath();this.ctx.arc(p.x,p.y,obj.id===this.selectedId?5.5:4,0,Math.PI*2);this.ctx.fill();this.ctx.restore(); }this.drawPointValueLabel(obj,p,{x:obj.data.x,y:obj.data.y},0,'',{force:true}); }
     drawCircle(obj){this.drawPolar(obj,t=>[obj.data.cx+obj.data.r*Math.cos(t),obj.data.cy+obj.data.r*Math.sin(t)]);} drawEllipse(obj){this.drawPolar(obj,t=>[obj.data.cx+obj.data.a*Math.cos(t),obj.data.cy+obj.data.b*Math.sin(t)]);} drawPolar(obj,fn){this.lineStyle(obj);this.ctx.beginPath();let markerPoint=null;for(let i=0;i<=260;i+=1){const t=i/260*Math.PI*2,[x,y]=fn(t),p=this.worldToScreen(x,y);if(i===0){this.ctx.moveTo(p.x,p.y);markerPoint=p;}else this.ctx.lineTo(p.x,p.y);}this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,markerPoint);}
     drawLine(obj){const{a,b,c}=obj.data;if(Math.abs(b)>1e-12){const bounds=this.currentBounds(),x1=bounds.xmin-2,x2=bounds.xmax+2;this.strokeSegment(obj,x1,(-a*x1-c)/b,x2,(-a*x2-c)/b);}else if(Math.abs(a)>1e-12){const bounds=this.currentBounds(),x=-c/a;this.strokeSegment(obj,x,bounds.ymin-2,x,bounds.ymax+2);}}
     drawPolygon(obj){const pts=Array.isArray(obj.data.vertices)?obj.data.vertices:[];if(pts.length<2)return;const color=this.objectColor(obj);this.lineStyle(obj);this.ctx.beginPath();let markerPoint=null;pts.forEach((v,i)=>{const p=this.worldToScreen(v[0],v[1]);if(i===0){this.ctx.moveTo(p.x,p.y);markerPoint=p;}else this.ctx.lineTo(p.x,p.y);});this.ctx.closePath();this.ctx.globalAlpha=.12;this.ctx.fillStyle=color;this.ctx.fill();this.ctx.globalAlpha=1;this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,markerPoint);}
@@ -499,8 +520,8 @@
       for(const obj of this.objects.visible){if(obj.type!=='function')continue;try{const fn=this.getCompiled(obj.id,obj.data.expression,{x:0}),y=fn({x:this.inspectX});if(!Number.isFinite(y))continue;const q=this.worldToScreen(this.inspectX,y);if(q.y<-20||q.y>h+20)continue;c.fillStyle=this.objectColor(obj);c.beginPath();c.arc(q.x,q.y,4.5,0,Math.PI*2);c.fill();}catch{}}
       c.restore();
     }
-    drawNotablePoints(){if(!this.notablePoints?.length)return;const c=this.ctx;c.save();let idx=0;for(const n of this.notablePoints){const p=this.worldToScreen(n.x,n.y);c.fillStyle=this.objectColor({color:n.color||'#ffd166'});c.strokeStyle=this.theme.bg;c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,5,0,Math.PI*2);c.fill();c.stroke();const obj=this.objects.getById?.(this.notableSourceId)||this.objects.items.find(o=>o.id===this.notableSourceId);this.drawPointValueLabel(obj||{color:n.color||'#ffd166'},p,{x:n.x,y:n.y},idx++,String(n.kind||'Ponto').replace(/^./,m=>m.toUpperCase())+`: (${this.formatPointValueNumber(n.x)}; ${this.formatPointValueNumber(n.y)})`);this.registerHoverPoint(obj,p,{x:n.x,y:n.y},{kind:n.kind||'ponto notável',label:n.kind||'Ponto notável',expression:obj?.data?.expression||''});}c.restore();}
-    render(){if(this.viewMode==='3d'){this.draw3DScene();return;}const{w,h}=this.size,c=this.ctx;this.hoverPoints=[];this.pointLabelBoxes=[];c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid();this.drawAxes();for(const obj of this.objects.items)if(obj.visible)this.drawObject(obj);this.refreshNotablePoints();this.drawNotablePoints();this.drawInspection();if(this.pointer){const sp=this.worldToScreen(this.pointer.x,this.pointer.y);this.updatePointTooltip(sp.x,sp.y,'mouse');}else this.hidePointTooltip();}
+    drawNotablePoints(){if(!this.notablePoints?.length)return;const c=this.ctx;c.save();let idx=0;for(const n of this.notablePoints){const p=this.worldToScreen(n.x,n.y);c.fillStyle=this.objectColor({color:n.color||'#ffd166'});c.strokeStyle=this.theme.bg;c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,5,0,Math.PI*2);c.fill();c.stroke();const obj=this.objects.getById?.(this.notableSourceId)||this.objects.items.find(o=>o.id===this.notableSourceId);this.drawPointValueLabel(obj||{color:n.color||'#ffd166'},p,{x:n.x,y:n.y},idx++,String(n.kind||'Ponto').replace(/^./,m=>m.toUpperCase())+`: (${this.formatPointValueNumber(n.x)}; ${this.formatPointValueNumber(n.y)})`,{force:true});this.registerHoverPoint(obj,p,{x:n.x,y:n.y},{kind:n.kind||'ponto notável',label:n.kind||'Ponto notável',expression:obj?.data?.expression||''});}c.restore();}
+    render(){if(this.viewMode==='3d'){this.draw3DScene();return;}const{w,h}=this.size,c=this.ctx;this.hoverPoints=[];this.pointLabelBoxes=[];this.pointLabelCount=0;this.pointLabelBudget=Math.max(10,Math.min(28,Math.floor((w*h)/70000)));c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid();this.drawAxes();for(const obj of this.objects.items)if(obj.visible)this.drawObject(obj);this.refreshNotablePoints();this.drawNotablePoints();this.drawInspection();if(this.pointer){const sp=this.worldToScreen(this.pointer.x,this.pointer.y);this.updatePointTooltip(sp.x,sp.y,'mouse');}else this.hidePointTooltip();}
 
     getObjectBounds(obj) {
       try {

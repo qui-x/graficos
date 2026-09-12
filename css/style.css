@@ -419,3 +419,10 @@ html.high-contrast .math-display,.math-command-pad{box-shadow:none}
   .math-command-pad{grid-template-columns:repeat(3,minmax(0,1fr))}
   .math-key.command{min-height:39px}
 }
+.math-pad-note.success{border-color:rgba(88,217,167,.28);background:rgba(88,217,167,.07);color:var(--green)}
+.math-key.calculus-key{min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.math-key.calculus-key .key-main{font-size:17px;line-height:1}
+.math-key.calculus-key small{font:650 8px Inter,system-ui,sans-serif;color:var(--muted);letter-spacing:.01em}
+.math-key.calculus-key:hover small{color:currentColor}
+html[data-theme="light"] .math-pad-note.success{background:rgba(35,114,79,.06);border-color:rgba(35,114,79,.24);color:#23724f}
+html.high-contrast .math-pad-note.success{border-color:var(--line-strong);background:var(--surface);color:var(--text)}

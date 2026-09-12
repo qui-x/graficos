@@ -124,7 +124,7 @@
     mathField(label,path,value,vars='',type='math',optional=false){const display=value?this.renderMath(value,this.varsMap(vars)):`<span class="math-placeholder">${optional?'Opcional':'Toque para editar'}</span>`;return`<div class="field-stack"><span class="field-label">${this.escape(label)}</span><button class="math-field" type="button" data-edit-path="${this.escape(path)}" data-editor-type="${type}" data-vars="${this.escape(vars)}" data-label="${this.escape(label)}"><span class="math-render">${display}</span><span class="math-edit-label">Editar</span></button></div>`;},
     renderMath(expr,vars={}){if(!expr)return'';try{return MathEngine.toMathML(expr,vars);}catch{return`<span>${this.escape(this.pretty(expr))}</span>`;}},
     varsMap(vars){const map={};String(vars||'').split(',').filter(Boolean).forEach(v=>map[v.trim()]=0);return map;},
-    pretty(s){return String(s).replace(/\bsin\b/g,'sen').replace(/\btan\b/g,'tg').replace(/\bpi\b/g,'π').replace(/sqrt\(/g,'√(').replace(/\*/g,'×').replace(/-/g,'−').replace(/\^2\b/g,'²').replace(/\^3\b/g,'³');},
+    pretty(s){return String(s).replace(/\bdiff\b/g,'d/d').replace(/\bpartial\b/g,'∂/∂').replace(/\bintegral\b/g,'∫').replace(/\blimit\b/g,'lim').replace(/\bsum\b/g,'Σ').replace(/\bprod\b/g,'Π').replace(/\binf\b/g,'∞').replace(/<=/g,'≤').replace(/>=/g,'≥').replace(/!=/g,'≠').replace(/;/g,', ').replace(/\bsin\b/g,'sen').replace(/\btan\b/g,'tg').replace(/\bpi\b/g,'π').replace(/sqrt\(/g,'√(').replace(/\*/g,'×').replace(/-/g,'−').replace(/\^2\b/g,'²').replace(/\^3\b/g,'³');},
     escapeMathText(s){return String(s).replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
     superscriptMap(ch){return ({'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ','=':'⁼'})[ch]||ch;},
     tokenizeEditableMath(expr){
@@ -133,6 +133,16 @@
       while(i<expr.length){
         const start=i;
         const next=expr.slice(i);
+        if(/^integral/.test(next)){push('∫',i,i+8,'fn calculus');i+=8;continue;}
+        if(/^partial/.test(next)){push('∂/∂',i,i+7,'fn calculus');i+=7;continue;}
+        if(/^limit/.test(next)){push('lim',i,i+5,'fn calculus');i+=5;continue;}
+        if(/^diff/.test(next)){push('d/d',i,i+4,'fn calculus');i+=4;continue;}
+        if(/^sum/.test(next)){push('Σ',i,i+3,'fn calculus');i+=3;continue;}
+        if(/^prod/.test(next)){push('Π',i,i+4,'fn calculus');i+=4;continue;}
+        if(/^inf/.test(next)){push('∞',i,i+3,'const');i+=3;continue;}
+        if(/^<=/.test(next)){push('≤',i,i+2,'op');i+=2;continue;}
+        if(/^>=/.test(next)){push('≥',i,i+2,'op');i+=2;continue;}
+        if(/^!=/.test(next)){push('≠',i,i+2,'op');i+=2;continue;}
         if(/^sqrt/.test(next)){push('√',i,i+4,'fn');i+=4;continue;}
         if(/^sin/.test(next)){push('sen',i,i+3,'fn');i+=3;continue;}
         if(/^tan/.test(next)){push('tg',i,i+3,'fn');i+=3;continue;}
@@ -161,7 +171,7 @@
         if(expr[i]==='/'){push('÷',i,i+1,'op');i+=1;continue;}
         if(expr[i]==='-'){push('−',i,i+1,'op');i+=1;continue;}
         if(expr[i]==='+'){push('+',i,i+1,'op');i+=1;continue;}
-        if(expr[i]===','){push(',',i,i+1,'comma');i+=1;continue;}
+        if(expr[i]===','||expr[i]===';'){push(',',i,i+1,'comma');i+=1;continue;}
         if(expr[i]==='.') {push(',',i,i+1,'comma');i+=1;continue;}
         if(/[0-9]/.test(expr[i])){let end=i+1;while(end<expr.length&&/[0-9.]/.test(expr[end]))end+=1;push(expr.slice(i,end).replace(/\./g,','),i,end,'number');i=end;continue;}
         if(/[A-Za-zÀ-ÿ]/.test(expr[i])){let end=i+1;while(end<expr.length&&/[A-Za-zÀ-ÿ0-9]/.test(expr[end]))end+=1;push(expr.slice(i,end),i,end,'var');i=end;continue;}
@@ -323,7 +333,7 @@
       if(e.key==='Backspace'){e.preventDefault();this.mathBackspace();return;}
       if(e.key==='Delete'){e.preventDefault();this.mathDeleteForward();return;}
       if(mod)return;
-      if(e.key.length===1&&/[0-9A-Za-zÀ-ÿ+\-*/^().,!π×÷ ]/.test(e.key)){e.preventDefault();this.insertMathToken(e.key,'text');}
+      if(e.key.length===1&&/[0-9A-Za-zÀ-ÿ+\-*/^().,!π×÷<>=; ]/.test(e.key)){e.preventDefault();this.insertMathToken(e.key,'text');}
     },
     moveMathCursor(delta){if(!this.mathState)return;this.mathState.cursor=Math.max(0,Math.min(this.mathState.expr.length,this.mathState.cursor+delta));this.renderMathEditor();},
     renderMathKeyboard(){
@@ -369,14 +379,43 @@
           key('cosh','cosh','func','function'),key('tanh','tanh','func','function')
         ].join('');
       }else{
-        const disabled=(label)=>`<button class="math-key function" type="button" disabled aria-disabled="true">${label}</button>`;
-        scientific=[disabled('d/dx'),disabled('∫'),disabled('lim'),disabled('Σ'),disabled('Π'),disabled('∞'),disabled('≤'),disabled('≥'),disabled('≠'),disabled('∂')].join('');
-        note='<div class="math-pad-note">Os operadores de cálculo avançado serão ativados junto ao motor simbólico. Os controles de edição e o teclado físico já funcionam neste campo.</div>';
+        scientific=[
+          key('<span class="key-main">d/dx</span><small>Derivada</small>','diff','derivative','function calculus-key','','Derivada numérica'),
+          key('<span class="key-main">∫ₐᵇ</span><small>Integral</small>','integral','integral','function calculus-key','','Integral definida'),
+          key('<span class="key-main">lim</span><small>Limite</small>','limit','limit','function calculus-key','','Limite'),
+          key('<span class="key-main">Σ</span><small>Somatório</small>','sum','sum','function calculus-key','','Somatório finito'),
+          key('<span class="key-main">Π</span><small>Produtório</small>','prod','prod','function calculus-key','','Produtório finito'),
+          key('∞','inf','text','function calculus-key','','Infinito'),
+          key('≤','<=','text','function calculus-key','','Menor ou igual'),
+          key('≥','>=','text','function calculus-key','','Maior ou igual'),
+          key('≠','!=','text','function calculus-key','','Diferente'),
+          key('<span class="key-main">∂</span><small>Parcial</small>','partial','partial','function calculus-key','','Derivada parcial')
+        ].join('');
+        note='<div class="math-pad-note success">Operadores de cálculo ativos. Derivadas, integrais definidas, limites, somatórios e produtórios são avaliados numericamente pelo MathEngine.</div>';
       }
       this.$.mathKeyboard.innerHTML=`<div class="math-calculator-shell"><div class="math-command-pad" aria-label="Controles de edição">${command}</div>${scientific?`<div class="math-scientific-pad">${scientific}</div>`:''}${note}<div class="math-calculator-pad">${core}</div><div class="math-keyboard-help"><span><kbd>Enter</kbd> salvar</span><span><kbd>Backspace</kbd> apagar</span><span><kbd>Delete</kbd> apagar à frente</span><span><kbd>← →</kbd> mover cursor</span><span><kbd>Ctrl+Z</kbd> desfazer</span></div></div>`;
     },
     pushMathUndo(){if(!this.mathState)return;this.mathState.undo.push({expr:this.mathState.expr,cursor:this.mathState.cursor});if(this.mathState.undo.length>80)this.mathState.undo.shift();this.mathState.redo=[];},
-    insertMathToken(token,kind){const s=this.mathState;if(!s)return;this.pushMathUndo();let insert=token,cursorOffset=String(token).length;if(kind==='func'){insert=`${token}()`;cursorOffset=token.length+1;}else if(kind==='sqrt'){insert='sqrt()';cursorOffset=5;}else if(kind==='abs'){insert='abs()';cursorOffset=4;}else if(kind==='power'){insert='^()';cursorOffset=2;}else if(kind==='fraction'){if(s.expr&&s.cursor===s.expr.length){s.expr=`(${s.expr})/()`;s.cursor=s.expr.length-1;this.renderMathEditor();return;}insert='/()';cursorOffset=2;}else if(kind==='square'){insert='^2';cursorOffset=2;}insert=insert.replace('×','*').replace('÷','/').replace('−','-').replace('π','pi').replace(',','.');s.expr=s.expr.slice(0,s.cursor)+insert+s.expr.slice(s.cursor);s.cursor+=cursorOffset;this.renderMathEditor();},
+    insertMathToken(token,kind){
+      const s=this.mathState;if(!s)return;this.pushMathUndo();
+      const contextVar=(String(s.vars||'').split(',').map(v=>v.trim()).find(Boolean)||'x');
+      const wrapCurrent=(builder)=>{if(s.expr&&s.cursor===s.expr.length){s.expr=builder(s.expr);s.cursor=s.expr.length;this.renderMathEditor();return true;}return false;};
+      let insert=token,cursorOffset=String(token).length;
+      if(kind==='func'){insert=`${token}()`;cursorOffset=token.length+1;}
+      else if(kind==='sqrt'){insert='sqrt()';cursorOffset=5;}
+      else if(kind==='abs'){insert='abs()';cursorOffset=4;}
+      else if(kind==='power'){insert='^()';cursorOffset=2;}
+      else if(kind==='fraction'){if(s.expr&&s.cursor===s.expr.length){s.expr=`(${s.expr})/()`;s.cursor=s.expr.length-1;this.renderMathEditor();return;}insert='/()';cursorOffset=2;}
+      else if(kind==='square'){insert='^2';cursorOffset=2;}
+      else if(kind==='derivative'){if(wrapCurrent(expr=>`diff(${expr};${contextVar})`))return;insert=`diff(;${contextVar})`;cursorOffset=5;}
+      else if(kind==='partial'){if(wrapCurrent(expr=>`partial(${expr};${contextVar})`))return;insert=`partial(;${contextVar})`;cursorOffset=8;}
+      else if(kind==='integral'){if(wrapCurrent(expr=>`integral(${expr};${contextVar};0;1)`))return;insert=`integral(;${contextVar};0;1)`;cursorOffset=9;}
+      else if(kind==='limit'){if(wrapCurrent(expr=>`limit(${expr};${contextVar};0)`))return;insert=`limit(;${contextVar};0)`;cursorOffset=6;}
+      else if(kind==='sum'){if(wrapCurrent(expr=>`sum(${expr};n;1;10)`))return;insert='sum(;n;1;10)';cursorOffset=4;}
+      else if(kind==='prod'){if(wrapCurrent(expr=>`prod(${expr};n;1;10)`))return;insert='prod(;n;1;10)';cursorOffset=5;}
+      insert=insert.replace('×','*').replace('÷','/').replace('−','-').replace('π','pi').replace('∞','inf').replace('≤','<=').replace('≥','>=').replace('≠','!=').replace(',','.');
+      s.expr=s.expr.slice(0,s.cursor)+insert+s.expr.slice(s.cursor);s.cursor+=cursorOffset;this.renderMathEditor();
+    },
     mathBackspace(){const s=this.mathState;if(!s||s.cursor<=0)return;this.pushMathUndo();s.expr=s.expr.slice(0,s.cursor-1)+s.expr.slice(s.cursor);s.cursor-=1;this.renderMathEditor();},
     mathDeleteForward(){const s=this.mathState;if(!s||s.cursor>=s.expr.length)return;this.pushMathUndo();s.expr=s.expr.slice(0,s.cursor)+s.expr.slice(s.cursor+1);this.renderMathEditor();},
     mathClear(){const s=this.mathState;if(!s||!s.expr)return;this.pushMathUndo();s.expr='';s.cursor=0;this.renderMathEditor();},
