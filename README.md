@@ -97,4 +97,4 @@ Depois, abra `http://localhost:8000` no navegador.
 
 ## Manual didático integrado
 
-O OrbisV inclui um manual completo em `manual/index.html`. Ele pode ser aberto pelo botão **Manual** na barra superior ou pela opção **Manual didático** no menu Projeto. O manual abre em outra aba para permanecer visível enquanto o usuário pratica no programa. Botões “Abrir no OrbisV” do manual retornam à aba do aplicativo e posicionam o usuário diretamente no modo ou ferramenta correspondente.
+O OrbisV inclui um manual completo em `manual/index.html`. Ele pode ser aberto pelo botão **Manual** na barra superior ou pela opção **Manual didático** no menu Projeto. Por padrão, o guia abre em uma janela integrada ao próprio programa. Em telas grandes ele fica lado a lado com o gráfico e pode ser ampliado ou redimensionado; no mobile ocupa uma janela interna e se recolhe quando o usuário escolhe “Abrir no OrbisV”. Os botões do manual levam diretamente ao modo ou ferramenta correspondente.

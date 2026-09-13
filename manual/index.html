@@ -7,14 +7,14 @@
   <meta name="description" content="Manual didático do OrbisV: guia completo de uso, modos matemáticos, ferramentas, importação, exportação e acessibilidade.">
   <title>Manual do OrbisV</title>
   <link rel="icon" href="../assets/orbisv-v-64.png">
-  <link rel="stylesheet" href="manual.css?v=6.5.0">
+  <link rel="stylesheet" href="manual.css?v=6.6.0">
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
   <header class="manual-topbar">
     <div class="manual-brand">
       <img src="../assets/orbisv-wordmark-official.png" alt="OrbisV">
-      <div><strong>Manual didático</strong><span>Versão 6.5</span></div>
+      <div><strong>Manual didático</strong><span>Versão 6.6</span></div>
     </div>
     <div class="top-actions">
       <button class="top-btn" id="openAppBtn" type="button" data-open-orbisv="project" title="Voltar ao OrbisV">Abrir OrbisV</button>
@@ -67,7 +67,7 @@
         <div class="hero-copy">
           <span class="eyebrow">MANUAL INTERATIVO</span>
           <h1>Aprenda o OrbisV enquanto usa o programa</h1>
-          <p>Este manual foi pensado para permanecer aberto em uma aba separada. Assim, você pode ler uma orientação aqui, voltar ao OrbisV e verificar imediatamente o que acabou de aprender.</p>
+          <p>Este manual foi pensado para permanecer aberto dentro do próprio OrbisV. No computador, ele pode ficar lado a lado com o gráfico; no celular, abre como uma janela integrada e compacta.</p>
           <div class="hero-actions">
             <button class="primary" data-open-orbisv="mode:function" type="button">Começar pelo modo Função</button>
             <a class="secondary" href="#roteiros">Ver exercícios guiados</a>
@@ -78,8 +78,8 @@
           <ol>
             <li>Leia uma seção.</li>
             <li>Use o botão <b>Abrir no OrbisV</b> quando ele aparecer.</li>
-            <li>O programa volta ao modo correspondente sem fechar este manual.</li>
-            <li>Faça o exemplo e retorne a esta aba para continuar.</li>
+            <li>O OrbisV muda para o recurso correspondente sem perder sua posição no manual.</li>
+            <li>No celular, o manual se recolhe automaticamente para você testar o recurso.</li>
           </ol>
         </div>
       </section>
@@ -390,7 +390,7 @@
         <details><summary>O CSV não foi exportado.</summary><p>É necessário ter pelo menos uma função visível. Se usar intervalo personalizado, confira x inicial, x final e passo. Se exceder 20.001 linhas, aumente o passo.</p></details>
         <details><summary>O arquivo não importa.</summary><p>O arquivo deve ser .orbisv ou .json compatível, conter JSON válido e ter no máximo 8 MB.</p></details>
         <details><summary>O PDF abriu a janela de impressão.</summary><p>Esse é o fluxo esperado. Escolha <b>Salvar como PDF</b> no diálogo de impressão do navegador.</p></details>
-        <details><summary>O manual ou PDF não abre outra aba.</summary><p>O navegador pode estar bloqueando pop-ups. Permita janelas para o endereço em que o OrbisV está sendo executado.</p></details>
+        <details><summary>O manual não aparece.</summary><p>Use o botão Manual na barra superior. O guia abre dentro do próprio OrbisV. Se a página estiver em cache, atualize o aplicativo uma vez para carregar a versão mais recente.</p></details>
       </section>
 
       <section class="manual-section searchable" id="glossario" data-title="Glossário termos">
@@ -418,6 +418,6 @@
 
   <button class="mobile-index-btn" id="mobileIndexBtn" type="button" aria-expanded="false" aria-controls="manualSidebar">Índice</button>
   <div class="manual-toast" id="manualToast" role="status" aria-live="polite"></div>
-  <script src="manual.js?v=6.5.0"></script>
+  <script src="manual.js?v=6.6.0"></script>
 </body>
 </html>

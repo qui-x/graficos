@@ -7,6 +7,8 @@
   const mobileIndex=document.getElementById('mobileIndexBtn');
   const toast=document.getElementById('manualToast');
   let toastTimer=null;
+  const embedded=new URLSearchParams(location.search).get('embed')==='1'||window.parent!==window;
+  if(embedded)root.classList.add('embedded');
 
   function loadTheme(){
     let theme='dark';
@@ -18,6 +20,11 @@
 
   function openInOrbisV(action){
     try{
+      if(embedded&&window.parent&&window.parent!==window&&window.parent.OrbisManualBridge){
+        window.parent.OrbisManualBridge.handle(action);
+        showToast(innerWidth<=760?'Recurso aberto no OrbisV. O manual foi recolhido.':'Recurso aberto no OrbisV ao lado do manual.');
+        return;
+      }
       if(window.opener && !window.opener.closed && window.opener.OrbisManualBridge){
         window.opener.OrbisManualBridge.handle(action);
         window.opener.OrbisManualBridge.focus?.();
@@ -25,9 +32,7 @@
         return;
       }
     }catch{}
-    const w=window.open('../index.html','orbisv-app');
-    if(w){showToast('O OrbisV foi aberto em outra aba. Navegue até o recurso indicado.');}
-    else showToast('O navegador bloqueou a abertura do OrbisV. Permita pop-ups para este endereço.');
+    location.href='../index.html';
   }
 
   document.addEventListener('click',(e)=>{

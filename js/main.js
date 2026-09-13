@@ -4,7 +4,7 @@
   const objects = new GraphObjects();
   const engine = new GraphEngine(canvas, objects);
   AppUI.init(objects, engine);
-  window.OrbisManualBridge = { handle(action){ AppUI.handleManualAction(action); }, focus(){ try{ window.focus(); }catch{} } };
+  window.OrbisManualBridge = { handle(action){ AppUI.handleManualAction(action,{fromManual:true}); }, focus(){ try{ window.focus(); }catch{} }, close(){ AppUI.closeManual(); } };
   if (!objects.items.length) engine.center();
   else engine.requestRender();
   const recalibrate = () => { engine.resize(); engine.requestRender(); };
@@ -15,13 +15,13 @@
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js?v=6.5.0', { scope: './', updateViaCache: 'none' });
+        const registration = await navigator.serviceWorker.register('./sw.js?v=6.6.0', { scope: './', updateViaCache: 'none' });
         registration.update().catch(()=>{});
         let reloadedForUpdate = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (reloadedForUpdate || sessionStorage.getItem('orbisv-sw-reloaded-v6.5.0') === '1') return;
+          if (reloadedForUpdate || sessionStorage.getItem('orbisv-sw-reloaded-v6.6.0') === '1') return;
           reloadedForUpdate = true;
-          sessionStorage.setItem('orbisv-sw-reloaded-v6.5.0','1');
+          sessionStorage.setItem('orbisv-sw-reloaded-v6.6.0','1');
           location.reload();
         });
       } catch (error) {

@@ -13,8 +13,8 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=6.5.0">
-  <link rel="stylesheet" href="css/style.css?v=6.5.0">
+  <link rel="manifest" href="manifest.webmanifest?v=6.6.0">
+  <link rel="stylesheet" href="css/style.css?v=6.6.0">
 </head>
 <body>
   <div class="orbisv-intro" id="orbisvIntro" role="dialog" aria-modal="true" aria-label="Apresentação OrbisV">
@@ -66,7 +66,7 @@
         <button class="header-btn" id="projectBtn" type="button" aria-haspopup="dialog">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6l2 2h8v10H4z"/></svg><span>Projeto</span>
         </button>
-        <button class="header-btn" id="manualBtn" type="button" title="Manual do OrbisV" aria-label="Abrir manual do OrbisV em nova aba">
+        <button class="header-btn" id="manualBtn" type="button" title="Manual do OrbisV" aria-label="Abrir manual do OrbisV dentro do programa">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h6.2c1.1 0 1.8.5 1.8 1.5v14c0-1-.7-1.5-1.8-1.5H5z"/><path d="M19 4.5h-6.2c-1.1 0-1.8.5-1.8 1.5v14c0-1 .7-1.5 1.8-1.5H19z"/></svg><span>Manual</span>
         </button>
         <button class="icon-btn" id="a11yBtn" type="button" title="Central de acessibilidade" aria-label="Central de acessibilidade" aria-haspopup="dialog">
@@ -197,6 +197,27 @@
       </aside>
     </section>
 
+    <aside class="manual-dock" id="manualDock" aria-labelledby="manualDockTitle" hidden>
+      <div class="manual-dock-resizer" id="manualDockResizer" aria-hidden="true"></div>
+      <header class="manual-dock-head">
+        <div class="manual-dock-title">
+          <img class="official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true">
+          <div><span class="micro-label">AJUDA INTERATIVA</span><h2 id="manualDockTitle">Manual didático</h2></div>
+        </div>
+        <div class="manual-dock-actions">
+          <button class="icon-btn small" id="manualDockExpandBtn" type="button" aria-pressed="false" title="Ampliar manual" aria-label="Ampliar manual">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+          </button>
+          <button class="icon-btn small" id="manualDockCloseBtn" type="button" title="Fechar manual" aria-label="Fechar manual">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="manual-dock-body">
+        <iframe id="manualFrame" title="Manual didático do OrbisV" loading="lazy" data-src="./manual/index.html?embed=1"></iframe>
+      </div>
+    </aside>
+
     <nav class="mobile-nav" aria-label="Modos principais">
       <button class="mobile-nav-btn active" data-mode="function" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c4-9 6-9 9 0s5 9 9-2"/></svg><span>Função</span>
@@ -268,7 +289,7 @@
             <button class="project-menu-card" id="projectA11yBtn" type="button"><strong>Acessibilidade</strong><span>Tema, contraste, visão de cores e leitura</span></button>
             <button class="project-menu-card" id="startTourBtn" type="button"><strong>Tour do OrbisV</strong><span>Rever as principais funcionalidades</span></button>
             <button class="project-menu-card" id="projectVisualBtn" type="button"><strong>Visualização</strong><span>Grade, eixos, coordenadas e snap</span></button>
-            <button class="project-menu-card" id="projectManualBtn" type="button"><strong>Manual didático</strong><span>Abrir o guia completo em outra aba</span></button>
+            <button class="project-menu-card" id="projectManualBtn" type="button"><strong>Manual didático</strong><span>Abrir o guia em uma janela dentro do OrbisV</span></button>
           </div>
           <div class="project-feature-strip" aria-label="Recursos principais">
             <span>Notação matemática visual</span><span>Objetos e histórico</span><span>47 modelos</span><span>PWA e acessibilidade</span>
@@ -398,11 +419,11 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=6.5.0"></script>
-  <script src="js/graphObjects.js?v=6.5.0"></script>
-  <script src="js/graphEngine.js?v=6.5.0"></script>
-  <script src="js/models.js?v=6.5.0"></script>
-  <script src="js/ui.js?v=6.5.0"></script>
-  <script src="js/main.js?v=6.5.0"></script>
+  <script src="js/mathEngine.js?v=6.6.0"></script>
+  <script src="js/graphObjects.js?v=6.6.0"></script>
+  <script src="js/graphEngine.js?v=6.6.0"></script>
+  <script src="js/models.js?v=6.6.0"></script>
+  <script src="js/ui.js?v=6.6.0"></script>
+  <script src="js/main.js?v=6.6.0"></script>
 </body>
 </html>
