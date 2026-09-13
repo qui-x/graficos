@@ -18,7 +18,8 @@ No primeiro acesso, o programa apresenta automaticamente um tour das principais 
 - **Vetor:** cria vetores a partir de origem e extremidade e apresenta módulo e direção.
 - **Geometria:** cria pontos, retas, círculos, elipses e polígonos.
 - **Discos/Anéis:** valida R ≥ r ≥ 0, calcula volumes de revolução e representa o perfil simétrico, o eixo, as seções transversais e os raios didáticos.
-- **Curva 3D e Reta 3D:** possuem formulários e notação preparados; o motor espacial ainda está reservado para a etapa de implementação 3D.
+- **Curva 3D e Reta 3D:** utilizam o motor espacial com câmera orbital, zoom, inspeção e projeção tridimensional.
+- **Discos/Anéis 3D:** pode representar sólidos de revolução com superfície externa, cavidade interna e seções.
 
 ## Editor matemático
 
@@ -52,18 +53,26 @@ A aba **Histórico** registra as alterações da cena e oferece desfazer/refazer
 
 A barra flutuante do gráfico oferece recentralização, grade, eixos, ajuste dos objetos à tela e modo de inspeção. A área gráfica aceita pan e zoom e mostra coordenadas temporárias quando o recurso está habilitado.
 
-## Projetos e salvamento automático
+## Projetos, importação e salvamento automático
 
-A sessão atual é salva automaticamente no navegador. Um arquivo `.orbisv` preserva objetos, visualização, histórico e modo matemático ativo, permitindo continuar o trabalho em outra execução do aplicativo.
+A sessão atual é salva automaticamente no navegador. O formato `.orbisv` preserva objetos, visualização, histórico e modo matemático ativo.
+
+A ferramenta **Importar projeto** aceita `.orbisv` e `.json`, mostra uma pré-visualização antes de aplicar o arquivo e oferece dois modos:
+
+- **Substituir cena:** restaura o projeto completo, incluindo visualização e histórico;
+- **Mesclar com a cena:** mantém o trabalho aberto e adiciona os objetos importados com novos identificadores.
+
+A importação valida o formato, a versão, a quantidade e os tipos dos objetos antes de alterar a cena. Arquivos de até 8 MB podem ser selecionados ou arrastados para a área de importação.
 
 ## Exportação
 
-O menu de exportação disponibiliza:
+A central de exportação permite definir um nome base e disponibiliza:
 
-- PNG;
-- SVG;
-- PDF por impressão do navegador;
-- CSV para tabelas de funções visíveis.
+- **ORBISV:** projeto completo para continuar o trabalho depois;
+- **PNG:** imagem do gráfico com resolução atual, 2× ou 3×;
+- **SVG:** exportação vetorial para cenas 2D compatíveis; cenas 3D e objetos que dependem do canvas são preservados como imagem incorporada;
+- **PDF:** relatório formatado com o gráfico e resumo dos objetos visíveis, usando a impressão do navegador para salvar em PDF;
+- **CSV:** tabela das funções visíveis, com intervalo da janela atual ou personalizado, passo configurável, separador `;`, vírgula decimal e BOM para compatibilidade com Excel.
 
 ## Acessibilidade
 
@@ -84,13 +93,3 @@ python -m http.server 8000
 ```
 
 Depois, abra `http://localhost:8000` no navegador.
-
-## Testes
-
-Com Node.js instalado:
-
-```bash
-npm test
-```
-
-A suíte verifica o motor matemático 2D, objetos, notação, catálogo de modelos, interface, PWA, acessibilidade, cache e principais contratos de interação.

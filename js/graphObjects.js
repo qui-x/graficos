@@ -182,11 +182,49 @@
     recoveryCandidate() {
       try { const raw = JSON.parse(localStorage.getItem(STORAGE_RECOVERY) || 'null'); return raw && Array.isArray(raw.items) ? raw : null; } catch { return null; }
     }
-    importProject(project) {
+    validateProject(project) {
       if (!project || project.format !== 'orbisv-project' || !Array.isArray(project.scene?.objects)) throw new Error('Arquivo OrbisV inválido ou incompatível.');
-      const previous = this.snapshot(); this.items = clone(project.scene.objects); nextId = this.items.reduce((m, o) => Math.max(m, Number(o.id) || 0), 0) + 1;
+      const version = Number(project.version || 1);
+      if (!Number.isInteger(version) || version < 1 || version > 2) throw new Error(`Versão de projeto não suportada: ${project.version}.`);
+      const objects = project.scene.objects;
+      if (objects.length > this.maxItems) throw new Error(`O projeto possui ${objects.length} objetos. O limite atual é ${this.maxItems}.`);
+      const allowed = new Set(['function','parametric','vector','point','line','circle','ellipse','polygon','washers','curve3d','line3d']);
+      const ids = new Set();
+      objects.forEach((obj, index) => {
+        if (!obj || typeof obj !== 'object' || !allowed.has(obj.type)) throw new Error(`Objeto ${index + 1} possui tipo inválido ou não suportado.`);
+        if (!obj.data || typeof obj.data !== 'object' || Array.isArray(obj.data)) throw new Error(`Objeto ${index + 1} não possui dados matemáticos válidos.`);
+        const id = Number(obj.id);
+        if (Number.isFinite(id)) { if (ids.has(id)) throw new Error(`O projeto contém identificadores duplicados (${id}).`); ids.add(id); }
+      });
+      return { version, objectCount: objects.length };
+    }
+    sanitizedProjectObjects(project) {
+      this.validateProject(project);
+      return project.scene.objects.map((raw, index) => ({
+        id: Number.isFinite(Number(raw.id)) ? Number(raw.id) : index + 1,
+        type: raw.type,
+        color: /^#[0-9a-f]{6}$/i.test(String(raw.color || '')) ? String(raw.color) : '#46e6ff',
+        visible: raw.visible !== false,
+        locked: Boolean(raw.locked),
+        name: typeof raw.name === 'string' ? raw.name.slice(0, 120) : '',
+        data: clone(raw.data)
+      }));
+    }
+    importProject(project) {
+      const imported = this.sanitizedProjectObjects(project);
+      const previous = this.snapshot(); this.items = imported; nextId = this.items.reduce((m, o) => Math.max(m, Number(o.id) || 0), 0) + 1;
       this.undoStack.push({ items: previous, action: 'abrir projeto', detail: project.name || '' }); this.redoStack = [];
       this.recordEvent('Projeto aberto', project.name || 'Projeto OrbisV', 'project'); this.notify({ action: 'Projeto aberto', detail: project.name || '', kind: 'project' });
+      return imported.length;
+    }
+    mergeProject(project) {
+      const imported = this.sanitizedProjectObjects(project);
+      if (this.items.length + imported.length > this.maxItems) throw new Error(`A mesclagem resultaria em ${this.items.length + imported.length} objetos. O limite atual é ${this.maxItems}.`);
+      const previous = this.snapshot();
+      const copies = imported.map((obj) => ({ ...clone(obj), id: nextId++ }));
+      this.items.push(...copies); this.redoStack = [];
+      this.commit(previous, 'Projeto mesclado', `${project.name || 'Projeto OrbisV'} · ${copies.length} objeto(s)`, 'project-merge');
+      return copies.length;
     }
     get visible() { return this.items.filter((o) => o.visible); }
   }

@@ -13,8 +13,8 @@
   <link rel="icon" href="assets/orbisv-v-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="assets/orbisv-v-64.png" sizes="64x64" type="image/png">
   <link rel="apple-touch-icon" href="assets/orbisv-v-180.png" sizes="180x180">
-  <link rel="manifest" href="manifest.webmanifest?v=6.3.0">
-  <link rel="stylesheet" href="css/style.css?v=6.3.0">
+  <link rel="manifest" href="manifest.webmanifest?v=6.4.0">
+  <link rel="stylesheet" href="css/style.css?v=6.4.0">
 </head>
 <body>
   <div class="orbisv-intro" id="orbisvIntro" role="dialog" aria-modal="true" aria-label="Apresentação OrbisV">
@@ -247,6 +247,7 @@
           </div>
           <p class="project-home-lead">Visualize, explore e compreenda matemática em um ambiente gráfico interativo, acessível e orientado pela notação da literatura.</p>
           <button class="project-continue" id="continueProjectBtn" type="button"><strong id="continueProjectLabel">Entrar no OrbisV</strong><span id="projectSessionSummary">Nenhum objeto na cena atual</span></button>
+          <label class="project-name-editor"><span>Nome do projeto</span><input id="projectNameInput" type="text" maxlength="80" value="Projeto OrbisV" autocomplete="off" spellcheck="false"></label>
           <div class="project-first-run" id="firstRunCard" hidden>
             <span class="micro-label">PRIMEIRO ACESSO</span>
             <strong>Conheça o OrbisV antes de começar</strong>
@@ -257,9 +258,9 @@
         <section class="project-home-menu" aria-label="Menu inicial do OrbisV">
           <div class="project-menu-grid">
             <button class="project-menu-card" id="newProjectBtn" type="button"><strong>Novo gráfico</strong><span>Iniciar uma cena vazia</span></button>
-            <button class="project-menu-card" id="openProjectBtn" type="button"><strong>Abrir projeto</strong><span>Importar um arquivo .orbisv</span></button>
+            <button class="project-menu-card" id="openProjectBtn" type="button"><strong>Importar projeto</strong><span>Abrir ou mesclar um arquivo .orbisv</span></button>
             <button class="project-menu-card" id="saveProjectBtn" type="button"><strong>Salvar projeto</strong><span>Guardar objetos, histórico e visualização</span></button>
-            <button class="project-menu-card" id="openExportBtn" type="button"><strong>Exportar</strong><span>PNG, SVG, PDF ou CSV</span></button>
+            <button class="project-menu-card" id="openExportBtn" type="button"><strong>Exportar</strong><span>ORBISV, PNG, SVG, PDF ou CSV</span></button>
             <button class="project-menu-card" id="projectModelsBtn" type="button"><strong>Modelos matemáticos</strong><span>Explorar a biblioteca de modelos pré-prontos</span></button>
             <button class="project-menu-card" id="projectA11yBtn" type="button"><strong>Acessibilidade</strong><span>Tema, contraste, visão de cores e leitura</span></button>
             <button class="project-menu-card" id="startTourBtn" type="button"><strong>Tour do OrbisV</strong><span>Rever as principais funcionalidades</span></button>
@@ -273,14 +274,50 @@
       </div>
     </section>
 
-    <section class="sheet-modal" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="exportTitle" hidden>
-      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">SAÍDA</span><h2 id="exportTitle">Exportar</h2></div></div><button class="icon-btn small" data-close-modal="exportSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-      <div class="export-grid">
-        <button class="export-card" data-export="png" type="button"><strong>PNG</strong><span>Imagem em alta resolução</span></button>
-        <button class="export-card" data-export="svg" type="button"><strong>SVG</strong><span>Gráfico vetorial</span></button>
-        <button class="export-card" data-export="pdf" type="button"><strong>PDF</strong><span>Relatório matemático via impressão</span></button>
-        <button class="export-card" data-export="csv" type="button"><strong>CSV</strong><span>Tabela de valores compatível com Excel</span></button>
+    <section class="sheet-modal wide transfer-modal" id="importSheet" role="dialog" aria-modal="true" aria-labelledby="importTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">ENTRADA</span><h2 id="importTitle">Importar projeto</h2></div></div><button class="icon-btn small" data-close-modal="importSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="transfer-layout">
+        <section class="transfer-panel">
+          <button class="import-dropzone" id="importDropzone" type="button">
+            <strong>Solte um arquivo .orbisv aqui</strong>
+            <span>ou selecione um projeto salvo no dispositivo</span>
+            <small>Formatos aceitos: .orbisv e .json · limite de 8 MB</small>
+          </button>
+          <button class="secondary-wide" id="importChooseBtn" type="button">Selecionar arquivo</button>
+        </section>
+        <section class="import-preview" id="importPreview" hidden>
+          <div class="import-preview-head"><div><span class="micro-label">PRÉ-VISUALIZAÇÃO</span><h3 id="importPreviewName">Projeto OrbisV</h3></div><span class="import-valid-badge" id="importValidBadge">Arquivo válido</span></div>
+          <div class="import-meta-grid" id="importMetaGrid"></div>
+          <fieldset class="import-mode-group">
+            <legend>Como importar</legend>
+            <label><input type="radio" name="importMode" value="replace" checked><span><strong>Substituir cena atual</strong><small>Carrega objetos, visualização e histórico do projeto.</small></span></label>
+            <label><input type="radio" name="importMode" value="merge"><span><strong>Mesclar com a cena</strong><small>Mantém o trabalho atual e adiciona os objetos importados.</small></span></label>
+          </fieldset>
+          <div class="dialog-actions transfer-actions"><button class="secondary-btn" id="importResetBtn" type="button">Escolher outro</button><button class="primary-inline" id="importApplyBtn" type="button">Importar projeto</button></div>
+        </section>
       </div>
+    </section>
+
+    <section class="sheet-modal wide transfer-modal" id="exportSheet" role="dialog" aria-modal="true" aria-labelledby="exportTitle" hidden>
+      <div class="modal-head"><div class="modal-heading-with-mark"><img class="modal-brand-mark official-v-mark" src="assets/orbisv-v-symbol.png" data-dark-src="assets/orbisv-v-symbol.png" data-light-src="assets/orbisv-v-symbol-light.png" alt="" aria-hidden="true"><div><span class="micro-label">SAÍDA</span><h2 id="exportTitle">Exportar e compartilhar</h2></div></div><button class="icon-btn small" data-close-modal="exportSheet" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="export-config">
+        <label class="stacked-setting"><span>Nome base do arquivo</span><input class="number-field" id="exportBaseName" type="text" maxlength="80" value="Projeto-OrbisV" autocomplete="off" spellcheck="false"></label>
+        <label class="stacked-setting"><span>Resolução PNG</span><select class="select-field" id="exportPngScale"><option value="1">Atual</option><option value="2" selected>2×</option><option value="3">3×</option></select></label>
+        <label class="stacked-setting"><span>CSV — origem do intervalo</span><select class="select-field" id="exportCsvRangeMode"><option value="view" selected>Janela atual</option><option value="custom">Intervalo personalizado</option></select></label>
+        <div class="export-csv-range" id="exportCsvCustomRange" hidden>
+          <label><span>x inicial</span><input class="number-field" id="exportCsvMin" type="number" step="any" value="-10"></label>
+          <label><span>x final</span><input class="number-field" id="exportCsvMax" type="number" step="any" value="10"></label>
+          <label><span>Passo</span><input class="number-field" id="exportCsvStep" type="number" step="any" min="0.000001" value="0.1"></label>
+        </div>
+      </div>
+      <div class="export-grid enhanced">
+        <button class="export-card" data-export="project" type="button"><strong>ORBISV</strong><span>Projeto completo para continuar depois</span><small>Objetos, visualização, histórico e modo ativo</small></button>
+        <button class="export-card" data-export="png" type="button"><strong>PNG</strong><span>Imagem do gráfico</span><small>Resolução ajustável para relatório ou apresentação</small></button>
+        <button class="export-card" data-export="svg" type="button"><strong>SVG</strong><span>Gráfico vetorial quando possível</span><small>Cenas 3D são preservadas como imagem incorporada</small></button>
+        <button class="export-card" data-export="pdf" type="button"><strong>PDF</strong><span>Relatório matemático formatado</span><small>Inclui gráfico e resumo dos objetos</small></button>
+        <button class="export-card" data-export="csv" type="button"><strong>CSV</strong><span>Tabela das funções visíveis</span><small>Separador ;, decimal com vírgula e BOM para Excel</small></button>
+      </div>
+      <div class="transfer-status" id="exportStatus">Escolha um formato. O conteúdo atual da cena será preservado na exportação.</div>
     </section>
 
     <section class="sheet-modal wide" id="a11ySheet" role="dialog" aria-modal="true" aria-labelledby="a11yTitle" hidden>
@@ -353,15 +390,15 @@
     </section>
   </div>
 
-  <input id="projectFileInput" type="file" accept=".orbisv,application/json" hidden>
+  <input id="projectFileInput" type="file" accept=".orbisv,.json,application/json" hidden>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
-  <script src="js/mathEngine.js?v=6.3.0"></script>
-  <script src="js/graphObjects.js?v=6.3.0"></script>
-  <script src="js/graphEngine.js?v=6.3.0"></script>
-  <script src="js/models.js?v=6.3.0"></script>
-  <script src="js/ui.js?v=6.3.0"></script>
-  <script src="js/main.js?v=6.3.0"></script>
+  <script src="js/mathEngine.js?v=6.4.0"></script>
+  <script src="js/graphObjects.js?v=6.4.0"></script>
+  <script src="js/graphEngine.js?v=6.4.0"></script>
+  <script src="js/models.js?v=6.4.0"></script>
+  <script src="js/ui.js?v=6.4.0"></script>
+  <script src="js/main.js?v=6.4.0"></script>
 </body>
 </html>
