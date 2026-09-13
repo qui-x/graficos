@@ -47,3 +47,6 @@ console.log('OrbisV UI architecture OK');
 
 if (!html.includes('Valores dos pontos')) throw new Error('point values toggle missing');
 if (!graph.includes('showPointValues') || !graph.includes('drawPointValueLabel')) throw new Error('point values on graph missing');
+
+if (!html.includes('option value="auto"')) throw new Error('auto snap option missing');
+if (!ui.includes("snap:'auto'")) throw new Error('auto snap default missing');
