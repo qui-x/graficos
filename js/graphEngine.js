@@ -112,6 +112,12 @@
       if (Number.isFinite(view.scale)) this.scale = Math.max(5, Math.min(1200, view.scale));
       if (Number.isFinite(view.offsetX)) this.offsetX = view.offsetX;
       if (Number.isFinite(view.offsetY)) this.offsetY = view.offsetY;
+      if (typeof view.showGrid === 'boolean') this.showGrid = view.showGrid;
+      if (typeof view.showMinorGrid === 'boolean') this.showMinorGrid = view.showMinorGrid;
+      if (typeof view.showAxes === 'boolean') this.showAxes = view.showAxes;
+      if (typeof view.showLabels === 'boolean') this.showLabels = view.showLabels;
+      if (typeof view.showCoordinates === 'boolean') this.showCoordinates = view.showCoordinates;
+      if (typeof view.showPointValues === 'boolean') this.showPointValues = view.showPointValues;
       if (view.camera3d && typeof view.camera3d === 'object') {
         const c=view.camera3d,t=c.target||{};
         if(Number.isFinite(c.yaw))this.camera3d.yaw=c.yaw;
@@ -122,7 +128,7 @@
       }
       this.requestRender();
     }
-    getView() { return { scale: this.scale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, showLabels: this.showLabels, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
+    getView() { return { scale: this.scale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, showLabels: this.showLabels, showCoordinates: this.showCoordinates, showPointValues: this.showPointValues, viewMode: this.viewMode, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
     requestRender() { if (this.framePending) return; this.framePending = true; requestAnimationFrame(() => { this.framePending = false; this.render(); }); }
     invalidateCache() { this.cache.clear(); }
     getCompiled(id, expression, variables) {
@@ -531,12 +537,34 @@
     }
     line3DPoints(obj,extent=10){const d=obj.data;if(d.method==='twoPoints'){const a={x:d.x1,y:d.y1,z:d.z1},b={x:d.x2,y:d.y2,z:d.z2},v={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z};return[{x:a.x-v.x*extent,y:a.y-v.y*extent,z:a.z-v.z*extent},{x:a.x+v.x*extent,y:a.y+v.y*extent,z:a.z+v.z*extent},a,b];}const a={x:d.x0,y:d.y0,z:d.z0},v={x:d.a,y:d.b,z:d.c};return[{x:a.x-v.x*extent,y:a.y-v.y*extent,z:a.z-v.z*extent},{x:a.x+v.x*extent,y:a.y+v.y*extent,z:a.z+v.z*extent},a,{x:a.x+v.x,y:a.y+v.y,z:a.z+v.z}];}
     drawLine3D(obj){const [a,b,p0,p1]=this.line3DPoints(obj,4),color=this.objectColor(obj);this.drawLine3DProjected(a,b,color,obj.id===this.selectedId?3.4:2.3,1,this.objectDash(obj));[p0,p1].forEach((q,i)=>{const p=this.project3D(q);if(!p)return;if(global.AppUI?.a11yPrefs?.markers)this.drawObjectMarker(obj,p,i?4:5,.95);this.registerHoverPoint(obj,p,q,{kind:i?'direção/ponto B':'ponto base',label:'Reta 3D'});});}
+    washerPoint3D(axis,u,r,theta){return axis==='x'?{x:u,y:r*Math.cos(theta),z:r*Math.sin(theta)}:{x:r*Math.cos(theta),y:u,z:r*Math.sin(theta)};}
+    washerRadiusFunctions(obj){const axis=obj.data.axis==='y'?'y':'x';try{return{axis,outer:this.getCompiled(`${obj.id}:3douter:${axis}`,obj.data.outerExpr,{[axis]:0}),inner:this.getCompiled(`${obj.id}:3dinner:${axis}`,obj.data.innerExpr||'0',{[axis]:0})};}catch{return null;}}
+    washerOuterMax(obj,steps=180){const f=this.washerRadiusFunctions(obj);if(!f)return 0;let max=0;for(let i=0;i<=steps;i++){const u=obj.data.a+(obj.data.b-obj.data.a)*i/steps,R=f.outer({[f.axis]:u});if(Number.isFinite(R))max=Math.max(max,Math.max(0,R));}return max;}
+    drawWashers3D(obj){
+      const f=this.washerRadiusFunctions(obj);if(!f)return;const {axis,outer,inner}=f,d=obj.data,color=this.objectColor(obj),c=this.ctx,isWasher=d.method==='washers';
+      const uSteps=Math.max(16,Math.min(34,Math.floor(this.size.w/32))),thetaSteps=this.size.w<600?18:24,faces=[];
+      const radii=(u)=>{const R=outer({[axis]:u}),ri=isWasher?inner({[axis]:u}):0;return Number.isFinite(R)&&Number.isFinite(ri)?{R:Math.max(0,R),r:Math.max(0,Math.min(R,ri))}:null;};
+      const pushFace=(pts,alpha,strokeAlpha=.18)=>{const proj=pts.map(q=>this.project3D(q));if(proj.some(q=>!q))return;faces.push({pts:proj,depth:proj.reduce((a,q)=>a+q.depth,0)/proj.length,alpha,strokeAlpha});};
+      for(let i=0;i<uSteps;i++){
+        const u0=d.a+(d.b-d.a)*i/uSteps,u1=d.a+(d.b-d.a)*(i+1)/uSteps,r0=radii(u0),r1=radii(u1);if(!r0||!r1)continue;
+        for(let j=0;j<thetaSteps;j++){
+          const t0=j*Math.PI*2/thetaSteps,t1=(j+1)*Math.PI*2/thetaSteps;
+          pushFace([this.washerPoint3D(axis,u0,r0.R,t0),this.washerPoint3D(axis,u1,r1.R,t0),this.washerPoint3D(axis,u1,r1.R,t1),this.washerPoint3D(axis,u0,r0.R,t1)],.12,.18);
+          if(isWasher&&(r0.r>1e-8||r1.r>1e-8))pushFace([this.washerPoint3D(axis,u0,r0.r,t1),this.washerPoint3D(axis,u1,r1.r,t1),this.washerPoint3D(axis,u1,r1.r,t0),this.washerPoint3D(axis,u0,r0.r,t0)],.065,.12);
+        }
+      }
+      for(const u of [d.a,d.b]){const rr=radii(u);if(!rr)continue;for(let j=0;j<thetaSteps;j++){const t0=j*Math.PI*2/thetaSteps,t1=(j+1)*Math.PI*2/thetaSteps;pushFace([this.washerPoint3D(axis,u,rr.r,t0),this.washerPoint3D(axis,u,rr.R,t0),this.washerPoint3D(axis,u,rr.R,t1),this.washerPoint3D(axis,u,rr.r,t1)],.20,.26);}}
+      faces.sort((a,b)=>b.depth-a.depth);c.save();c.fillStyle=color;c.strokeStyle=color;c.lineJoin='round';for(const face of faces){c.globalAlpha=face.alpha;c.beginPath();c.moveTo(face.pts[0].x,face.pts[0].y);for(let i=1;i<face.pts.length;i++)c.lineTo(face.pts[i].x,face.pts[i].y);c.closePath();c.fill();c.globalAlpha=face.strokeAlpha;c.lineWidth=.55;c.stroke();}c.restore();
+      const guideA=axis==='x'?{x:d.a,y:0,z:0}:{x:0,y:d.a,z:0},guideB=axis==='x'?{x:d.b,y:0,z:0}:{x:0,y:d.b,z:0};this.drawLine3DProjected(guideA,guideB,this.theme.guide,1.5,.9,[7,5]);
+      const ringCount=7;for(let k=0;k<ringCount;k++){const u=d.a+(d.b-d.a)*k/(ringCount-1),rr=radii(u);if(!rr)continue;for(const radius of [rr.R,...(isWasher&&rr.r>1e-8?[rr.r]:[])]){let prev=null;for(let j=0;j<=thetaSteps;j++){const q=this.washerPoint3D(axis,u,radius,j*Math.PI*2/thetaSteps);if(prev)this.drawLine3DProjected(prev,q,color,radius===rr.R?1.05:.75,radius===rr.R?.6:.38);prev=q;}}const q=this.washerPoint3D(axis,u,rr.R,0),p=this.project3D(q);if(p){const area=Math.PI*Math.max(0,rr.R*rr.R-rr.r*rr.r);if(global.AppUI?.a11yPrefs?.markers)this.drawObjectMarker(obj,p,3.2,.86);this.registerHoverPoint(obj,p,q,{kind:isWasher?'seção de anel 3D':'seção de disco 3D',label:isWasher?'Anel 3D':'Disco 3D',expression:`${axis} = ${this.formatTooltipNumber(u)} · R = ${this.formatTooltipNumber(rr.R)}${isWasher?` · r = ${this.formatTooltipNumber(rr.r)}`:''} · A ≈ ${this.formatTooltipNumber(area)}`});}}
+      const meridians=8;for(let j=0;j<meridians;j++){const theta=j*Math.PI*2/meridians;let prevOuter=null,prevInner=null;for(let i=0;i<=uSteps;i++){const u=d.a+(d.b-d.a)*i/uSteps,rr=radii(u);if(!rr){prevOuter=null;prevInner=null;continue;}const qo=this.washerPoint3D(axis,u,rr.R,theta);if(prevOuter)this.drawLine3DProjected(prevOuter,qo,color,.7,.34);prevOuter=qo;if(isWasher&&rr.r>1e-8){const qi=this.washerPoint3D(axis,u,rr.r,theta);if(prevInner)this.drawLine3DProjected(prevInner,qi,color,.6,.24);prevInner=qi;}}}
+    }
     draw3DScene() {
       const {w,h}=this.size,c=this.ctx;this.hoverPoints=[];c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid3D();this.drawAxes3D();
-      for(const obj of this.objects.items){if(!obj.visible)continue;if(obj.type==='curve3d')this.drawCurve3D(obj);else if(obj.type==='line3d')this.drawLine3D(obj);}
+      for(const obj of this.objects.items){if(!obj.visible)continue;if(obj.type==='curve3d')this.drawCurve3D(obj);else if(obj.type==='line3d')this.drawLine3D(obj);else if(obj.type==='washers')this.drawWashers3D(obj);}
       if(this.hoveredPoint){this.updatePointTooltip(this.hoveredPoint.screen.x,this.hoveredPoint.screen.y,'mouse');}
     }
-    getObjectBounds3D(obj){try{if(obj.type==='curve3d'){const pts=this.sampleCurve3D(obj,320).filter(Boolean);if(!pts.length)return null;return{xmin:Math.min(...pts.map(p=>p.x)),xmax:Math.max(...pts.map(p=>p.x)),ymin:Math.min(...pts.map(p=>p.y)),ymax:Math.max(...pts.map(p=>p.y)),zmin:Math.min(...pts.map(p=>p.z)),zmax:Math.max(...pts.map(p=>p.z))};}if(obj.type==='line3d'){const [, ,p0,p1]=this.line3DPoints(obj,1);return{xmin:Math.min(p0.x,p1.x),xmax:Math.max(p0.x,p1.x),ymin:Math.min(p0.y,p1.y),ymax:Math.max(p0.y,p1.y),zmin:Math.min(p0.z,p1.z),zmax:Math.max(p0.z,p1.z)};}}catch{}return null;}
+    getObjectBounds3D(obj){try{if(obj.type==='curve3d'){const pts=this.sampleCurve3D(obj,320).filter(Boolean);if(!pts.length)return null;return{xmin:Math.min(...pts.map(p=>p.x)),xmax:Math.max(...pts.map(p=>p.x)),ymin:Math.min(...pts.map(p=>p.y)),ymax:Math.max(...pts.map(p=>p.y)),zmin:Math.min(...pts.map(p=>p.z)),zmax:Math.max(...pts.map(p=>p.z))};}if(obj.type==='line3d'){const [, ,p0,p1]=this.line3DPoints(obj,1);return{xmin:Math.min(p0.x,p1.x),xmax:Math.max(p0.x,p1.x),ymin:Math.min(p0.y,p1.y),ymax:Math.max(p0.y,p1.y),zmin:Math.min(p0.z,p1.z),zmax:Math.max(p0.z,p1.z)};}if(obj.type==='washers'){const r=this.washerOuterMax(obj,220),a=obj.data.a,b=obj.data.b;if(obj.data.axis==='y')return{xmin:-r,xmax:r,ymin:a,ymax:b,zmin:-r,zmax:r};return{xmin:a,xmax:b,ymin:-r,ymax:r,zmin:-r,zmax:r};}}catch{}return null;}
 
     drawInspection() {
       if (!this.inspectMode || !Number.isFinite(this.inspectX)) return; const { h } = this.size, c=this.ctx, theme=this.theme, p=this.worldToScreen(this.inspectX,0);

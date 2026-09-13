@@ -140,6 +140,8 @@
       if (obj.type === 'circle') return `Círculo r = ${obj.data.r}`;
       if (obj.type === 'ellipse') return `Elipse a = ${obj.data.a}, b = ${obj.data.b}`;
       if (obj.type === 'line') return `${obj.data.a}x + ${obj.data.b}y + ${obj.data.c} = 0`;
+      if (obj.type === 'polygon') return `Polígono com ${(obj.data.vertices || []).length} vértices`;
+      if (obj.type === 'washers') return `${obj.data.method === 'washers' ? 'Anéis' : 'Discos'} em torno do eixo ${obj.data.axis || 'x'} · V ≈ ${Number.isFinite(obj.data.volume) ? obj.data.volume.toFixed(4) : '—'}`;
       if (obj.type === 'curve3d') return `r(t) = (${obj.data.xExpr}, ${obj.data.yExpr}, ${obj.data.zExpr})`;
       if (obj.type === 'line3d') return obj.data.method === 'twoPoints' ? `Reta 3D por dois pontos` : `Reta 3D com direção (${obj.data.a}, ${obj.data.b}, ${obj.data.c})`;
       return obj.type;
