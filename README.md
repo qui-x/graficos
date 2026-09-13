@@ -93,3 +93,8 @@ python -m http.server 8000
 ```
 
 Depois, abra `http://localhost:8000` no navegador.
+
+
+## Manual didático integrado
+
+O OrbisV inclui um manual completo em `manual/index.html`. Ele pode ser aberto pelo botão **Manual** na barra superior ou pela opção **Manual didático** no menu Projeto. O manual abre em outra aba para permanecer visível enquanto o usuário pratica no programa. Botões “Abrir no OrbisV” do manual retornam à aba do aplicativo e posicionam o usuário diretamente no modo ou ferramenta correspondente.
