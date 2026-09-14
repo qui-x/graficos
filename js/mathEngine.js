@@ -21,7 +21,10 @@
     módulo: 'abs', modulo: 'abs'
   });
   const DISPLAY_NAMES = Object.freeze({ sin: 'sen', cos: 'cos', tan: 'tg', asin: 'arcsen', acos: 'arccos', atan: 'arctg', ln: 'ln', log: 'log' });
-  const MAX_EXPRESSION_LENGTH = 500;
+  const MAX_EXPRESSION_LENGTH = 2000;
+  const MAX_TOKENS = 4096;
+  const MAX_AST_NODES = 4096;
+  const MAX_AST_DEPTH = 512;
   const STANDARD_IDENTIFIER_DEFAULT = 1;
   const GREEK_SYMBOLS = Object.freeze({
     'α':'alpha','β':'beta','γ':'gamma','δ':'delta','ε':'epsilon','ζ':'zeta','η':'eta','θ':'theta','ι':'iota','κ':'kappa','λ':'lambda','μ':'mu','ν':'nu','ξ':'xi','ο':'omicron','ρ':'rho','σ':'sigma','ς':'sigma','υ':'upsilon','ω':'omega'
@@ -142,6 +145,7 @@
       if (!this.input) throw new Error(ERROR_MESSAGES.EMPTY);
       if (this.input.length > MAX_EXPRESSION_LENGTH) throw new Error(ERROR_MESSAGES.LONG);
       this.tokens = addImplicitMultiplication(rawTokenize(this.input, this.variables));
+      if (this.tokens.length > MAX_TOKENS) throw new Error('A expressão possui elementos demais para ser processada com segurança.');
       this.tokens.push({ type: 'eof', value: null });
       this.index = 0;
     }
@@ -253,14 +257,19 @@
   function derivativeNode(exprNode, variableName, variables) {
     const x=Number(Object.prototype.hasOwnProperty.call(variables||{},variableName)?variables[variableName]:STANDARD_IDENTIFIER_DEFAULT);
     if(!Number.isFinite(x)) return NaN;
-    const h=Math.max(1e-6,Math.abs(x)*1e-5);
-    const fm=evaluate(exprNode,withVariable(variables,variableName,x-h));
-    const fp=evaluate(exprNode,withVariable(variables,variableName,x+h));
-    if(Number.isFinite(fm)&&Number.isFinite(fp)) return (fp-fm)/(2*h);
-    const f0=evaluate(exprNode,withVariable(variables,variableName,x));
-    if(Number.isFinite(f0)&&Number.isFinite(fp)) return (fp-f0)/h;
-    if(Number.isFinite(fm)&&Number.isFinite(f0)) return (f0-fm)/h;
-    return NaN;
+    const scale=Math.max(1,Math.abs(x));let best=NaN;
+    for(const ratio of [1e-4,3e-5,1e-5,3e-6]){
+      const h=Math.max(1e-7,scale*ratio);
+      const f2m=evaluate(exprNode,withVariable(variables,variableName,x-2*h));
+      const fm=evaluate(exprNode,withVariable(variables,variableName,x-h));
+      const fp=evaluate(exprNode,withVariable(variables,variableName,x+h));
+      const f2p=evaluate(exprNode,withVariable(variables,variableName,x+2*h));
+      let d=NaN;
+      if([f2m,fm,fp,f2p].every(Number.isFinite)) d=(f2m-8*fm+8*fp-f2p)/(12*h);
+      else if(Number.isFinite(fm)&&Number.isFinite(fp)) d=(fp-fm)/(2*h);
+      if(Number.isFinite(d)){if(Number.isFinite(best)&&Math.abs(d-best)<=2e-7*Math.max(1,Math.abs(d)))return d;best=d;}
+    }
+    return best;
   }
   function simpsonNode(exprNode,variableName,a,b,variables,segments=720){
     if(!Number.isFinite(a)||!Number.isFinite(b)||a===b)return a===b?0:NaN;
@@ -269,8 +278,12 @@
     return acc*h/3;
   }
   function integralNode(exprNode,variableName,a,b,variables){
-    if(Number.isFinite(a)&&Number.isFinite(b))return simpsonNode(exprNode,variableName,a,b,variables);
-    const eps=1e-5,n=1000;
+    if(Number.isFinite(a)&&Number.isFinite(b)){
+      if(a===b)return 0;let sign=1;if(a>b){[a,b]=[b,a];sign=-1;}let prev=NaN,value=NaN,n=180;
+      for(let pass=0;pass<5;pass+=1){value=simpsonNode(exprNode,variableName,a,b,variables,n);if(!Number.isFinite(value))return NaN;if(Number.isFinite(prev)&&Math.abs(value-prev)<=2e-9*Math.max(1,Math.abs(value)))return sign*value;prev=value;n*=2;}
+      return sign*value;
+    }
+    const eps=1e-5,n=1600;
     if(a===-Infinity&&b===Infinity){
       const transformed={type:'internal-transform',fn:(t)=>{const u=Math.PI*(t-.5),x=Math.tan(u),jac=Math.PI/(Math.cos(u)**2);return evaluate(exprNode,withVariable(variables,variableName,x))*jac;}};
       return simpsonTransform(transformed.fn,eps,1-eps,n);
@@ -320,7 +333,24 @@
     }
   }
 
-  function parse(expression, variables = {}) { return new Parser(expression, variables).parse(); }
+  function assertAstComplexity(root) {
+    let nodes = 0;
+    const walk = (node, depth) => {
+      if (!node || typeof node !== 'object') return;
+      nodes += 1;
+      if (nodes > MAX_AST_NODES) throw new Error('A expressão é complexa demais para ser processada com segurança.');
+      if (depth > MAX_AST_DEPTH) throw new Error('A expressão possui aninhamento excessivo.');
+      if (node.left) walk(node.left, depth + 1);
+      if (node.right) walk(node.right, depth + 1);
+      if (node.argument) walk(node.argument, depth + 1);
+      if (node.value && typeof node.value === 'object') walk(node.value, depth + 1);
+      if (Array.isArray(node.args)) node.args.forEach((arg) => walk(arg, depth + 1));
+    };
+    walk(root, 1);
+    return root;
+  }
+
+  function parse(expression, variables = {}) { return assertAstComplexity(new Parser(expression, variables).parse()); }
   function compile(expression, variables = {}) {
     const ast = parse(expression, variables);
     return (runtimeVariables = variables) => {
@@ -383,52 +413,141 @@
       .replace(/\bdiff\b/g,' derivada ').replace(/\bpartial\b/g,' derivada parcial ').replace(/\bintegral\b/g,' integral ').replace(/\blimit\b/g,' limite ').replace(/\bsum\b/g,' somatório ').replace(/\bprod\b/g,' produtório ').replace(/\binf\b/g,' infinito ').replace(/\*/g, ' vezes ').replace(/\//g, ' dividido por ').replace(/\^/g, ' elevado a ');
   }
 
+  function numericDerivativeFn(fn, x, variables = {}) {
+    if (!Number.isFinite(x)) return NaN;
+    const scale = Math.max(1, Math.abs(x));
+    let best = NaN;
+    for (const ratio of [1e-4, 3e-5, 1e-5, 3e-6]) {
+      const h = Math.max(1e-7, scale * ratio);
+      const f2m = fn(Object.assign({}, variables, { x: x - 2*h }));
+      const fm = fn(Object.assign({}, variables, { x: x - h }));
+      const fp = fn(Object.assign({}, variables, { x: x + h }));
+      const f2p = fn(Object.assign({}, variables, { x: x + 2*h }));
+      let d = NaN;
+      if ([f2m,fm,fp,f2p].every(Number.isFinite)) d = (f2m - 8*fm + 8*fp - f2p) / (12*h);
+      else if (Number.isFinite(fm) && Number.isFinite(fp)) d = (fp - fm) / (2*h);
+      if (Number.isFinite(d)) {
+        if (Number.isFinite(best) && Math.abs(d-best) <= 2e-7*Math.max(1,Math.abs(d))) return d;
+        best = d;
+      }
+    }
+    return best;
+  }
+
   function derivative(expression, x, variables = {}) {
     const fn = compile(expression, Object.assign({}, variables, { x: 0 }));
-    const h = Math.max(1e-6, Math.abs(x) * 1e-5);
-    return (fn(Object.assign({}, variables, { x: x + h })) - fn(Object.assign({}, variables, { x: x - h }))) / (2 * h);
+    return numericDerivativeFn(fn, Number(x), variables);
   }
-  function integral(expression, a, b, variables = {}, segments = 600) {
-    const fn = compile(expression, Object.assign({}, variables, { x: 0 }));
-    let n = Math.max(20, Math.floor(segments)); if (n % 2) n += 1;
+
+  function compositeSimpsonFn(fn, a, b, variables, segments) {
+    let n = Math.max(32, Math.floor(segments)); if (n % 2) n += 1;
     const h = (b - a) / n; let sum = 0;
     for (let i = 0; i <= n; i += 1) {
-      const x = a + i * h; const y = fn(Object.assign({}, variables, { x })); if (!Number.isFinite(y)) return NaN;
+      const x = a + i * h; const y = fn(Object.assign({}, variables, { x }));
+      if (!Number.isFinite(y)) return NaN;
       sum += (i === 0 || i === n ? 1 : i % 2 ? 4 : 2) * y;
     }
     return sum * h / 3;
   }
-  function roots(expression, a, b, variables = {}, samples = 480) {
+
+  function integral(expression, a, b, variables = {}, segments = 256) {
+    a = Number(a); b = Number(b);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return NaN;
+    if (a === b) return 0;
+    const sign = a <= b ? 1 : -1; if (sign < 0) [a,b] = [b,a];
     const fn = compile(expression, Object.assign({}, variables, { x: 0 }));
-    const out = []; const span = b - a; let px = a; let py = fn(Object.assign({}, variables, { x: px }));
-    const push = (x) => { if (Number.isFinite(x) && !out.some((v) => Math.abs(v - x) < Math.max(1e-5, Math.abs(span) * 1e-5))) out.push(x); };
-    for (let i = 1; i <= samples; i += 1) {
-      const x = a + span * i / samples; const y = fn(Object.assign({}, variables, { x }));
-      if (Number.isFinite(y) && Math.abs(y) < 1e-7) push(x);
-      if (Number.isFinite(py) && Number.isFinite(y) && py * y < 0) {
-        let lo = px, hi = x, flo = py;
-        for (let k = 0; k < 42; k += 1) { const mid = (lo + hi) / 2; const fm = fn(Object.assign({}, variables, { x: mid })); if (!Number.isFinite(fm)) break; if (flo * fm <= 0) hi = mid; else { lo = mid; flo = fm; } }
-        push((lo + hi) / 2);
-      }
-      px = x; py = y;
+    let n = Math.max(64, Math.floor(segments)); if (n % 2) n += 1;
+    let prev = NaN, value = NaN;
+    for (let pass = 0; pass < 5; pass += 1) {
+      value = compositeSimpsonFn(fn, a, b, variables, n);
+      if (!Number.isFinite(value)) return NaN;
+      if (Number.isFinite(prev) && Math.abs(value-prev) <= 2e-9*Math.max(1,Math.abs(value))) return sign*value;
+      prev = value; n *= 2;
     }
-    return out.sort((x, y) => x - y);
+    return sign*value;
   }
-  function extrema(expression, a, b, variables = {}, samples = 320) {
+
+  function refineBracketRoot(fn, lo, hi, variables) {
+    let flo = fn(Object.assign({}, variables, {x:lo}));
+    let fhi = fn(Object.assign({}, variables, {x:hi}));
+    if (!Number.isFinite(flo) || !Number.isFinite(fhi)) return NaN;
+    for (let k=0;k<64;k+=1) {
+      const mid=(lo+hi)/2, fm=fn(Object.assign({},variables,{x:mid}));
+      if (!Number.isFinite(fm)) return NaN;
+      if (Math.abs(fm) < 1e-12) return mid;
+      if (flo*fm <= 0) {hi=mid;fhi=fm;} else {lo=mid;flo=fm;}
+      if (Math.abs(hi-lo) <= 1e-12*Math.max(1,Math.abs(mid))) break;
+    }
+    return (lo+hi)/2;
+  }
+
+  function refineTouchingRoot(fn, seed, lo, hi, variables) {
+    let x = Math.max(lo, Math.min(hi, seed));
+    let bestX=x, bestAbs=Infinity;
+    for (let k=0;k<24;k+=1) {
+      const y=fn(Object.assign({},variables,{x}));
+      if (!Number.isFinite(y)) break;
+      const ay=Math.abs(y); if (ay<bestAbs){bestAbs=ay;bestX=x;}
+      if (ay<1e-11) return x;
+      const d=numericDerivativeFn(fn,x,variables);
+      if (!Number.isFinite(d)||Math.abs(d)<1e-12) break;
+      const nx=x-y/d;
+      if (!Number.isFinite(nx)||nx<lo||nx>hi) break;
+      if (Math.abs(nx-x)<1e-12*Math.max(1,Math.abs(x))) {x=nx;break;}
+      x=nx;
+    }
+    const finalY=fn(Object.assign({},variables,{x:bestX}));
+    return Number.isFinite(finalY)&&Math.abs(finalY)<1e-8*Math.max(1,Math.abs(bestX))?bestX:NaN;
+  }
+
+  function roots(expression, a, b, variables = {}, samples = 720) {
+    a=Number(a);b=Number(b); if(!Number.isFinite(a)||!Number.isFinite(b)||a===b)return[]; if(a>b)[a,b]=[b,a];
     const fn = compile(expression, Object.assign({}, variables, { x: 0 }));
-    const out = []; const step = (b - a) / samples;
-    let prevX = a, prevY = fn(Object.assign({}, variables, { x: a }));
-    let curX = a + step, curY = fn(Object.assign({}, variables, { x: curX }));
-    for (let i = 2; i <= samples; i += 1) {
-      const nextX = a + i * step, nextY = fn(Object.assign({}, variables, { x: nextX }));
-      if ([prevY, curY, nextY].every(Number.isFinite)) {
-        if (curY <= prevY && curY < nextY) out.push({ x: curX, y: curY, kind: 'mínimo' });
-        if (curY >= prevY && curY > nextY) out.push({ x: curX, y: curY, kind: 'máximo' });
+    const n=Math.max(96,Math.min(5000,Math.floor(samples)||720)), span=b-a, step=span/n, out=[];
+    const push=(x)=>{if(!Number.isFinite(x)||x<a-step||x>b+step)return;const tol=Math.max(1e-8,Math.abs(span)*2e-7);if(!out.some(v=>Math.abs(v-x)<tol))out.push(Math.max(a,Math.min(b,x)));};
+    let x0=a,y0=fn(Object.assign({},variables,{x:x0}));
+    let x1=a+step,y1=fn(Object.assign({},variables,{x:x1}));
+    if(Number.isFinite(y0)&&Math.abs(y0)<1e-10)push(x0);
+    for(let i=2;i<=n;i+=1){
+      const x2=a+i*step,y2=fn(Object.assign({},variables,{x:x2}));
+      if(Number.isFinite(y1)&&Math.abs(y1)<1e-10)push(x1);
+      if(Number.isFinite(y0)&&Number.isFinite(y1)&&y0*y1<0)push(refineBracketRoot(fn,x0,x1,variables));
+      if([y0,y1,y2].every(Number.isFinite)){
+        const a0=Math.abs(y0),a1=Math.abs(y1),a2=Math.abs(y2);
+        if(a1<=a0&&a1<=a2&&a1<Math.max(a0,a2)*0.35){
+          const root=refineTouchingRoot(fn,x1,x0,x2,variables);if(Number.isFinite(root))push(root);
+        }
       }
-      prevX = curX; prevY = curY; curX = nextX; curY = nextY;
+      x0=x1;y0=y1;x1=x2;y1=y2;
     }
-    return out.slice(0, 20);
+    if(Number.isFinite(y1)&&Math.abs(y1)<1e-10)push(x1);
+    return out.sort((x,y)=>x-y);
   }
+
+  function refineExtremum(fn, lo, hi, variables, maximize=false) {
+    const phi=(Math.sqrt(5)-1)/2; let a=lo,b=hi;
+    let c=b-phi*(b-a),d=a+phi*(b-a);
+    const score=(x)=>{const y=fn(Object.assign({},variables,{x}));return Number.isFinite(y)?(maximize?-y:y):Infinity;};
+    let fc=score(c),fd=score(d);
+    for(let i=0;i<36;i+=1){if(fc<fd){b=d;d=c;fd=fc;c=b-phi*(b-a);fc=score(c);}else{a=c;c=d;fc=fd;d=a+phi*(b-a);fd=score(d);}}
+    const x=(a+b)/2,y=fn(Object.assign({},variables,{x}));return Number.isFinite(y)?{x,y}:null;
+  }
+
+  function extrema(expression, a, b, variables = {}, samples = 480) {
+    a=Number(a);b=Number(b);if(!Number.isFinite(a)||!Number.isFinite(b)||a===b)return[];if(a>b)[a,b]=[b,a];
+    const fn = compile(expression, Object.assign({}, variables, { x: 0 }));
+    const n=Math.max(96,Math.min(4000,Math.floor(samples)||480)), step=(b-a)/n, out=[];
+    let px=a,py=fn(Object.assign({},variables,{x:px})),cx=a+step,cy=fn(Object.assign({},variables,{x:cx}));
+    for(let i=2;i<=n;i+=1){const nx=a+i*step,ny=fn(Object.assign({},variables,{x:nx}));
+      if([py,cy,ny].every(Number.isFinite)){
+        let kind=null,maximize=false;if(cy<=py&&cy<ny)kind='mínimo';else if(cy>=py&&cy>ny){kind='máximo';maximize=true;}
+        if(kind){const r=refineExtremum(fn,px,nx,variables,maximize);if(r&&!out.some(q=>Math.abs(q.x-r.x)<Math.max(1e-7,step*.08)))out.push({...r,kind});}
+      }
+      px=cx;py=cy;cx=nx;cy=ny;
+    }
+    return out.slice(0,60);
+  }
+
   function formatNumber(value, decimals = 4) {
     if (!Number.isFinite(value)) return '—';
     if (Math.abs(value) < Math.pow(10, -decimals)) value = 0;
@@ -443,36 +562,41 @@
     const a = Number(config.a), b = Number(config.b);
     if (!Number.isFinite(a) || !Number.isFinite(b) || !(a < b)) return { valid:false, error:'O intervalo de integração deve ser finito e crescente.' };
     let outerFn, innerFn;
-    try {
-      outerFn = compile(outerExpr, { [axis]: 0 });
-      innerFn = compile(innerExpr, { [axis]: 0 });
-    } catch (error) {
-      return { valid:false, error:error?.message || 'Não foi possível interpretar os raios.' };
-    }
-    const samples = Math.max(240, Math.min(1200, Math.floor(Number(config.samples) || 480)));
-    let maxOuter = 0, maxInner = 0, minGap = Infinity, sampleAt = a, sampleOuter = 0, sampleInner = 0;
+    try { outerFn = compile(outerExpr, { [axis]: 0 }); innerFn = compile(innerExpr, { [axis]: 0 }); }
+    catch (error) { return { valid:false, error:error?.message || 'Não foi possível interpretar os raios.' }; }
+
+    const evaluateRadii = (u) => {
+      const R = outerFn({ [axis]: u }), r = method === 'washers' ? innerFn({ [axis]: u }) : 0;
+      if (!Number.isFinite(R) || !Number.isFinite(r)) return {ok:false,error:`Os raios não estão definidos em todo o intervalo. Verifique ${axis} = ${formatNumber(u,6)}.`};
+      const tol = 1e-9 * Math.max(1, Math.abs(R), Math.abs(r));
+      if (R < -tol || r < -tol) return {ok:false,error:`Raios representam distâncias ao eixo e devem ser não negativos. Verifique ${axis} = ${formatNumber(u,6)}.`};
+      if (r - R > tol) return {ok:false,error:`O raio interno não pode exceder o raio externo. Em ${axis} = ${formatNumber(u,6)}, r = ${formatNumber(r,6)} e R = ${formatNumber(R,6)}.`};
+      return {ok:true,R:Math.max(0,R),r:Math.max(0,r)};
+    };
+
+    const samples = Math.max(360, Math.min(4000, Math.floor(Number(config.samples) || 720)));
+    let maxOuter = 0, maxInner = 0, minGap = Infinity, sampleAt = (a+b)/2, sampleOuter = 0, sampleInner = 0;
     for (let i = 0; i <= samples; i += 1) {
       const u = a + (b - a) * i / samples;
-      const R = outerFn({ [axis]: u }), r = method === 'washers' ? innerFn({ [axis]: u }) : 0;
-      if (!Number.isFinite(R) || !Number.isFinite(r)) return { valid:false, error:`Os raios não estão definidos em todo o intervalo. Verifique ${axis} = ${formatNumber(u,4)}.` };
-      const tol = 1e-9 * Math.max(1, Math.abs(R), Math.abs(r));
-      if (R < -tol || r < -tol) return { valid:false, error:`Raios representam distâncias ao eixo e devem ser não negativos. Verifique ${axis} = ${formatNumber(u,4)}.` };
-      if (r - R > tol) return { valid:false, error:`O raio interno não pode exceder o raio externo. Em ${axis} = ${formatNumber(u,4)}, r = ${formatNumber(r,4)} e R = ${formatNumber(R,4)}.` };
-      maxOuter = Math.max(maxOuter, R); maxInner = Math.max(maxInner, r); minGap = Math.min(minGap, R - r);
-      if (i === Math.floor(samples / 2)) { sampleAt = u; sampleOuter = R; sampleInner = r; }
+      const rr = evaluateRadii(u); if (!rr.ok) return {valid:false,error:rr.error};
+      maxOuter = Math.max(maxOuter, rr.R); maxInner = Math.max(maxInner, rr.r); minGap = Math.min(minGap, rr.R - rr.r);
+      if (i === Math.floor(samples / 2)) { sampleAt = u; sampleOuter = rr.R; sampleInner = rr.r; }
+      if (i < samples) {
+        const mid = u + (b-a)/(2*samples), mm = evaluateRadii(mid); if (!mm.ok) return {valid:false,error:mm.error};
+        maxOuter=Math.max(maxOuter,mm.R);maxInner=Math.max(maxInner,mm.r);minGap=Math.min(minGap,mm.R-mm.r);
+      }
     }
-    let n = Math.max(200, Math.floor(Number(config.segments) || 800)); if (n % 2) n += 1;
-    const h = (b - a) / n; let acc = 0;
-    for (let i = 0; i <= n; i += 1) {
-      const u = a + i * h, R = outerFn({ [axis]: u }), r = method === 'washers' ? innerFn({ [axis]: u }) : 0;
-      if (!Number.isFinite(R) || !Number.isFinite(r)) return { valid:false, error:'Não foi possível integrar porque existe uma descontinuidade no intervalo.' };
-      const area = Math.PI * Math.max(0, R * R - r * r);
-      acc += (i === 0 || i === n ? 1 : i % 2 ? 4 : 2) * area;
-    }
-    const volume = acc * h / 3;
+
+    const integrateArea = (segments) => {
+      let n=Math.max(200,Math.floor(segments));if(n%2)n+=1;const h=(b-a)/n;let acc=0;
+      for(let i=0;i<=n;i+=1){const u=a+i*h,rr=evaluateRadii(u);if(!rr.ok)return NaN;const area=Math.PI*Math.max(0,rr.R*rr.R-rr.r*rr.r);acc+=(i===0||i===n?1:i%2?4:2)*area;}
+      return acc*h/3;
+    };
+    let n=Math.max(400,Math.floor(Number(config.segments)||800));if(n%2)n+=1;let prev=NaN,volume=NaN;
+    for(let pass=0;pass<4;pass+=1){volume=integrateArea(n);if(!Number.isFinite(volume))return {valid:false,error:'Não foi possível integrar porque existe uma descontinuidade no intervalo.'};if(Number.isFinite(prev)&&Math.abs(volume-prev)<=2e-8*Math.max(1,Math.abs(volume)))break;prev=volume;n*=2;}
     const sampleArea = Math.PI * Math.max(0, sampleOuter * sampleOuter - sampleInner * sampleInner);
-    return { valid:true, method, axis, outerExpr, innerExpr, a, b, volume, maxOuter, maxInner, minGap:Number.isFinite(minGap)?minGap:0, sample:{ u:sampleAt, R:sampleOuter, r:sampleInner, area:sampleArea } };
+    return { valid:true, method, axis, outerExpr, innerExpr, a, b, volume, maxOuter, maxInner, minGap:Number.isFinite(minGap)?minGap:0, sample:{ u:sampleAt, R:sampleOuter, r:sampleInner, area:sampleArea }, convergenceSegments:n };
   }
 
-  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, analyzeRevolution, identifierNames, isStandardIdentifier, standardIdentifierDefault: STANDARD_IDENTIFIER_DEFAULT, functions: Object.keys(FUNCTIONS), calculusFunctions:[...CALCULUS_FUNCTIONS], constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES });
+  global.MathEngine = Object.freeze({ normalize, parse, compile, evalExpr, toMathML, toAccessibleText, derivative, integral, roots, extrema, formatNumber, analyzeRevolution, identifierNames, isStandardIdentifier, standardIdentifierDefault: STANDARD_IDENTIFIER_DEFAULT, functions: Object.keys(FUNCTIONS), calculusFunctions:[...CALCULUS_FUNCTIONS], constants: Object.keys(CONSTANTS), errors: ERROR_MESSAGES, limits:Object.freeze({maxExpressionLength:MAX_EXPRESSION_LENGTH,maxTokens:MAX_TOKENS,maxAstNodes:MAX_AST_NODES,maxAstDepth:MAX_AST_DEPTH}) });
 })(window);

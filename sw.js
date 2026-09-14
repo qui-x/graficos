@@ -1,8 +1,8 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v6.6-20260913`;
-const BUILD = '6.6.0';
+const CACHE_NAME = `${CACHE_PREFIX}v6.7-20260914`;
+const BUILD = '6.7.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -39,41 +39,84 @@ const APP_SHELL = [
   './manual/assets/exportacao.png',
 ];
 
+const REQUIRED_SHELL = new Set([
+  './', './index.html', `./manifest.webmanifest?v=${BUILD}`, `./css/style.css?v=${BUILD}`,
+  `./js/mathEngine.js?v=${BUILD}`, `./js/models.js?v=${BUILD}`, `./js/graphObjects.js?v=${BUILD}`,
+  `./js/graphEngine.js?v=${BUILD}`, `./js/ui.js?v=${BUILD}`, `./js/main.js?v=${BUILD}`
+]);
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const failedRequired = [];
+    await Promise.all(APP_SHELL.map(async (url) => {
+      try {
+        const response = await fetch(url, { cache: 'reload' });
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        await cache.put(url, response.clone());
+      } catch (error) {
+        if (REQUIRED_SHELL.has(url)) failedRequired.push(url);
+        else console.warn('OrbisV SW: recurso opcional não foi pré-cacheado.', url, error);
+      }
+    }));
+    if (failedRequired.length) throw new Error(`Falha ao preparar recursos essenciais: ${failedRequired.join(', ')}`);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-async function networkFirst(request) {
+async function matchCached(request) {
+  const exact = await caches.match(request, { ignoreSearch: false });
+  if (exact) return exact;
+  try {
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin) return null;
+    const base = new URL('./', self.location.href);
+    const relative = './' + url.pathname.slice(base.pathname.length).replace(/^\/+/, '');
+    return (await caches.match(relative, { ignoreSearch: true })) || null;
+  } catch { return null; }
+}
+
+async function navigationFallback(request) {
+  const url = new URL(request.url);
+  const manualPath = new URL('./manual/index.html', self.location.href).pathname;
+  if (url.pathname === manualPath) return (await caches.match('./manual/index.html')) || Response.error();
+  return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+}
+
+async function networkFirst(request, navigation = false) {
   try {
     const response = await fetch(request);
     if (response && response.ok) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
+      await cache.put(request, response.clone());
+      return response;
     }
-    return response;
+    const cached = await matchCached(request);
+    if (cached) return cached;
+    if (navigation) return navigationFallback(request);
+    return response || Response.error();
   } catch (error) {
-    return (await caches.match(request)) || (await caches.match('./index.html')) || Response.error();
+    const cached = await matchCached(request);
+    if (cached) return cached;
+    if (navigation) return navigationFallback(request);
+    return Response.error();
   }
 }
 
 async function staleWhileRevalidate(request) {
-  const cached = await caches.match(request);
+  const cached = await matchCached(request);
   const network = fetch(request).then(async (response) => {
     if (response && response.ok) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
+      await cache.put(request, response.clone());
     }
     return response;
   }).catch(() => null);
@@ -86,8 +129,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   const isCode = /\.(?:js|css)$/.test(url.pathname) || url.pathname.endsWith('/manifest.webmanifest');
-  if (request.mode === 'navigate' || isCode) {
-    event.respondWith(networkFirst(request));
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request, true));
+    return;
+  }
+  if (isCode) {
+    event.respondWith(networkFirst(request, false));
     return;
   }
   event.respondWith(staleWhileRevalidate(request));

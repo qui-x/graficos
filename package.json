@@ -1,6 +1,6 @@
 {
   "name": "orbisv",
-  "version": "6.6.0",
+  "version": "6.7.0",
   "private": true,
-  "description": "OrbisV — PWA, acessibilidade e identidade visual refinadas para claro/escuro."
+  "description": "OrbisV — ambiente gráfico matemático com renderização 2D/3D, persistência resiliente, validação profunda e PWA offline."
 }

@@ -19,7 +19,9 @@
       this.canvas = canvas;
       this.ctx = canvas.getContext('2d');
       this.objects = objects;
-      this.scale = 42;
+      this.scaleX = 42;
+      this.scaleY = 42;
+      this.equalScale = true;
       this.viewMode = '2d';
       this.camera3d = { yaw: -0.72, pitch: 0.58, distance: 13, target: { x: 0, y: 0, z: 0 }, fov: 52 };
       this.cameraPan3d = { x: 0, y: 0 };
@@ -47,6 +49,9 @@
       this.activePointers = new Map();
       this.pinchDistance = null;
       this.cache = new Map();
+      this.cacheLimit = 512;
+      this.lastRenderError = null;
+      this.runtimeErrorCount = 0;
       this.resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => this.resize()) : null;
       this.resizeObserver?.observe(canvas.parentElement);
       this.bindEvents();
@@ -85,8 +90,10 @@
       this.invalidateCache(); this.requestRender();
     }
     get size() { return { w: Math.max(260, this.canvas.clientWidth || 320), h: Math.max(220, this.canvas.clientHeight || 320) }; }
-    worldToScreen(x, y) { const { w, h } = this.size; return { x: w / 2 + this.offsetX + x * this.scale, y: h / 2 + this.offsetY - y * this.scale }; }
-    screenToWorld(px, py) { const { w, h } = this.size; return { x: (px - w / 2 - this.offsetX) / this.scale, y: (h / 2 + this.offsetY - py) / this.scale }; }
+    get scale() { return Math.sqrt(Math.max(1e-9, this.scaleX * this.scaleY)); }
+    set scale(value) { const v = Math.max(5, Math.min(1200, Number(value) || 42)); this.scaleX = v; this.scaleY = v; }
+    worldToScreen(x, y) { const { w, h } = this.size; return { x: w / 2 + this.offsetX + x * this.scaleX, y: h / 2 + this.offsetY - y * this.scaleY }; }
+    screenToWorld(px, py) { const { w, h } = this.size; return { x: (px - w / 2 - this.offsetX) / this.scaleX, y: (h / 2 + this.offsetY - py) / this.scaleY }; }
     currentBounds() { const { w, h } = this.size; const a = this.screenToWorld(0, h), b = this.screenToWorld(w, 0); return { xmin: a.x, xmax: b.x, ymin: a.y, ymax: b.y }; }
 
     setViewMode(mode) {
@@ -105,36 +112,91 @@
     }
     center() {
       if (this.viewMode === '3d') { this.resetCamera3D(); this.requestRender(); return; }
-      this.offsetX = 0; this.offsetY = 0; this.scale = Math.max(28, Math.min(62, this.size.w / 16)); this.inspectX = null; this.requestRender();
+      this.offsetX = 0; this.offsetY = 0; const baseX = Math.max(28, Math.min(62, this.size.w / 16)); this.scaleX = baseX; this.scaleY = this.equalScale ? baseX : Math.max(28, Math.min(62, this.size.h / 12)); this.inspectX = null; this.invalidateCache(); this.requestRender();
     }
     setView(view) {
-      if (!view) return;
-      if (Number.isFinite(view.scale)) this.scale = Math.max(5, Math.min(1200, view.scale));
-      if (Number.isFinite(view.offsetX)) this.offsetX = view.offsetX;
-      if (Number.isFinite(view.offsetY)) this.offsetY = view.offsetY;
+      if (!view || typeof view !== 'object') return;
+      const legacyScale = Number.isFinite(view.scale) ? Math.max(5, Math.min(1200, view.scale)) : null;
+      if (legacyScale !== null) { this.scaleX = legacyScale; this.scaleY = legacyScale; }
+      if (Number.isFinite(view.scaleX)) this.scaleX = Math.max(5, Math.min(1200, view.scaleX));
+      if (Number.isFinite(view.scaleY)) this.scaleY = Math.max(5, Math.min(1200, view.scaleY));
+      if (typeof view.equalScale === 'boolean') this.equalScale = view.equalScale;
+      else if (legacyScale !== null && !Number.isFinite(view.scaleX) && !Number.isFinite(view.scaleY)) this.equalScale = true;
+      if (this.equalScale) { const common = legacyScale ?? Math.min(this.scaleX, this.scaleY); this.scaleX = common; this.scaleY = common; }
+      if (Number.isFinite(view.offsetX)) this.offsetX = Math.max(-1e9, Math.min(1e9, view.offsetX));
+      if (Number.isFinite(view.offsetY)) this.offsetY = Math.max(-1e9, Math.min(1e9, view.offsetY));
       if (typeof view.showGrid === 'boolean') this.showGrid = view.showGrid;
       if (typeof view.showMinorGrid === 'boolean') this.showMinorGrid = view.showMinorGrid;
       if (typeof view.showAxes === 'boolean') this.showAxes = view.showAxes;
       if (typeof view.showLabels === 'boolean') this.showLabels = view.showLabels;
       if (typeof view.showCoordinates === 'boolean') this.showCoordinates = view.showCoordinates;
       if (typeof view.showPointValues === 'boolean') this.showPointValues = view.showPointValues;
+      if (view.viewMode === '3d' || view.viewMode === '2d') this.viewMode = view.viewMode;
       if (view.camera3d && typeof view.camera3d === 'object') {
         const c=view.camera3d,t=c.target||{};
         if(Number.isFinite(c.yaw))this.camera3d.yaw=c.yaw;
         if(Number.isFinite(c.pitch))this.camera3d.pitch=Math.max(-1.45,Math.min(1.45,c.pitch));
         if(Number.isFinite(c.distance))this.camera3d.distance=Math.max(2.5,Math.min(180,c.distance));
         if(Number.isFinite(c.fov))this.camera3d.fov=Math.max(28,Math.min(85,c.fov));
-        if(Number.isFinite(t.x))this.camera3d.target.x=t.x;if(Number.isFinite(t.y))this.camera3d.target.y=t.y;if(Number.isFinite(t.z))this.camera3d.target.z=t.z;
+        if(Number.isFinite(t.x))this.camera3d.target.x=Math.max(-1e9,Math.min(1e9,t.x));
+        if(Number.isFinite(t.y))this.camera3d.target.y=Math.max(-1e9,Math.min(1e9,t.y));
+        if(Number.isFinite(t.z))this.camera3d.target.z=Math.max(-1e9,Math.min(1e9,t.z));
       }
+      this.invalidateCache();
       this.requestRender();
     }
-    getView() { return { scale: this.scale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, showLabels: this.showLabels, showCoordinates: this.showCoordinates, showPointValues: this.showPointValues, viewMode: this.viewMode, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
-    requestRender() { if (this.framePending) return; this.framePending = true; requestAnimationFrame(() => { this.framePending = false; this.render(); }); }
+    getView() { return { scale: this.scale, scaleX: this.scaleX, scaleY: this.scaleY, equalScale: this.equalScale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, showLabels: this.showLabels, showCoordinates: this.showCoordinates, showPointValues: this.showPointValues, viewMode: this.viewMode, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
+    setEqualScale(enabled, fit = true) {
+      const next = Boolean(enabled); const { w, h } = this.size; const center = this.screenToWorld(w / 2, h / 2);
+      this.equalScale = next;
+      if (next) { const common = Math.max(5, Math.min(1200, Math.min(this.scaleX, this.scaleY))); this.scaleX = common; this.scaleY = common; this.offsetX = -center.x * common; this.offsetY = center.y * common; }
+      if (!next && fit && this.objects?.visible?.length) { this.fitToObjects(); return; }
+      this.invalidateCache(); this.requestRender();
+    }
+    requestRender() {
+      if (this.framePending) return;
+      this.framePending = true;
+      requestAnimationFrame(() => {
+        this.framePending = false;
+        try { this.render(); this.lastRenderError = null; }
+        catch (error) {
+          this.lastRenderError = error;
+          this.runtimeErrorCount += 1;
+          console.error('OrbisV: falha isolada durante a renderização.', error);
+          global.AppUI?.reportRuntimeError?.(error, 'renderização');
+        }
+      });
+    }
     invalidateCache() { this.cache.clear(); }
     getCompiled(id, expression, variables) {
       const key = `${id}|${expression}|${Object.keys(variables).sort().join(',')}`;
-      if (this.cache.has(key)) return this.cache.get(key);
-      const fn = MathEngine.compile(expression, variables); this.cache.set(key, fn); return fn;
+      if (this.cache.has(key)) {
+        const fn=this.cache.get(key); this.cache.delete(key); this.cache.set(key,fn); return fn;
+      }
+      const fn = MathEngine.compile(expression, variables);
+      this.cache.set(key, fn);
+      while (this.cache.size > this.cacheLimit) this.cache.delete(this.cache.keys().next().value);
+      return fn;
+    }
+    safeDrawObject(obj, mode='2d') {
+      try {
+        if (mode === '3d') {
+          if(obj.type==='curve3d')this.drawCurve3D(obj);
+          else if(obj.type==='line3d')this.drawLine3D(obj);
+          else if(obj.type==='washers')this.drawWashers3D(obj);
+        } else this.drawObject(obj);
+      } catch (error) {
+        this.runtimeErrorCount += 1;
+        console.warn(`OrbisV: objeto ${obj?.id ?? '?'} não pôde ser renderizado.`, error);
+      }
+    }
+    curveSamplingSteps(kind='function') {
+      const visibleCurves=this.objects.visible.filter(o=>kind==='3d'?o.type==='curve3d':kind==='parametric'?o.type==='parametric':o.type==='function').length||1;
+      const base=kind==='function'?Math.ceil(this.size.w*Math.min(2.35,1.2+this.scale/240)):Math.ceil(this.size.w*1.1);
+      const globalBudget=kind==='function'?900000:420000;
+      const per=Math.floor(globalBudget/visibleCurves);
+      const min=kind==='function'?480:320, max=kind==='function'?4800:1800;
+      return Math.max(min,Math.min(max,base,per));
     }
 
     bindEvents() {
@@ -205,8 +267,10 @@
       this.updatePointTooltip(px,py,e.pointerType);
     }
     zoomAt(px, py, factor) {
-      const before = this.screenToWorld(px, py); this.scale = Math.max(5, Math.min(1200, this.scale * factor)); const after = this.screenToWorld(px, py);
-      this.offsetX += (after.x - before.x) * this.scale; this.offsetY -= (after.y - before.y) * this.scale; this.invalidateCache(); this.requestRender();
+      const before = this.screenToWorld(px, py), f = Number.isFinite(factor) && factor > 0 ? factor : 1;
+      this.scaleX = Math.max(5, Math.min(1200, this.scaleX * f)); this.scaleY = Math.max(5, Math.min(1200, this.scaleY * f));
+      const after = this.screenToWorld(px, py);
+      this.offsetX += (after.x - before.x) * this.scaleX; this.offsetY -= (after.y - before.y) * this.scaleY; this.invalidateCache(); this.requestRender();
     }
 
     formatTooltipNumber(value) {
@@ -248,14 +312,15 @@
     }
     hidePointTooltip(){this.hoveredPoint=null;const el=this.pointTooltip;if(!el)return;el.classList.remove('visible');el.hidden=true;}
 
-    gridStep() {
-      const targetPixels = this.scale >= 800 ? 48 : this.scale >= 520 ? 54 : 62;
-      const raw = targetPixels / Math.max(this.scale, 1e-9);
+    gridStep(scaleValue = this.scale) {
+      const axisScale = Math.max(1e-9, Number(scaleValue) || this.scale);
+      const targetPixels = axisScale >= 800 ? 48 : axisScale >= 520 ? 54 : 62;
+      const raw = targetPixels / axisScale;
       const exp = Math.floor(Math.log10(Math.max(raw, 1e-12)));
       const norm = raw / Math.pow(10, exp);
       const factor = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
       const step = factor * Math.pow(10, exp);
-      return this.scale >= 950 ? Math.min(step, 0.1) : step;
+      return axisScale >= 950 ? Math.min(step, 0.1) : step;
     }
     formatGridLabel(value) {
       const abs = Math.abs(value); if (abs >= 10000 || (abs > 0 && abs < .001)) return value.toExponential(1).replace('.', ',');
@@ -264,22 +329,22 @@
     drawGrid() {
       if (!this.showGrid) return;
       const { w, h } = this.size, c = this.ctx, theme = this.theme; const ox = w / 2 + this.offsetX, oy = h / 2 + this.offsetY;
-      const worldStep = this.gridStep(), step = worldStep * this.scale, majorEvery = 5, majorPx = step * majorEvery;
+      const worldStepX = this.gridStep(this.scaleX), worldStepY = this.gridStep(this.scaleY), stepX = worldStepX * this.scaleX, stepY = worldStepY * this.scaleY, majorEvery = 5, majorPxX = stepX * majorEvery, majorPxY = stepY * majorEvery;
       c.save();
       if (this.showMinorGrid) {
         c.lineWidth = 1; c.strokeStyle = theme.grid;
-        for (let x = ((ox % step) + step) % step; x < w; x += step) { c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
-        for (let y = ((oy % step) + step) % step; y < h; y += step) { c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
+        for (let x = ((ox % stepX) + stepX) % stepX; x < w; x += stepX) { c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
+        for (let y = ((oy % stepY) + stepY) % stepY; y < h; y += stepY) { c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
       }
       c.lineWidth = 1.15; c.strokeStyle = theme.gridMajor;
-      for (let x = ((ox % majorPx) + majorPx) % majorPx; x < w; x += majorPx) { c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
-      for (let y = ((oy % majorPx) + majorPx) % majorPx; y < h; y += majorPx) { c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
+      for (let x = ((ox % majorPxX) + majorPxX) % majorPxX; x < w; x += majorPxX) { c.beginPath(); c.moveTo(Math.round(x)+.5,0); c.lineTo(Math.round(x)+.5,h); c.stroke(); }
+      for (let y = ((oy % majorPxY) + majorPxY) % majorPxY; y < h; y += majorPxY) { c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(w,Math.round(y)+.5); c.stroke(); }
       if (this.showLabels) {
         c.fillStyle = theme.label; c.font = '11px system-ui'; c.textBaseline = 'top'; c.textAlign = 'center';
-        const startX = Math.ceil((-ox) / majorPx), endX = Math.floor((w - ox) / majorPx);
-        for (let i = startX; i <= endX; i += 1) { const value = i * worldStep * majorEvery; if (Math.abs(value) < 1e-12) continue; const sx = ox + i * majorPx; const sy = Math.min(h - 16, Math.max(4, oy + 7)); c.fillText(this.formatGridLabel(value), sx, sy); }
-        c.textAlign = 'right'; c.textBaseline = 'middle'; const startY = Math.ceil((-oy) / majorPx), endY = Math.floor((h - oy) / majorPx);
-        for (let j = startY; j <= endY; j += 1) { const value = -j * worldStep * majorEvery; if (Math.abs(value) < 1e-12) continue; const sy = oy + j * majorPx; const sx = Math.min(w - 5, Math.max(30, ox - 7)); c.fillText(this.formatGridLabel(value), sx, sy); }
+        const startX = Math.ceil((-ox) / majorPxX), endX = Math.floor((w - ox) / majorPxX);
+        for (let i = startX; i <= endX; i += 1) { const value = i * worldStepX * majorEvery; if (Math.abs(value) < 1e-12) continue; const sx = ox + i * majorPxX; const sy = Math.min(h - 16, Math.max(4, oy + 7)); c.fillText(this.formatGridLabel(value), sx, sy); }
+        c.textAlign = 'right'; c.textBaseline = 'middle'; const startY = Math.ceil((-oy) / majorPxY), endY = Math.floor((h - oy) / majorPxY);
+        for (let j = startY; j <= endY; j += 1) { const value = -j * worldStepY * majorEvery; if (Math.abs(value) < 1e-12) continue; const sy = oy + j * majorPxY; const sx = Math.min(w - 5, Math.max(30, ox - 7)); c.fillText(this.formatGridLabel(value), sx, sy); }
       }
       c.restore();
     }
@@ -370,7 +435,7 @@
     adaptiveFunctionMarkerXs(bounds) {
       const b=bounds||this.currentBounds();
       if (!b || !Number.isFinite(b.xmin) || !Number.isFinite(b.xmax) || b.xmax<=b.xmin || this.scale < 24) return [];
-      const stepBase=this.gridStep();
+      const stepBase=this.gridStep(this.scaleX);
       let step=stepBase*5;
       if(this.scale>=36)step=stepBase*2;
       if(this.scale>=70)step=stepBase;
@@ -419,7 +484,7 @@
       if(!this.notableSourceId)return;
       const obj=this.objects.getById?.(this.notableSourceId)||this.objects.items.find(o=>o.id===this.notableSourceId);
       if(!obj||obj.type!=='function'||!obj.visible){this.notablePoints=[];return;}
-      const b=this.currentBounds(),key=[obj.id,obj.data.expression,b.xmin.toFixed(5),b.xmax.toFixed(5),this.scale.toFixed(2)].join('|');
+      const b=this.currentBounds(),key=[obj.id,obj.data.expression,b.xmin.toFixed(5),b.xmax.toFixed(5),this.scaleX.toFixed(2),this.scaleY.toFixed(2)].join('|');
       if(!force&&key===this.notableViewKey)return;
       this.notableViewKey=key;
       try{
@@ -430,33 +495,46 @@
         roots.forEach(x=>points.push({x,y:0,color:obj.color,kind:'raiz'}));
         if(b.xmin<=0&&b.xmax>=0){const y0=fn({x:0});if(Number.isFinite(y0)&&y0>=b.ymin&&y0<=b.ymax)points.push({x:0,y:y0,color:obj.color,kind:'interseção y'});}
         ext.forEach(pt=>{if(Number.isFinite(pt.x)&&Number.isFinite(pt.y)&&pt.x>=b.xmin&&pt.x<=b.xmax&&pt.y>=b.ymin&&pt.y<=b.ymax)points.push({...pt,color:obj.color,kind:pt.kind||'extremo'});});
-        const eps=Math.max(1e-8,3/Math.max(this.scale,1));
+        const eps=Math.max(1e-8,3/Math.max(this.scaleY,1));
         this.notablePoints=points.filter((p,i,a)=>a.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<eps)===i);
       }catch{this.notablePoints=[];}
     }
     drawFunction(obj) {
       let fn; try { fn = this.getCompiled(obj.id, obj.data.expression, { x: 0 }); } catch { return; }
       const { w, h } = this.size; const domainMin = Number.isFinite(obj.data.xMin) ? obj.data.xMin : -Infinity; const domainMax = Number.isFinite(obj.data.xMax) ? obj.data.xMax : Infinity;
-      this.lineStyle(obj); this.ctx.beginPath(); let started = false, prevY = null, prevWorldY=null;
-      const steps=Math.min(4200,Math.max(700,Math.ceil(w*Math.min(2.25,1.15+this.scale/260))));
+      this.lineStyle(obj); this.ctx.beginPath(); let started = false, prevY = null, prevWorldY=null, prevX=null;
+      const steps=this.curveSamplingSteps('function');
       for (let i=0;i<=steps;i+=1) {
         const px=(i/steps)*w,x=this.screenToWorld(px,0).x;
-        if(x<domainMin||x>domainMax){started=false;prevY=null;prevWorldY=null;continue;}
+        if(x<domainMin||x>domainMax){started=false;prevY=null;prevWorldY=null;prevX=null;continue;}
         const y=fn({x});
-        if(!Number.isFinite(y)||Math.abs(y)>1e10){started=false;prevY=null;prevWorldY=null;continue;}
-        const p=this.worldToScreen(x,y);
-        const screenJump=prevY!==null?Math.abs(p.y-prevY):0;
-        const worldJump=prevWorldY!==null?Math.abs(y-prevWorldY):0;
-        const breakSegment=!started||screenJump>h*.92||(worldJump*this.scale>h*1.3);
+        if(!Number.isFinite(y)||Math.abs(y)>1e10){started=false;prevY=null;prevWorldY=null;prevX=null;continue;}
+        const p=this.worldToScreen(x,y),screenJump=prevY!==null?Math.abs(p.y-prevY):0,worldJump=prevWorldY!==null?Math.abs(y-prevWorldY):0;
+        let discontinuity=false;
+        if(prevX!==null&&Number.isFinite(prevWorldY)){
+          const midX=(prevX+x)/2,midY=fn({x:midX});
+          if(!Number.isFinite(midY)||Math.abs(midY)>1e10)discontinuity=true;
+          else {const linearMid=(prevWorldY+y)/2,curveDeviation=Math.abs(midY-linearMid)*this.scaleY;if(curveDeviation>h*1.15&&screenJump>h*.45)discontinuity=true;}
+        }
+        const breakSegment=!started||discontinuity||screenJump>h*.90||(worldJump*this.scaleY>h*1.25);
         if(breakSegment)this.ctx.moveTo(p.x,p.y);else this.ctx.lineTo(p.x,p.y);
-        started=true;prevY=p.y;prevWorldY=y;
+        started=true;prevY=p.y;prevWorldY=y;prevX=x;
       }
       this.ctx.stroke(); this.finishStyle(); this.drawAdaptiveFunctionMarkers(obj,fn,domainMin,domainMax);
     }
     drawParametric(obj) {
       let fx,fy; try{fx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0});fy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});}catch{return;}
-      const steps=900; this.lineStyle(obj); this.ctx.beginPath(); let started=false,markerPoint=null;
-      for(let i=0;i<=steps;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/steps,x=fx({t}),y=fy({t});if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>1e8||Math.abs(y)>1e8){started=false;continue;}const p=this.worldToScreen(x,y);if(!started){this.ctx.moveTo(p.x,p.y);started=true;}else this.ctx.lineTo(p.x,p.y);if(!markerPoint&&i>=steps*.48&&i<=steps*.52)markerPoint=p;}this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,markerPoint);
+      const steps=this.curveSamplingSteps('parametric'); this.lineStyle(obj); this.ctx.beginPath(); let started=false,markerPoint=null,prev=null;
+      const diag=Math.hypot(this.size.w,this.size.h);
+      for(let i=0;i<=steps;i+=1){
+        const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/steps,x=fx({t}),y=fy({t});
+        if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>1e8||Math.abs(y)>1e8){started=false;prev=null;continue;}
+        const p=this.worldToScreen(x,y); let broken=false;
+        if(prev){const jump=Math.hypot(p.x-prev.p.x,p.y-prev.p.y);if(jump>diag*.85)broken=true;else{const mt=(prev.t+t)/2,mx=fx({t:mt}),my=fy({t:mt});if(!Number.isFinite(mx)||!Number.isFinite(my))broken=true;}}
+        if(!started||broken){this.ctx.moveTo(p.x,p.y);started=true;}else this.ctx.lineTo(p.x,p.y);
+        prev={p,t};if(!markerPoint&&i>=steps*.48&&i<=steps*.52)markerPoint=p;
+      }
+      this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,markerPoint);
     }
     drawVector(obj) { const d=obj.data,a=this.worldToScreen(d.x1,d.y1),b=this.worldToScreen(d.x2,d.y2),color=this.objectColor(obj);this.lineStyle(obj,2.5);this.ctx.beginPath();this.ctx.moveTo(a.x,a.y);this.ctx.lineTo(b.x,b.y);this.ctx.stroke();this.finishStyle();this.drawObjectMarker(obj,{x:(a.x+b.x)/2,y:(a.y+b.y)/2},4.5);const ang=Math.atan2(b.y-a.y,b.x-a.x),len=12;this.ctx.fillStyle=color;this.ctx.beginPath();this.ctx.moveTo(b.x,b.y);this.ctx.lineTo(b.x-len*Math.cos(ang-.55),b.y-len*Math.sin(ang-.55));this.ctx.lineTo(b.x-len*Math.cos(ang+.55),b.y-len*Math.sin(ang+.55));this.ctx.closePath();this.ctx.fill(); }
     drawPoint(obj) { const p=this.worldToScreen(obj.data.x,obj.data.y),color=this.objectColor(obj);this.registerHoverPoint(obj,p,{x:obj.data.x,y:obj.data.y},{kind:'ponto',label:'Ponto'});if(global.AppUI?.a11yPrefs?.markers)this.drawObjectMarker(obj,p,obj.id===this.selectedId?6:5);else{this.ctx.save();this.ctx.fillStyle=color;this.ctx.shadowColor=obj.id===this.selectedId?color:'transparent';this.ctx.shadowBlur=obj.id===this.selectedId?8:0;this.ctx.beginPath();this.ctx.arc(p.x,p.y,obj.id===this.selectedId?5.5:4,0,Math.PI*2);this.ctx.fill();this.ctx.restore(); }this.drawPointValueLabel(obj,p,{x:obj.data.x,y:obj.data.y},0,'',{force:true}); }
@@ -466,7 +544,7 @@
     drawWashers(obj){
       const axis=obj.data.axis==='y'?'y':'x',vars={[axis]:0};let outer,inner;
       try{outer=this.getCompiled(`${obj.id}:outer:${axis}`,obj.data.outerExpr,vars);inner=this.getCompiled(`${obj.id}:inner:${axis}`,obj.data.innerExpr||'0',vars);}catch{return;}
-      const a=obj.data.a,b=obj.data.b,steps=300,color=this.objectColor(obj),isWasher=obj.data.method==='washers';
+      const a=obj.data.a,b=obj.data.b,solidCount=Math.max(1,this.objects.visible.filter(o=>o.type==='washers').length),steps=Math.max(100,Math.min(320,Math.floor(72000/solidCount))),color=this.objectColor(obj),isWasher=obj.data.method==='washers';
       const P=(u,r)=>axis==='x'?this.worldToScreen(u,r):this.worldToScreen(r,u);
       const radial=(fn,u)=>{const v=fn({[axis]:u});return Number.isFinite(v)?Math.max(0,v):NaN;};
       const outerSamples=[],innerSamples=[];
@@ -531,8 +609,12 @@
       try{const fx=this.getCompiled(`${obj.id}:3dx`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:3dy`,obj.data.yExpr,{t:0}),fz=this.getCompiled(`${obj.id}:3dz`,obj.data.zExpr,{t:0}),pts=[];for(let i=0;i<=steps;i++){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/steps,x=fx({t}),y=fy({t}),z=fz({t});pts.push(Number.isFinite(x)&&Number.isFinite(y)&&Number.isFinite(z)&&Math.max(Math.abs(x),Math.abs(y),Math.abs(z))<1e8?{x,y,z,t}:null);}return pts;}catch{return[];}
     }
     drawCurve3D(obj) {
-      const pts=this.sampleCurve3D(obj,Math.max(320,Math.min(1200,Math.floor(this.size.w*1.05)))),color=this.objectColor(obj),c=this.ctx;c.save();c.strokeStyle=color;c.lineWidth=obj.id===this.selectedId?3.5:2.3;c.lineCap='round';c.lineJoin='round';c.setLineDash(this.objectDash(obj));if(obj.id===this.selectedId){c.shadowColor=color;c.shadowBlur=7;}c.beginPath();let pen=false;
-      pts.forEach((q,i)=>{if(!q){pen=false;return;}const p=this.project3D(q);if(!p){pen=false;return;}if(!pen){c.moveTo(p.x,p.y);pen=true;}else c.lineTo(p.x,p.y);if(global.AppUI?.a11yPrefs?.markers&&i%Math.max(1,Math.floor(pts.length/28))===0){this.registerHoverPoint(obj,p,q,{kind:'ponto da curva 3D',label:'Curva 3D',expression:`x(t)=${obj.data.xExpr}; y(t)=${obj.data.yExpr}; z(t)=${obj.data.zExpr}`});}});c.stroke();c.restore();
+      const pts=this.sampleCurve3D(obj,this.curveSamplingSteps('3d')),color=this.objectColor(obj),c=this.ctx;c.save();c.strokeStyle=color;c.lineWidth=obj.id===this.selectedId?3.5:2.3;c.lineCap='round';c.lineJoin='round';c.setLineDash(this.objectDash(obj));if(obj.id===this.selectedId){c.shadowColor=color;c.shadowBlur=7;}c.beginPath();let pen=false,prevQ=null,prevP=null;
+      const diag=Math.hypot(this.size.w,this.size.h);
+      pts.forEach((q,i)=>{if(!q){pen=false;prevQ=null;prevP=null;return;}const p=this.project3D(q);if(!p){pen=false;prevQ=null;prevP=null;return;}
+        let broken=false;if(prevQ&&prevP){const worldJump=Math.hypot(q.x-prevQ.x,q.y-prevQ.y,q.z-prevQ.z),screenJump=Math.hypot(p.x-prevP.x,p.y-prevP.y);if(screenJump>diag*.88||worldJump>Math.max(100,this.camera3d.distance*30))broken=true;}
+        if(!pen||broken){c.moveTo(p.x,p.y);pen=true;}else c.lineTo(p.x,p.y);prevQ=q;prevP=p;
+        if(global.AppUI?.a11yPrefs?.markers&&i%Math.max(1,Math.floor(pts.length/28))===0){this.registerHoverPoint(obj,p,q,{kind:'ponto da curva 3D',label:'Curva 3D',expression:`x(t)=${obj.data.xExpr}; y(t)=${obj.data.yExpr}; z(t)=${obj.data.zExpr}`});}});c.stroke();c.restore();
       if(global.AppUI?.a11yPrefs?.markers){for(let i=0;i<pts.length;i+=Math.max(1,Math.floor(pts.length/24))){const q=pts[i];if(!q)continue;const p=this.project3D(q);if(!p)continue;this.drawObjectMarker(obj,p,3.4,.86);this.registerHoverPoint(obj,p,q,{kind:'ponto da curva 3D',label:'Curva 3D',expression:`t = ${this.formatTooltipNumber(q.t)}`});}}
     }
     line3DPoints(obj,extent=10){const d=obj.data;if(d.method==='twoPoints'){const a={x:d.x1,y:d.y1,z:d.z1},b={x:d.x2,y:d.y2,z:d.z2},v={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z};return[{x:a.x-v.x*extent,y:a.y-v.y*extent,z:a.z-v.z*extent},{x:a.x+v.x*extent,y:a.y+v.y*extent,z:a.z+v.z*extent},a,b];}const a={x:d.x0,y:d.y0,z:d.z0},v={x:d.a,y:d.b,z:d.c};return[{x:a.x-v.x*extent,y:a.y-v.y*extent,z:a.z-v.z*extent},{x:a.x+v.x*extent,y:a.y+v.y*extent,z:a.z+v.z*extent},a,{x:a.x+v.x,y:a.y+v.y,z:a.z+v.z}];}
@@ -542,7 +624,7 @@
     washerOuterMax(obj,steps=180){const f=this.washerRadiusFunctions(obj);if(!f)return 0;let max=0;for(let i=0;i<=steps;i++){const u=obj.data.a+(obj.data.b-obj.data.a)*i/steps,R=f.outer({[f.axis]:u});if(Number.isFinite(R))max=Math.max(max,Math.max(0,R));}return max;}
     drawWashers3D(obj){
       const f=this.washerRadiusFunctions(obj);if(!f)return;const {axis,outer,inner}=f,d=obj.data,color=this.objectColor(obj),c=this.ctx,isWasher=d.method==='washers';
-      const uSteps=Math.max(16,Math.min(34,Math.floor(this.size.w/32))),thetaSteps=this.size.w<600?18:24,faces=[];
+      const solidCount=Math.max(1,this.objects.visible.filter(o=>o.type==='washers').length),thetaBase=this.size.w<600?18:24,thetaSteps=Math.max(12,Math.min(thetaBase,Math.floor(72/Math.sqrt(solidCount)))),faceBudget=Math.max(180,Math.floor(18000/solidCount)),uSteps=Math.max(10,Math.min(34,Math.floor(this.size.w/32),Math.floor(faceBudget/thetaSteps))),faces=[];
       const radii=(u)=>{const R=outer({[axis]:u}),ri=isWasher?inner({[axis]:u}):0;return Number.isFinite(R)&&Number.isFinite(ri)?{R:Math.max(0,R),r:Math.max(0,Math.min(R,ri))}:null;};
       const pushFace=(pts,alpha,strokeAlpha=.18)=>{const proj=pts.map(q=>this.project3D(q));if(proj.some(q=>!q))return;faces.push({pts:proj,depth:proj.reduce((a,q)=>a+q.depth,0)/proj.length,alpha,strokeAlpha});};
       for(let i=0;i<uSteps;i++){
@@ -561,7 +643,7 @@
     }
     draw3DScene() {
       const {w,h}=this.size,c=this.ctx;this.hoverPoints=[];c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid3D();this.drawAxes3D();
-      for(const obj of this.objects.items){if(!obj.visible)continue;if(obj.type==='curve3d')this.drawCurve3D(obj);else if(obj.type==='line3d')this.drawLine3D(obj);else if(obj.type==='washers')this.drawWashers3D(obj);}
+      for(const obj of this.objects.items){if(!obj.visible)continue;this.safeDrawObject(obj,'3d');}
       if(this.hoveredPoint){this.updatePointTooltip(this.hoveredPoint.screen.x,this.hoveredPoint.screen.y,'mouse');}
     }
     getObjectBounds3D(obj){try{if(obj.type==='curve3d'){const pts=this.sampleCurve3D(obj,320).filter(Boolean);if(!pts.length)return null;return{xmin:Math.min(...pts.map(p=>p.x)),xmax:Math.max(...pts.map(p=>p.x)),ymin:Math.min(...pts.map(p=>p.y)),ymax:Math.max(...pts.map(p=>p.y)),zmin:Math.min(...pts.map(p=>p.z)),zmax:Math.max(...pts.map(p=>p.z))};}if(obj.type==='line3d'){const [, ,p0,p1]=this.line3DPoints(obj,1);return{xmin:Math.min(p0.x,p1.x),xmax:Math.max(p0.x,p1.x),ymin:Math.min(p0.y,p1.y),ymax:Math.max(p0.y,p1.y),zmin:Math.min(p0.z,p1.z),zmax:Math.max(p0.z,p1.z)};}if(obj.type==='washers'){const r=this.washerOuterMax(obj,220),a=obj.data.a,b=obj.data.b;if(obj.data.axis==='y')return{xmin:-r,xmax:r,ymin:a,ymax:b,zmin:-r,zmax:r};return{xmin:a,xmax:b,ymin:-r,ymax:r,zmin:-r,zmax:r};}}catch{}return null;}
@@ -573,7 +655,12 @@
       c.restore();
     }
     drawNotablePoints(){if(!this.notablePoints?.length)return;const c=this.ctx;c.save();let idx=0;for(const n of this.notablePoints){const p=this.worldToScreen(n.x,n.y);c.fillStyle=this.objectColor({color:n.color||'#ffd166'});c.strokeStyle=this.theme.bg;c.lineWidth=2;c.beginPath();c.arc(p.x,p.y,5,0,Math.PI*2);c.fill();c.stroke();const obj=this.objects.getById?.(this.notableSourceId)||this.objects.items.find(o=>o.id===this.notableSourceId);this.drawPointValueLabel(obj||{color:n.color||'#ffd166'},p,{x:n.x,y:n.y},idx++,String(n.kind||'Ponto').replace(/^./,m=>m.toUpperCase())+`: (${this.formatPointValueNumber(n.x)}; ${this.formatPointValueNumber(n.y)})`,{force:true});this.registerHoverPoint(obj,p,{x:n.x,y:n.y},{kind:n.kind||'ponto notável',label:n.kind||'Ponto notável',expression:obj?.data?.expression||''});}c.restore();}
-    render(){if(this.viewMode==='3d'){this.draw3DScene();return;}const{w,h}=this.size,c=this.ctx;this.hoverPoints=[];this.pointLabelBoxes=[];this.pointLabelCount=0;this.pointLabelBudget=Math.max(10,Math.min(28,Math.floor((w*h)/70000)));c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid();this.drawAxes();for(const obj of this.objects.items)if(obj.visible)this.drawObject(obj);this.refreshNotablePoints();this.drawNotablePoints();this.drawInspection();if(this.pointer){const sp=this.worldToScreen(this.pointer.x,this.pointer.y);this.updatePointTooltip(sp.x,sp.y,'mouse');}else this.hidePointTooltip();}
+    render(){
+      if(this.viewMode==='3d'){this.draw3DScene();return;}
+      const{w,h}=this.size,c=this.ctx;this.hoverPoints=[];this.pointLabelBoxes=[];this.pointLabelCount=0;this.pointLabelBudget=Math.max(10,Math.min(28,Math.floor((w*h)/70000)));c.clearRect(0,0,w,h);c.fillStyle=this.theme.bg;c.fillRect(0,0,w,h);this.drawGrid();this.drawAxes();
+      for(const obj of this.objects.items)if(obj.visible)this.safeDrawObject(obj,'2d');
+      this.refreshNotablePoints();this.drawNotablePoints();this.drawInspection();if(this.pointer){const sp=this.worldToScreen(this.pointer.x,this.pointer.y);this.updatePointTooltip(sp.x,sp.y,'mouse');}else this.hidePointTooltip();
+    }
 
     getObjectBounds(obj) {
       try {
@@ -588,18 +675,27 @@
       } catch {}
       return null;
     }
-    fitToObjects(){if(this.viewMode==='3d'){const arr=this.objects.visible.map(o=>this.getObjectBounds3D(o)).filter(Boolean);if(!arr.length){this.center();return;}const xmin=Math.min(...arr.map(b=>b.xmin)),xmax=Math.max(...arr.map(b=>b.xmax)),ymin=Math.min(...arr.map(b=>b.ymin)),ymax=Math.max(...arr.map(b=>b.ymax)),zmin=Math.min(...arr.map(b=>b.zmin)),zmax=Math.max(...arr.map(b=>b.zmax));const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2,cz=(zmin+zmax)/2,span=Math.max(xmax-xmin,ymax-ymin,zmax-zmin,1);this.camera3d.target={x:cx,y:cy,z:cz};this.camera3d.distance=Math.max(4,Math.min(180,span*2.35));this.requestRender();return;}const arr=this.objects.visible.map(o=>this.getObjectBounds(o)).filter(Boolean);if(!arr.length){this.center();return;}let xmin=Math.min(...arr.map(b=>b.xmin)),xmax=Math.max(...arr.map(b=>b.xmax)),ymin=Math.min(...arr.map(b=>b.ymin)),ymax=Math.max(...arr.map(b=>b.ymax));if(xmin===xmax){xmin-=1;xmax+=1;}if(ymin===ymax){ymin-=1;ymax+=1;}const{w,h}=this.size,pad=46,sx=(w-pad*2)/(xmax-xmin),sy=(h-pad*2)/(ymax-ymin);this.scale=Math.max(5,Math.min(450,Math.min(sx,sy)));const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2;this.offsetX=-cx*this.scale;this.offsetY=cy*this.scale;this.requestRender();}
+    fitToObjects(){if(this.viewMode==='3d'){const arr=this.objects.visible.map(o=>this.getObjectBounds3D(o)).filter(Boolean);if(!arr.length){this.center();return;}const xmin=Math.min(...arr.map(b=>b.xmin)),xmax=Math.max(...arr.map(b=>b.xmax)),ymin=Math.min(...arr.map(b=>b.ymin)),ymax=Math.max(...arr.map(b=>b.ymax)),zmin=Math.min(...arr.map(b=>b.zmin)),zmax=Math.max(...arr.map(b=>b.zmax));const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2,cz=(zmin+zmax)/2,span=Math.max(xmax-xmin,ymax-ymin,zmax-zmin,1);this.camera3d.target={x:cx,y:cy,z:cz};this.camera3d.distance=Math.max(4,Math.min(180,span*2.35));this.requestRender();return;}const arr=this.objects.visible.map(o=>this.getObjectBounds(o)).filter(Boolean);if(!arr.length){this.center();return;}let xmin=Math.min(...arr.map(b=>b.xmin)),xmax=Math.max(...arr.map(b=>b.xmax)),ymin=Math.min(...arr.map(b=>b.ymin)),ymax=Math.max(...arr.map(b=>b.ymax));if(xmin===xmax){xmin-=1;xmax+=1;}if(ymin===ymax){ymin-=1;ymax+=1;}const{w,h}=this.size,pad=46,sx=Math.max(5,Math.min(450,(w-pad*2)/(xmax-xmin))),sy=Math.max(5,Math.min(450,(h-pad*2)/(ymax-ymin)));if(this.equalScale){const common=Math.min(sx,sy);this.scaleX=common;this.scaleY=common;}else{this.scaleX=sx;this.scaleY=sy;}const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2;this.offsetX=-cx*this.scaleX;this.offsetY=cy*this.scaleY;this.invalidateCache();this.requestRender();}
     inspectionValues(x){const values=[];for(const obj of this.objects.visible){if(obj.type==='function'){try{const y=this.getCompiled(obj.id,obj.data.expression,{x:0})({x});if(Number.isFinite(y))values.push({id:obj.id,label:`f${obj.id}(x)`,expression:obj.data.expression,y,color:this.objectColor(obj)});}catch{}}}return values;}
 
     snapshotDataUrl(scale=2) {
-      this.render();
-      const cssW=Math.max(1,this.size.w),cssH=Math.max(1,this.size.h),factor=Math.max(1,Math.min(4,Number(scale)||1));
-      const out=document.createElement('canvas');out.width=Math.round(cssW*factor);out.height=Math.round(cssH*factor);
-      const c=out.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(this.canvas,0,0,this.canvas.width,this.canvas.height,0,0,out.width,out.height);
-      return out.toDataURL('image/png');
+      const out=this.snapshotCanvas(scale);
+      try{return out.toDataURL('image/png');}catch(error){throw new Error('Não foi possível gerar a imagem nessa resolução. Tente uma escala menor.');}
     }
-    exportPng(filename='OrbisV-grafico.png',scale=2) {
-      const url=this.snapshotDataUrl(scale),link=document.createElement('a');link.download=filename;link.href=url;link.click();
+    snapshotCanvas(scale=2) {
+      this.render();
+      const cssW=Math.max(1,this.size.w),cssH=Math.max(1,this.size.h);let factor=Math.max(1,Math.min(4,Number(scale)||1));
+      const maxDimension=12000,maxPixels=64000000;
+      factor=Math.min(factor,maxDimension/cssW,maxDimension/cssH,Math.sqrt(maxPixels/(cssW*cssH)));
+      factor=Math.max(1,Number.isFinite(factor)?factor:1);
+      const out=document.createElement('canvas');out.width=Math.max(1,Math.round(cssW*factor));out.height=Math.max(1,Math.round(cssH*factor));
+      const c=out.getContext('2d');if(!c)throw new Error('O navegador não disponibilizou um contexto gráfico para exportação.');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(this.canvas,0,0,this.canvas.width,this.canvas.height,0,0,out.width,out.height);return out;
+    }
+    async exportPng(filename='OrbisV-grafico.png',scale=2) {
+      const canvas=this.snapshotCanvas(scale);
+      const blob=await new Promise((resolve,reject)=>{try{canvas.toBlob((value)=>value?resolve(value):reject(new Error('O navegador não conseguiu codificar o PNG.')),'image/png');}catch(error){reject(error);}});
+      const url=URL.createObjectURL(blob),link=document.createElement('a');link.download=filename;link.href=url;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+      return {width:canvas.width,height:canvas.height,size:blob.size};
     }
     exportSvg(filename='OrbisV-grafico.svg'){
       const unsupported=this.viewMode==='3d'||this.objects.visible.some(o=>['washers','curve3d','line3d'].includes(o.type));
@@ -610,13 +706,13 @@
         this.downloadText(svg,'image/svg+xml',filename);return {rasterized:true};
       }
       const parts=[`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`,`<title>OrbisV</title>`,`<desc>Gráfico exportado pelo OrbisV</desc>`,`<rect width="100%" height="100%" fill="${theme.bg}"/>`];
-      if(this.showGrid){const step=this.gridStep()*this.scale,ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.gridMajor}" stroke-width="1">`);for(let x=((ox%step)+step)%step;x<w;x+=step)parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`);for(let y=((oy%step)+step)%step;y<h;y+=step)parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`);parts.push('</g>');}
+      if(this.showGrid){const stepX=this.gridStep(this.scaleX)*this.scaleX,stepY=this.gridStep(this.scaleY)*this.scaleY,ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.gridMajor}" stroke-width="1">`);for(let x=((ox%stepX)+stepX)%stepX;x<w;x+=stepX)parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`);for(let y=((oy%stepY)+stepY)%stepY;y<h;y+=stepY)parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`);parts.push('</g>');}
       if(this.showAxes){const ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.axis}" stroke-width="1.6"><line x1="0" y1="${oy}" x2="${w}" y2="${oy}"/><line x1="${ox}" y1="0" x2="${ox}" y2="${h}"/></g>`);}
       for(const obj of this.objects.visible){const part=this.objectToSvg(obj);if(part)parts.push(part);}parts.push('</svg>');this.downloadText(parts.join(''),'image/svg+xml',filename);return {rasterized:false};
     }
-    objectToSvg(obj){const p=(x,y)=>this.worldToScreen(x,y),color=this.objectColor(obj);if(obj.type==='point'){const q=p(obj.data.x,obj.data.y);return`<circle cx="${q.x}" cy="${q.y}" r="4" fill="${color}"/>`;}if(obj.type==='vector'){const a=p(obj.data.x1,obj.data.y1),b=p(obj.data.x2,obj.data.y2);return`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.5"/>`;}if(obj.type==='circle'){const q=p(obj.data.cx,obj.data.cy);return`<circle cx="${q.x}" cy="${q.y}" r="${obj.data.r*this.scale}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='ellipse'){const q=p(obj.data.cx,obj.data.cy);return`<ellipse cx="${q.x}" cy="${q.y}" rx="${obj.data.a*this.scale}" ry="${obj.data.b*this.scale}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='line'){const b=this.currentBounds(),d=obj.data;if(Math.abs(d.b)>1e-12)return this.svgLine(b.xmin,(-d.a*b.xmin-d.c)/d.b,b.xmax,(-d.a*b.xmax-d.c)/d.b,color);if(Math.abs(d.a)>1e-12){const x=-d.c/d.a;return this.svgLine(x,b.ymin,x,b.ymax,color);}return'';}if(obj.type==='polygon'){const pts=(obj.data.vertices||[]).map(v=>p(v[0],v[1]));return pts.length?`<polygon points="${pts.map(q=>`${q.x},${q.y}`).join(' ')}" fill="${color}" fill-opacity=".12" stroke="${color}" stroke-width="2.2"/>`:'';}if(obj.type==='function'||obj.type==='parametric'){try{const pts=[];if(obj.type==='function'){const fn=this.getCompiled(obj.id,obj.data.expression,{x:0}),bounds=this.currentBounds();for(let i=0;i<=800;i+=1){const x=bounds.xmin+(bounds.xmax-bounds.xmin)*i/800,y=fn({x});if(Number.isFinite(y)&&Math.abs(y)<1e8)pts.push(p(x,y));else pts.push(null);}}else{const fx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});for(let i=0;i<=800;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/800,x=fx({t}),y=fy({t});pts.push(Number.isFinite(x)&&Number.isFinite(y)?p(x,y):null);}}let d='',pen=false;for(const q of pts){if(!q){pen=false;continue;}d+=`${pen?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;pen=true;}return`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>`;}catch{return'';}}return'';}
+    objectToSvg(obj){const p=(x,y)=>this.worldToScreen(x,y),color=this.objectColor(obj);if(obj.type==='point'){const q=p(obj.data.x,obj.data.y);return`<circle cx="${q.x}" cy="${q.y}" r="4" fill="${color}"/>`;}if(obj.type==='vector'){const a=p(obj.data.x1,obj.data.y1),b=p(obj.data.x2,obj.data.y2);return`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.5"/>`;}if(obj.type==='circle'){const q=p(obj.data.cx,obj.data.cy);return`<ellipse cx="${q.x}" cy="${q.y}" rx="${obj.data.r*this.scaleX}" ry="${obj.data.r*this.scaleY}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='ellipse'){const q=p(obj.data.cx,obj.data.cy);return`<ellipse cx="${q.x}" cy="${q.y}" rx="${obj.data.a*this.scaleX}" ry="${obj.data.b*this.scaleY}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='line'){const b=this.currentBounds(),d=obj.data;if(Math.abs(d.b)>1e-12)return this.svgLine(b.xmin,(-d.a*b.xmin-d.c)/d.b,b.xmax,(-d.a*b.xmax-d.c)/d.b,color);if(Math.abs(d.a)>1e-12){const x=-d.c/d.a;return this.svgLine(x,b.ymin,x,b.ymax,color);}return'';}if(obj.type==='polygon'){const pts=(obj.data.vertices||[]).map(v=>p(v[0],v[1]));return pts.length?`<polygon points="${pts.map(q=>`${q.x},${q.y}`).join(' ')}" fill="${color}" fill-opacity=".12" stroke="${color}" stroke-width="2.2"/>`:'';}if(obj.type==='function'||obj.type==='parametric'){try{const pts=[];if(obj.type==='function'){const fn=this.getCompiled(obj.id,obj.data.expression,{x:0}),bounds=this.currentBounds();for(let i=0;i<=800;i+=1){const x=bounds.xmin+(bounds.xmax-bounds.xmin)*i/800,y=fn({x});if(Number.isFinite(y)&&Math.abs(y)<1e8)pts.push(p(x,y));else pts.push(null);}}else{const fx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});for(let i=0;i<=800;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/800,x=fx({t}),y=fy({t});pts.push(Number.isFinite(x)&&Number.isFinite(y)?p(x,y):null);}}let d='',pen=false;for(const q of pts){if(!q){pen=false;continue;}d+=`${pen?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;pen=true;}return`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>`;}catch{return'';}}return'';}
     svgLine(x1,y1,x2,y2,color){const a=this.worldToScreen(x1,y1),b=this.worldToScreen(x2,y2);return`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.2"/>`;}
-    downloadText(text,type,filename){const blob=new Blob([text],{type:`${type};charset=utf-8`}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),0);}
+    downloadText(text,type,filename){const blob=new Blob([text],{type:`${type};charset=utf-8`}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);try{a.click();}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}}
   }
 
   global.GraphEngine = GraphEngine;

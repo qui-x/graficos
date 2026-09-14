@@ -62,7 +62,13 @@ A ferramenta **Importar projeto** aceita `.orbisv` e `.json`, mostra uma pré-vi
 - **Substituir cena:** restaura o projeto completo, incluindo visualização e histórico;
 - **Mesclar com a cena:** mantém o trabalho aberto e adiciona os objetos importados com novos identificadores.
 
-A importação valida o formato, a versão, a quantidade e os tipos dos objetos antes de alterar a cena. Arquivos de até 8 MB podem ser selecionados ou arrastados para a área de importação.
+A importação valida o formato, a versão, a quantidade e os tipos dos objetos antes de alterar a cena. Arquivos de até 16 MB podem ser selecionados ou arrastados para a área de importação. A versão 6.7 também valida os dados matemáticos de cada objeto antes de aplicar o projeto.
+
+## Robustez da versão 6.7
+
+A versão 6.7 amplia a tolerância a projetos complexos sem alterar a organização visual da interface. Entre as melhorias estão validação profunda dos objetos importados, recuperação automática de sessão por cópias anterior e de recuperação, autosave com modo compacto em caso de limite de armazenamento, isolamento de falhas por objeto durante a renderização, limites de segurança para expressões e canvases, amostragem adaptativa com tratamento de descontinuidades, detecção de raízes de multiplicidade par, integração numérica refinada, exportação CSV em lotes, cache offline mais defensivo e suporte efetivo à escala cartesiana proporcional ou independente.
+
+O limite operacional de objetos foi ampliado para 240 por projeto. Operações em lote verificam capacidade antes de modificar a cena, evitando estados parcialmente aplicados. A importação continua recusando dados não finitos, geometrias inválidas, expressões que não compilam e identificadores duplicados.
 
 ## Exportação
 
