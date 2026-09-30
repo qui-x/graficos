@@ -1,0 +1,442 @@
+[
+  {
+    "name": "Representação: fund-expressoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-fracoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-divisibilidade",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-proporcoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-unidades",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-conjuntos",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-logica",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-algebra",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-equacoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-inequacoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-composicao",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-exponenciais",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-progressoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-trigonometria",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-triangulos",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-medidas-planas",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-solidos",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-complexos",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-combinatoria",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-estatistica",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-juros",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-distancias",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-retas-medidas",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-circunferencia",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-conicas",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-conica-geral",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-reta-plano",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-planos",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-coordenadas",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-quadricas",
+    "ok": true
+  },
+  {
+    "name": "Representação: geo-poligonos",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-produtos",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-produto-misto",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-matrizes",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-sistemas",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-bases",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-gram-schmidt",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-transformacoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-autovalores",
+    "ok": true
+  },
+  {
+    "name": "Representação: alg-minimos-quadrados",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-aproximacoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-epsilon-delta",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-derivacao",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-tangentes",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-implicitas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-taxas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-analise",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-otimizacao",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-newton",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-lhopital",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-taylor",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-riemann",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc1-fundamental",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-primitivas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-substituicao",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-partes",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-fracoes-parciais",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-substituicao-trig",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-quadratura",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-improprias",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-areas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-cascas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-arcos",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-aplicacoes",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-parametricas-medidas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-edo",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-sequencias",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-criterios",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-series-potencias",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-superficies",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-limites-caminhos",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-parciais",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-direcionais",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-duplas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-polares",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-triplas",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-jacobiano",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-lagrange",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-campos",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-integral-linha",
+    "ok": true
+  },
+  {
+    "name": "Representação: calc2-fluxo-superficie",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-contagem",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-decimal",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-agrupamentos",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-padroes",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-malha",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-pesquisa",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-chances",
+    "ok": true
+  },
+  {
+    "name": "Representação: fund-percurso",
+    "ok": true
+  },
+  {
+    "name": "278 campos com esquema, prévia e validação de exemplos",
+    "ok": true
+  },
+  {
+    "name": "Frações de 40 dígitos permanecem exatas",
+    "ok": true
+  },
+  {
+    "name": "Variáveis específicas de cada campo são respeitadas",
+    "ok": true
+  },
+  {
+    "name": "Matrizes e vetores rejeitam dimensões inválidas",
+    "ok": true
+  },
+  {
+    "name": "Representação de proporção direta usa correspondência correta",
+    "ok": true
+  },
+  {
+    "name": "Conversão gráfica: 0 °C corresponde a 32 °F",
+    "ok": true
+  },
+  {
+    "name": "Figura plana: rectangle",
+    "ok": true
+  },
+  {
+    "name": "Figura plana: circle",
+    "ok": true
+  },
+  {
+    "name": "Figura plana: trapezoid",
+    "ok": true
+  },
+  {
+    "name": "Figura plana: polygon",
+    "ok": true
+  },
+  {
+    "name": "Sólido: sphere",
+    "ok": true
+  },
+  {
+    "name": "Sólido: cylinder",
+    "ok": true
+  },
+  {
+    "name": "Sólido: cone",
+    "ok": true
+  },
+  {
+    "name": "Sólido: box",
+    "ok": true
+  },
+  {
+    "name": "Sólido: pyramid",
+    "ok": true
+  },
+  {
+    "name": "Cônica imaginária tem contorno vazio",
+    "ok": true
+  },
+  {
+    "name": "Famílias impróprias: integral truncada converge ou cresce conforme p",
+    "ok": true
+  },
+  {
+    "name": "Primitivas variam por constante aditiva",
+    "ok": true
+  },
+  {
+    "name": "Região tripla respeita limites de tetraedro",
+    "ok": true
+  },
+  {
+    "name": "Malha polar transformada permanece no quarto de disco",
+    "ok": true
+  },
+  {
+    "name": "Textos de conjuntos são escapados na representação",
+    "ok": true
+  }
+]

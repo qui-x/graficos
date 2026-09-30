@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Abertura em papel, cinco áreas e navegação",
+    "ok": true
+  },
+  {
+    "name": "Currículo: ano, código e extensão sem enquadramento falso",
+    "ok": true
+  },
+  {
+    "name": "Professor: roteiro editável e exportação",
+    "ok": true
+  },
+  {
+    "name": "Importação inválida de roteiro preserva a versão local",
+    "ok": true
+  },
+  {
+    "name": "Roteiro acompanha laboratório e previsão sobrevive ao reload",
+    "ok": true
+  },
+  {
+    "name": "Dois ensaios capturados com o teclado matemático original",
+    "ok": true
+  },
+  {
+    "name": "Comparação numérica e produção de conclusão",
+    "ok": true
+  },
+  {
+    "name": "Devolutiva docente persistente e backup com evidências",
+    "ok": true
+  },
+  {
+    "name": "Restauração retoma valores e processo da investigação",
+    "ok": true
+  },
+  {
+    "name": "Compatibilidade com anotações antigas e texto sem execução",
+    "ok": true
+  },
+  {
+    "name": "Caderno livre exporta e reimporta sem duplicação",
+    "ok": true
+  },
+  {
+    "name": "Editor gráfico também registra uma investigação com cena",
+    "ok": true
+  },
+  {
+    "name": "Claro e escuro: rótulos e superfícies atualizados",
+    "ok": true
+  },
+  {
+    "name": "320px: índice, currículo, laboratório, Caderno e professor sem estouro",
+    "ok": true
+  },
+  {
+    "name": "Roteiro importado válido abre com textos personalizados",
+    "ok": true
+  },
+  {
+    "name": "Sem exceções JavaScript",
+    "ok": true
+  }
+]

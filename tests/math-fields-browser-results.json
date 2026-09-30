@@ -1,0 +1,434 @@
+[
+  {
+    "name": "Campos formatados e diálogo: fund-expressoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-fracoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-divisibilidade",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-proporcoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-unidades",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-conjuntos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-logica",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-algebra",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-equacoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-inequacoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-composicao",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-exponenciais",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-progressoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-trigonometria",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-triangulos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-medidas-planas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-solidos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-complexos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-combinatoria",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-estatistica",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-juros",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-distancias",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-retas-medidas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-circunferencia",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-conicas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-conica-geral",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-reta-plano",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-planos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-coordenadas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-quadricas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: geo-poligonos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-produtos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-produto-misto",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-matrizes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-sistemas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-bases",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-gram-schmidt",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-transformacoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-autovalores",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: alg-minimos-quadrados",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-aproximacoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-epsilon-delta",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-derivacao",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-tangentes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-implicitas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-taxas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-analise",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-otimizacao",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-newton",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-lhopital",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-taylor",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-riemann",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc1-fundamental",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-primitivas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-substituicao",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-partes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-fracoes-parciais",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-substituicao-trig",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-quadratura",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-improprias",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-areas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-cascas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-arcos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-aplicacoes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-parametricas-medidas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-edo",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-sequencias",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-criterios",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-series-potencias",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-superficies",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-limites-caminhos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-parciais",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-direcionais",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-duplas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-polares",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-triplas",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-jacobiano",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-lagrange",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-campos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-integral-linha",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: calc2-fluxo-superficie",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-contagem",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-decimal",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-agrupamentos",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-padroes",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-malha",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-pesquisa",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-chances",
+    "ok": true
+  },
+  {
+    "name": "Campos formatados e diálogo: fund-percurso",
+    "ok": true
+  },
+  {
+    "name": "Fração, radical e potência em notação visual; salvar e cancelar",
+    "ok": true
+  },
+  {
+    "name": "Desfazer, refazer e cursor ao substituir a expressão",
+    "ok": true
+  },
+  {
+    "name": "Validação impede salvar divisão por zero e variável indevida",
+    "ok": true
+  },
+  {
+    "name": "Fração de 40 dígitos preservada na edição e no desenho",
+    "ok": true
+  },
+  {
+    "name": "Matriz: colar tabela, editar célula com fração e cancelar",
+    "ok": true
+  },
+  {
+    "name": "Lista extensa: paginação mantém todos os 500 valores",
+    "ok": true
+  },
+  {
+    "name": "Conjuntos: preservar maiúsculas, minúsculas e vírgula textual",
+    "ok": true
+  },
+  {
+    "name": "Lógica: teclado próprio e mapa de valorações",
+    "ok": true
+  },
+  {
+    "name": "Variáveis u, v e n aparecem nos campos correspondentes",
+    "ok": true
+  },
+  {
+    "name": "Comparação gráfica guarda referência e acompanha os novos dados",
+    "ok": true
+  },
+  {
+    "name": "Comparação de diagramas mostra referência e atual",
+    "ok": true
+  },
+  {
+    "name": "Unidades diferentes bloqueiam sobreposição ambígua",
+    "ok": true
+  },
+  {
+    "name": "Vistas espaciais 3D, xy, xz e yz mudam a projeção",
+    "ok": true
+  },
+  {
+    "name": "Área entre curvas aparece com preenchimento",
+    "ok": true
+  },
+  {
+    "name": "Editor gráfico nativo mantém teclado e rascunho próprios",
+    "ok": true
+  },
+  {
+    "name": "Mobile: diálogo de matriz sem estouro; teclado salva fração",
+    "ok": true
+  },
+  {
+    "name": "Mobile escuro: representação e comparação sem estouro",
+    "ok": true
+  },
+  {
+    "name": "320px: editor de expressão mantém salvar e cancelar acessíveis",
+    "ok": true
+  },
+  {
+    "name": "Sem erros JavaScript não tratados",
+    "ok": true
+  }
+]

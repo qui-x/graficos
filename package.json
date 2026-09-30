@@ -1,6 +1,20 @@
 {
   "name": "orbisv",
-  "version": "6.7.0",
+  "version": "9.1.0",
   "private": true,
-  "description": "OrbisV — ambiente gráfico matemático com renderização 2D/3D, persistência resiliente, validação profunda e PWA offline."
+  "description": "OrbisV: 101 laboratórios, investigação matemática e organização curricular BNCC.",
+  "scripts": {
+    "test": "node tests/mathematics.cjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:fields": "node tests/math-fields-browser.mjs",
+    "test:visuals": "node tests/representations.cjs",
+    "test:inquiry": "node tests/inquiry-browser.mjs",
+    "test:curriculum": "node tests/curriculum.cjs",
+    "test:graphics": "node tests/graphical-browser.mjs",
+    "test:actions": "node tests/actions-browser.mjs",
+    "test:controls": "node tests/view-controls-browser.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
 }

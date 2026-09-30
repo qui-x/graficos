@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Cena gráfica: fund-funcoes",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: fund-modelos",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: geo-plano",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: geo-espaco",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: alg-vetores",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: alg-parametric",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc1-limites",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc1-derivadas",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc2-integracao",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc2-integrais",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc2-parametric",
+    "ok": true
+  },
+  {
+    "name": "Cena gráfica: calc2-curvas3d",
+    "ok": true
+  },
+  {
+    "name": "Duas páginas: gráfico à esquerda e registro à direita",
+    "ok": true
+  },
+  {
+    "name": "Escuro mantém a identidade e atualiza a área gráfica",
+    "ok": true
+  },
+  {
+    "name": "Pontos de partida têm fórmulas formatadas e pergunta de exploração",
+    "ok": true
+  },
+  {
+    "name": "A preferência antiga de barra recolhida não quebra os modos",
+    "ok": true
+  },
+  {
+    "name": "Modelo espacial conserva sua câmera e formulário",
+    "ok": true
+  },
+  {
+    "name": "Mobile: painel ajusta ao espaço disponível e mantém o editor",
+    "ok": true
+  },
+  {
+    "name": "Sem exceções JavaScript",
+    "ok": true
+  }
+]
