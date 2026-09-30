@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Câmera nativa: planos exatos XY, XZ e YZ, em projeção ortogonal",
+    "ok": true
+  },
+  {
+    "name": "Câmera nativa: rotação com valor em graus e estado sincronizado",
+    "ok": true
+  },
+  {
+    "name": "Centro XYZ: passos, frações, validação e cancelamento usam o editor matemático",
+    "ok": true
+  },
+  {
+    "name": "Mover a câmera segue os eixos da tela nas três vistas",
+    "ok": true
+  },
+  {
+    "name": "Zoom, enquadramento e restauração preservam os objetos",
+    "ok": true
+  },
+  {
+    "name": "Eixos individuais e plano da grade sobrevivem ao salvamento da cena",
+    "ok": true
+  },
+  {
+    "name": "Teclado do gráfico: rotação, Shift para mover e Home para recuperar",
+    "ok": true
+  },
+  {
+    "name": "Gestos por dois dedos: zoom, deslocamento e fim da interação",
+    "ok": true
+  },
+  {
+    "name": "2D: centro, zoom e eixos sem controles de Z ou rotação",
+    "ok": true
+  },
+  {
+    "name": "Bancada 3D: vistas distintas, proporcionais e eixos independentes",
+    "ok": true
+  },
+  {
+    "name": "Bancada 3D: zoom e centro alteram apenas a representação",
+    "ok": true
+  },
+  {
+    "name": "Bancada: arraste e teclado giram; deslocamento não altera a rotação",
+    "ok": true
+  },
+  {
+    "name": "Recalcular e comparar mantém um único conjunto de controles",
+    "ok": true
+  },
+  {
+    "name": "Exportação SVG corresponde à vista selecionada",
+    "ok": true
+  },
+  {
+    "name": "Bancada 2D: zoom e controles não alteram métricas ou preenchimento",
+    "ok": true
+  },
+  {
+    "name": "Captura desktop: espaço, controle matemático e tema escuro",
+    "ok": true
+  },
+  {
+    "name": "320 px e paisagem: controles acessíveis, recolhíveis e sem estouro",
+    "ok": true
+  },
+  {
+    "name": "Controles visuais aparecem no módulo que os opera",
+    "ok": true
+  },
+  {
+    "name": "Sem exceções JavaScript",
+    "ok": true
+  }
+]

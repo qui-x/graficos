@@ -1,9 +1,39 @@
 'use strict';
 
 const CACHE_PREFIX = 'orbisv-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v6.7-20260914`;
-const BUILD = '6.7.0';
+const CACHE_NAME = `${CACHE_PREFIX}v9.1-20260928`;
+const BUILD = '9.1.0';
+const MODULE_SHELL = [
+  `./css/view-controls.css?v=${BUILD}`,
+  `./js/view-controls.js?v=${BUILD}`,
+  `./js/labs/plot-view.js?v=${BUILD}`,
+  `./css/investigation.css?v=${BUILD}`,
+  `./css/actions.css?v=${BUILD}`,
+  `./js/labs/school.js?v=${BUILD}`,
+  `./js/curriculum.js?v=${BUILD}`,
+  `./js/inquiry-catalog.js?v=${BUILD}`,
+  `./js/inquiry.js?v=${BUILD}`,
+  `./css/platform.css?v=${BUILD}`,
+  `./css/workbench.css?v=${BUILD}`,
+  `./css/math-fields.css?v=${BUILD}`,
+  `./css/representations.css?v=${BUILD}`,
+  `./js/catalog.js?v=${BUILD}`,
+  `./js/platform.js?v=${BUILD}`,
+  `./js/labs/kernel.js?v=${BUILD}`,
+  `./js/labs/fundamentals.js?v=${BUILD}`,
+  `./js/labs/geometry.js?v=${BUILD}`,
+  `./js/labs/vectors.js?v=${BUILD}`,
+  `./js/labs/calculus1.js?v=${BUILD}`,
+  `./js/labs/calculus2.js?v=${BUILD}`,
+  `./js/labs/multivariable.js?v=${BUILD}`,
+  `./js/labs/extend-catalog.js?v=${BUILD}`,
+  `./js/labs/worker-source.js?v=${BUILD}`,
+  `./js/labs/math-fields.js?v=${BUILD}`,
+  `./js/labs/representations.js?v=${BUILD}`,
+  `./js/labs/workbench.js?v=${BUILD}`,
+];
 const APP_SHELL = [
+  ...MODULE_SHELL,
   './',
   './index.html',
   `./manifest.webmanifest?v=${BUILD}`,
@@ -29,6 +59,12 @@ const APP_SHELL = [
   './assets/orbisv-logo-transparent.png',
   './assets/orbisv-logo-horizontal.png',
   './assets/orbisv-logo-symbol.png',
+  './manual/investigacao.html',
+  './docs/GUIA_PEDAGOGICO.md',
+  './docs/CURRICULO_E_LIMITES.md',
+  './docs/MAPEAMENTO_BNCC.csv',
+  './docs/CATALOGO_COMPLETO.md',
+  './VALIDACAO.md',
   './manual/index.html',
   './manual/manual.css',
   './manual/manual.js',
@@ -40,6 +76,7 @@ const APP_SHELL = [
 ];
 
 const REQUIRED_SHELL = new Set([
+  ...MODULE_SHELL,
   './', './index.html', `./manifest.webmanifest?v=${BUILD}`, `./css/style.css?v=${BUILD}`,
   `./js/mathEngine.js?v=${BUILD}`, `./js/models.js?v=${BUILD}`, `./js/graphObjects.js?v=${BUILD}`,
   `./js/graphEngine.js?v=${BUILD}`, `./js/ui.js?v=${BUILD}`, `./js/main.js?v=${BUILD}`

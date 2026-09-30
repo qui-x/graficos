@@ -1,106 +1,75 @@
-# OrbisV
+# OrbisV 9.1.0 — Caderno de investigação
 
-**Visualize · Explore · Descubra**  
-**Matemática em qualquer dimensão**
+Projeto completo em HTML, CSS e JavaScript. Inclui 101 laboratórios: 89 bancadas de cálculo, entre elas oito novas explorações escolares, e 12 ambientes do editor gráfico. As cinco áreas permanecem livres: Fundamentos da Matemática, Geometria Analítica, Álgebra Vetorial, Cálculo I e Cálculo II.
 
-OrbisV é um ambiente gráfico matemático responsivo para explorar funções, curvas paramétricas, vetores, geometria analítica e aplicações de cálculo com entrada visual em notação matemática.
+## Abrir
 
-## Ao abrir o programa
+1. Extraia todo o ZIP, preservando as pastas.
+2. Abra `index.html` em um navegador atualizado. O processamento matemático e as bibliotecas estão incluídos; a abertura por arquivo local foi testada em Chromium.
+3. Para instalar como aplicativo web ou servir a uma rede, hospede a pasta em HTTPS ou use um servidor local. Exemplo com Python instalado: `python -m http.server 8000`; abra `http://localhost:8000`.
 
-O OrbisV sempre inicia pelo menu **Projeto**, que funciona como a página inicial do aplicativo. A partir dele é possível continuar a sessão salva automaticamente, iniciar um novo gráfico, abrir ou salvar um projeto `.orbisv`, acessar a biblioteca de modelos, configurar acessibilidade e visualização, exportar resultados ou iniciar o tour guiado.
+O service worker prepara o uso offline após a primeira carga completa sob uma origem compatível. Não é necessário executar npm para usar o programa. Um executável de Windows não integra este pacote; os arquivos estão disponíveis para seu processo de empacotamento.
 
-No primeiro acesso, o programa apresenta automaticamente um tour das principais áreas. O tour pode ser repetido a qualquer momento pelo menu Projeto.
+## O que mudou
 
-## Modos matemáticos
+- Identidade de Caderno de investigação: papel, títulos com serifa, símbolo V original e acentos ciano/magenta; temas claro e escuro.
+- Botões e ações padronizados: menu Cena por finalidade, seleção de modos em lista, exportações em linhas e diálogos com o mesmo acabamento visual.
+- Editores gráficos integrados ao Caderno: faixa de modos, painel com Entrada/Objetos/Histórico/Registro, cenas 2D/3D e biblioteca Pontos de partida.
+- Abertura com índice das cinco áreas e retorno à última investigação.
+- Perguntas próprias nos 101 laboratórios; previsão, captura de ensaios, comparação, conclusão, novo problema e autoavaliação.
+- Roteiros docentes editáveis e importação/exportação em JSON.
+- Caderno com registros estruturados, cenas/resultados vinculados e devolutivas do professor.
+- Consulta curricular por ano, tema e código BNCC, com indicação de apoio parcial e extensão universitária separada.
+- Oito novas explorações: coleções, valor posicional, repartição, sequências, malha, tabelas e colunas, acaso e percurso.
+- Preservação do teclado e das caixas matemáticas: 278 campos das bancadas com representação formatada.
+- Ações antigas reaproveitadas no Menu Cena, com importação, mesclagem, exportação, preferências e menus contextuais padronizados.
+- Controles visuais distribuídos por módulo: plano XY e inspeção em funções, componentes em vetores, alinhamento em geometria, perfil/sólido em discos e anéis e vistas XY/XZ/YZ nas construções espaciais.
+- Câmera refinada com zoom, enquadramento, centro X/Y/Z editável pelo teclado matemático, eixos individuais, grade por plano, projeção ortogonal/perspectiva e gestos de dois dedos.
 
-- **Função:** representa funções de uma variável e oferece análise numérica, pontos notáveis e tabela CSV.
-- **Paramétrica:** representa curvas definidas por `x(t)` e `y(t)` em um intervalo do parâmetro.
-- **Vetor:** cria vetores a partir de origem e extremidade e apresenta módulo e direção.
-- **Geometria:** cria pontos, retas, círculos, elipses e polígonos.
-- **Discos/Anéis:** valida R ≥ r ≥ 0, calcula volumes de revolução e representa o perfil simétrico, o eixo, as seções transversais e os raios didáticos.
-- **Curva 3D e Reta 3D:** utilizam o motor espacial com câmera orbital, zoom, inspeção e projeção tridimensional.
-- **Discos/Anéis 3D:** pode representar sólidos de revolução com superfície externa, cavidade interna e seções.
+## Usar em aula
 
-## Editor matemático
+Acesse **Professor**, escolha o laboratório e personalize o roteiro. O estudante registra uma previsão, calcula, captura ensaios e escreve uma conclusão baseada em evidências. O treino numérico continua disponível antes da revelação do resultado. Os menus são livres, sem níveis ou bloqueios por desempenho.
 
-Campos matemáticos abrem o Editor Matemático OrbisV. No mobile, o editor utiliza teclado próprio em formato de calculadora científica e não abre o teclado nativo por padrão.
+O editor gráfico mantém ferramentas, desfazer, câmeras, exportação e cenas. Use **Investigar** na barra superior para abrir seu painel de registro.
 
-A entrada aceita notação próxima à literatura matemática, incluindo multiplicação implícita, parênteses, potências, raízes, constantes e funções. Exemplos válidos incluem `2x`, `3(x+1)`, `2pi`, `sen(x)` e `tg(x)`.
+## Dados locais
 
-O editor possui cursor visual, validação da expressão, desfazer/refazer próprio e navegação pelas posições de inserção. A representação visual utiliza MathML para frações, raízes e expoentes.
+Anotações, rascunhos, preferências e entradas são salvos no navegador. Use **Exportar** no Caderno e **Exportar roteiro** para conservar cópias externas. O programa não envia trabalhos automaticamente e não possui servidor, login, gestão remota de turma ou sincronização.
 
-## Modelos matemáticos
+Os Cadernos da versão anterior continuam aceitos. Os dados anteriores usam as mesmas chaves de armazenamento quando a origem do programa é mantida. A migração acrescenta campos opcionais às anotações, preservando os textos e resultados existentes.
 
-A biblioteca de modelos pré-prontos pode ser aberta pelos formulários compatíveis ou pelo menu inicial. Os modelos são organizados por categoria e podem ser pesquisados. Ao usar um modelo, os dados são carregados no formulário para revisão antes de serem adicionados ao gráfico.
+## Documentação
 
-## Objetos e histórico
+- `manual/investigacao.html`: guia de uso da nova interface, legível no navegador.
+- `docs/GUIA_PEDAGOGICO.md`: mediação, prática, evidências e propostas de aula.
+- `docs/CURRICULO_E_LIMITES.md`: abrangência e limites curriculares.
+- `docs/MAPEAMENTO_BNCC.csv`: relação dos 101 laboratórios com códigos, recortes e referência oficial.
+- `docs/CATALOGO_COMPLETO.md`: conteúdos e perguntas de investigação.
+- `docs/IDENTIDADE_VISUAL.md`: regras de botões, menus, diálogos e temas.
+- `docs/ARQUITETURA.md`: organização interna e manutenção.
+- `VALIDACAO.md`: verificações e limites dos testes.
 
-A aba **Objetos** permite:
+O manual antigo do editor gráfico foi preservado em `manual/index.html`, como referência complementar das ferramentas gráficas.
 
-- editar um objeto;
-- mostrar ou ocultar;
-- bloquear ou desbloquear;
-- duplicar;
-- alterar a ordem;
-- selecionar múltiplos objetos;
-- executar ações em lote;
-- mostrar pontos notáveis quando aplicável;
-- excluir objetos.
+## Desenvolvimento e testes
 
-A aba **Histórico** registra as alterações da cena e oferece desfazer/refazer. O histórico do projeto é separado do histórico interno do Editor Matemático.
+Requer Node para os testes, Python para regenerar o worker e Playwright para os testes de navegador. Instale as dependências de desenvolvimento com `npm install` e o navegador com `npx playwright install chromium`.
 
-## Área gráfica
-
-A barra flutuante do gráfico oferece recentralização, grade, eixos, ajuste dos objetos à tela e modo de inspeção. A área gráfica aceita pan e zoom e mostra coordenadas temporárias quando o recurso está habilitado.
-
-## Projetos, importação e salvamento automático
-
-A sessão atual é salva automaticamente no navegador. O formato `.orbisv` preserva objetos, visualização, histórico e modo matemático ativo.
-
-A ferramenta **Importar projeto** aceita `.orbisv` e `.json`, mostra uma pré-visualização antes de aplicar o arquivo e oferece dois modos:
-
-- **Substituir cena:** restaura o projeto completo, incluindo visualização e histórico;
-- **Mesclar com a cena:** mantém o trabalho aberto e adiciona os objetos importados com novos identificadores.
-
-A importação valida o formato, a versão, a quantidade e os tipos dos objetos antes de alterar a cena. Arquivos de até 16 MB podem ser selecionados ou arrastados para a área de importação. A versão 6.7 também valida os dados matemáticos de cada objeto antes de aplicar o projeto.
-
-## Robustez da versão 6.7
-
-A versão 6.7 amplia a tolerância a projetos complexos sem alterar a organização visual da interface. Entre as melhorias estão validação profunda dos objetos importados, recuperação automática de sessão por cópias anterior e de recuperação, autosave com modo compacto em caso de limite de armazenamento, isolamento de falhas por objeto durante a renderização, limites de segurança para expressões e canvases, amostragem adaptativa com tratamento de descontinuidades, detecção de raízes de multiplicidade par, integração numérica refinada, exportação CSV em lotes, cache offline mais defensivo e suporte efetivo à escala cartesiana proporcional ou independente.
-
-O limite operacional de objetos foi ampliado para 240 por projeto. Operações em lote verificam capacidade antes de modificar a cena, evitando estados parcialmente aplicados. A importação continua recusando dados não finitos, geometrias inválidas, expressões que não compilam e identificadores duplicados.
-
-## Exportação
-
-A central de exportação permite definir um nome base e disponibiliza:
-
-- **ORBISV:** projeto completo para continuar o trabalho depois;
-- **PNG:** imagem do gráfico com resolução atual, 2× ou 3×;
-- **SVG:** exportação vetorial para cenas 2D compatíveis; cenas 3D e objetos que dependem do canvas são preservados como imagem incorporada;
-- **PDF:** relatório formatado com o gráfico e resumo dos objetos visíveis, usando a impressão do navegador para salvar em PDF;
-- **CSV:** tabela das funções visíveis, com intervalo da janela atual ou personalizado, passo configurável, separador `;`, vírgula decimal e BOM para compatibilidade com Excel.
-
-## Acessibilidade
-
-A Central de Acessibilidade inclui tema claro e escuro, alto contraste, escala de texto, espaçamento entre letras, redução de movimento, leitura simplificada, simulações de visão de cores, diferenciação de curvas por traços e marcadores, descrição acessível do gráfico e navegação por teclado.
-
-As simulações disponíveis são protanopia, deuteranopia, tritanopia e acromatopsia. A diferenciação de objetos não depende exclusivamente de cor.
-
-## PWA
-
-O OrbisV pode funcionar como aplicativo web instalável quando servido por HTTPS ou `localhost`. O projeto possui manifesto, Service Worker, ícones convencionais e `maskable`, cache do app shell e atualização versionada dos arquivos principais.
-
-## Executar localmente
-
-O projeto é estático. Um modo simples de executar é:
-
-```bash
-python -m http.server 8000
+```sh
+npm test
+npm run test:visuals
+npm run test:curriculum
+npm run test:browser
+npm run test:fields
+npm run test:inquiry
+npm run test:graphics
+npm run test:actions
+npm run test:controls
+python scripts/build-worker.py
 ```
 
-Depois, abra `http://localhost:8000` no navegador.
+A variável opcional `ORBISV_CHROMIUM` permite indicar o executável do Chromium. O worker já vem gerado para o uso normal.
 
+## Alcance curricular
 
-## Manual didático integrado
-
-O OrbisV inclui um manual completo em `manual/index.html`. Ele pode ser aberto pelo botão **Manual** na barra superior ou pela opção **Manual didático** no menu Projeto. Por padrão, o guia abre em uma janela integrada ao próprio programa. Em telas grandes ele fica lado a lado com o gráfico e pode ser ampliado ou redimensionado; no mobile ocupa uma janela interna e se recolhe quando o usuário escolhe “Abrir no OrbisV”. Os botões do manual levam diretamente ao modo ou ferramenta correspondente.
+A associação à BNCC indica **apoio parcial**, com recorte explícito. Não afirma cobertura integral da Educação Básica nem domínio automático de habilidades. A extensão universitária, especialmente Cálculo I e II, é organizada por temas próprios. A distribuição de conteúdos do Ensino Médio por série e as adaptações locais cabem à rede e à escola.

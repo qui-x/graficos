@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Ações da cena: três grupos e nome editável",
+    "ok": true
+  },
+  {
+    "name": "Salvar cena conserva objetos e nome no arquivo",
+    "ok": true
+  },
+  {
+    "name": "Nova cena pede confirmação e Cancelar conserva a construção",
+    "ok": true
+  },
+  {
+    "name": "Importar cena: prévia e mesclagem mantêm os dois objetos",
+    "ok": true
+  },
+  {
+    "name": "Exportação em linhas produz PNG com o gráfico real",
+    "ok": true
+  },
+  {
+    "name": "Menu do objeto mantém duplicação e exclusão com confirmação",
+    "ok": true
+  },
+  {
+    "name": "Preferências de visualização continuam ligadas ao gráfico",
+    "ok": true
+  },
+  {
+    "name": "Acessibilidade: tema, contraste e botões com superfícies comuns",
+    "ok": true
+  },
+  {
+    "name": "Guia de investigação abre dentro do novo laboratório",
+    "ok": true
+  },
+  {
+    "name": "Sete modos: seleção usa o novo menu e indica o modo ativo",
+    "ok": true
+  },
+  {
+    "name": "320px: menus e janelas sem estouro e fechamento acessível",
+    "ok": true
+  },
+  {
+    "name": "Teclado conserva notação e ações no mesmo padrão",
+    "ok": true
+  },
+  {
+    "name": "Celular deitado: painel e editor continuam acessíveis",
+    "ok": true
+  },
+  {
+    "name": "Sem exceções JavaScript",
+    "ok": true
+  }
+]

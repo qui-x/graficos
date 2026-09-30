@@ -1,0 +1,62 @@
+[
+  {
+    "name": "101 laboratórios com perguntas e classificação curricular",
+    "ok": true
+  },
+  {
+    "name": "Códigos de anos e filtro de todos os anos escolares",
+    "ok": true
+  },
+  {
+    "name": "Todos os módulos de Cálculo permanecem sem código BNCC direto",
+    "ok": true
+  },
+  {
+    "name": "Mapeamento não referencia laboratórios inexistentes",
+    "ok": true
+  },
+  {
+    "name": "Contagem: reorganizar mantém quantidades",
+    "ok": true
+  },
+  {
+    "name": "Valor posicional conserva zeros internos",
+    "ok": true
+  },
+  {
+    "name": "Divisão euclidiana com resto e zero",
+    "ok": true
+  },
+  {
+    "name": "Sequência crescente e domínio natural",
+    "ok": true
+  },
+  {
+    "name": "Malha: mesma área, perímetros distintos",
+    "ok": true
+  },
+  {
+    "name": "Pesquisa: total zero não gera NaN",
+    "ok": true
+  },
+  {
+    "name": "Chance: determinismo, evento certo e impossível",
+    "ok": true
+  },
+  {
+    "name": "Trajeto: retorno conserva chegada",
+    "ok": true
+  },
+  {
+    "name": "Validação de roteiro rejeita identificador e textos inválidos",
+    "ok": true
+  },
+  {
+    "name": "Validação da investigação preserva texto e recusa cargas malformadas",
+    "ok": true
+  },
+  {
+    "name": "Concluir não atribui nota nem declara domínio de habilidade",
+    "ok": true
+  }
+]

@@ -23,7 +23,10 @@
       this.scaleY = 42;
       this.equalScale = true;
       this.viewMode = '2d';
-      this.camera3d = { yaw: -0.72, pitch: 0.58, distance: 13, target: { x: 0, y: 0, z: 0 }, fov: 52 };
+      this.camera3d = { yaw: -40*Math.PI/180, pitch: Math.PI/6, distance: 13, target: { x: 0, y: 0, z: 0 }, fov: 52, projection:'perspective' };
+      this.axisVisibility = {x:true,y:true,z:true};
+      this.gridPlane = 'xy';
+      this.dragMode = 'orbit';
       this.cameraPan3d = { x: 0, y: 0 };
       this.offsetX = 0;
       this.offsetY = 0;
@@ -63,8 +66,8 @@
       const high = document.documentElement.classList.contains('high-contrast');
       if (light && high) return { bg:'#ffffff', grid:'rgba(0,0,0,.20)', gridMajor:'rgba(0,0,0,.42)', axis:'#000000', label:'#1e2a35', guide:'#004f65' };
       if (high) return { bg:'#000000', grid:'rgba(255,255,255,.26)', gridMajor:'rgba(255,255,255,.52)', axis:'#ffffff', label:'#e6f1fa', guide:'#7cf2ff' };
-      if (light) return { bg:'#ffffff', grid:'rgba(16,32,51,.11)', gridMajor:'rgba(16,32,51,.23)', axis:'#20384e', label:'#455e75', guide:'#315dcb' };
-      return { bg:'#06101c', grid:'rgba(160,190,220,.12)', gridMajor:'rgba(165,200,235,.24)', axis:'#d9e8f5', label:'#a7b9ca', guide:'#77dffc' };
+      if (light) return { bg:'#fffdf8', grid:'rgba(70,79,81,.10)', gridMajor:'rgba(70,79,81,.22)', axis:'#203545', label:'#506572', guide:'#057d90' };
+      return { bg:'#1b2834', grid:'rgba(179,193,204,.11)', gridMajor:'rgba(179,193,204,.24)', axis:'#edf1f5', label:'#b3c1cc', guide:'#61d8e6' };
     }
 
     objectColor(obj) {
@@ -107,7 +110,8 @@
       this.requestRender();
     }
     resetCamera3D() {
-      this.camera3d = { yaw: -0.72, pitch: 0.58, distance: 13, target: { x: 0, y: 0, z: 0 }, fov: 52 };
+      this.camera3d = { yaw: -40*Math.PI/180, pitch: Math.PI/6, distance: 13, target: { x: 0, y: 0, z: 0 }, fov: 52, projection:'perspective' };
+      this.gridPlane = 'xy'; this.dragMode = 'orbit';
       this.cameraPan3d = { x: 0, y: 0 };
     }
     center() {
@@ -128,6 +132,10 @@
       if (typeof view.showGrid === 'boolean') this.showGrid = view.showGrid;
       if (typeof view.showMinorGrid === 'boolean') this.showMinorGrid = view.showMinorGrid;
       if (typeof view.showAxes === 'boolean') this.showAxes = view.showAxes;
+      this.axisVisibility = {x:true,y:true,z:true};
+      if (view.axisVisibility && typeof view.axisVisibility === 'object') for (const axis of ['x','y','z']) if (typeof view.axisVisibility[axis] === 'boolean') this.axisVisibility[axis] = view.axisVisibility[axis];
+      this.gridPlane = ['xy','xz','yz'].includes(view.gridPlane) ? view.gridPlane : 'xy';
+      this.dragMode = view.dragMode === 'pan' ? 'pan' : 'orbit';
       if (typeof view.showLabels === 'boolean') this.showLabels = view.showLabels;
       if (typeof view.showCoordinates === 'boolean') this.showCoordinates = view.showCoordinates;
       if (typeof view.showPointValues === 'boolean') this.showPointValues = view.showPointValues;
@@ -135,7 +143,8 @@
       if (view.camera3d && typeof view.camera3d === 'object') {
         const c=view.camera3d,t=c.target||{};
         if(Number.isFinite(c.yaw))this.camera3d.yaw=c.yaw;
-        if(Number.isFinite(c.pitch))this.camera3d.pitch=Math.max(-1.45,Math.min(1.45,c.pitch));
+        if(Number.isFinite(c.pitch))this.camera3d.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,c.pitch));
+        this.camera3d.projection=c.projection==='orthographic'?'orthographic':'perspective';
         if(Number.isFinite(c.distance))this.camera3d.distance=Math.max(2.5,Math.min(180,c.distance));
         if(Number.isFinite(c.fov))this.camera3d.fov=Math.max(28,Math.min(85,c.fov));
         if(Number.isFinite(t.x))this.camera3d.target.x=Math.max(-1e9,Math.min(1e9,t.x));
@@ -145,7 +154,19 @@
       this.invalidateCache();
       this.requestRender();
     }
-    getView() { return { scale: this.scale, scaleX: this.scaleX, scaleY: this.scaleY, equalScale: this.equalScale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, showLabels: this.showLabels, showCoordinates: this.showCoordinates, showPointValues: this.showPointValues, viewMode: this.viewMode, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
+    getView() { return { scale: this.scale, scaleX: this.scaleX, scaleY: this.scaleY, equalScale: this.equalScale, offsetX: this.offsetX, offsetY: this.offsetY, showGrid: this.showGrid, showMinorGrid: this.showMinorGrid, showAxes: this.showAxes, axisVisibility:{...this.axisVisibility},gridPlane:this.gridPlane,dragMode:this.dragMode, showLabels: this.showLabels, showCoordinates: this.showCoordinates, showPointValues: this.showPointValues, viewMode: this.viewMode, camera3d: JSON.parse(JSON.stringify(this.camera3d)) }; }
+    zoomView(factor) {
+      if (!Number.isFinite(factor) || factor <= 0) return;
+      if (this.viewMode === '3d') { this.camera3d.distance=Math.max(2.5,Math.min(180,this.camera3d.distance/factor));this.requestRender(); }
+      else this.zoomAt(this.size.w/2,this.size.h/2,factor);
+    }
+    panScreen3D(dx,dy) {
+      const c=this.camera3d,cy=Math.cos(c.yaw),sy=Math.sin(c.yaw),sp=Math.sin(c.pitch),cp=Math.cos(c.pitch);
+      const focal=(Math.min(this.size.w,this.size.h)*.5)/Math.tan(c.fov*Math.PI/360),k=c.distance/focal;
+      const delta={x:(-dx*cy-dy*sy*sp)*k,y:(-dx*sy+dy*cy*sp)*k,z:dy*cp*k};
+      for(const axis of ['x','y','z'])c.target[axis]=Math.max(-1e9,Math.min(1e9,c.target[axis]+delta[axis]));
+      this.requestRender();
+    }
     setEqualScale(enabled, fit = true) {
       const next = Boolean(enabled); const { w, h } = this.size; const center = this.screenToWorld(w / 2, h / 2);
       this.equalScale = next;
@@ -158,7 +179,7 @@
       this.framePending = true;
       requestAnimationFrame(() => {
         this.framePending = false;
-        try { this.render(); this.lastRenderError = null; }
+        try { this.render(); this.onViewChange?.(); this.lastRenderError = null; }
         catch (error) {
           this.lastRenderError = error;
           this.runtimeErrorCount += 1;
@@ -201,9 +222,11 @@
 
     bindEvents() {
       this.canvas.addEventListener('pointerdown', (e) => {
+        if(e.button!==0&&e.button!==2)return;
         this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        try { this.canvas.setPointerCapture(e.pointerId); } catch {}
         if (this.activePointers.size === 2) {
-          const p = [...this.activePointers.values()]; this.pinchDistance = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); this.dragging = false; return;
+          const p = [...this.activePointers.values()]; this.pinchDistance = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); this.pinchCenter={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2}; this.dragging = false; return;
         }
         this.dragging = !this.inspectMode;
         this.last = { x: e.clientX, y: e.clientY };
@@ -217,33 +240,37 @@
           const p = [...this.activePointers.values()]; const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
           if (this.pinchDistance && d > 0) {
             const r = this.canvas.getBoundingClientRect(); const cx = (p[0].x + p[1].x) / 2 - r.left; const cy = (p[0].y + p[1].y) / 2 - r.top;
-            if(this.viewMode==='3d'){this.camera3d.distance=Math.max(2.5,Math.min(180,this.camera3d.distance/(d/this.pinchDistance)));this.requestRender();}else this.zoomAt(cx, cy, d / this.pinchDistance); this.pinchDistance = d;
+            const next={x:cx+r.left,y:cy+r.top},dx=next.x-(this.pinchCenter?.x??next.x),dy=next.y-(this.pinchCenter?.y??next.y);
+            if(this.viewMode==='3d'){this.zoomView(d/this.pinchDistance);this.panScreen3D(dx,dy);}else{this.zoomAt(cx, cy, d / this.pinchDistance);this.offsetX+=dx;this.offsetY+=dy;this.requestRender();} this.pinchDistance = d;this.pinchCenter=next;
           }
           return;
         }
         if (this.viewMode === '3d') {
           if (!this.dragging) return;
           const dx=e.clientX-this.last.x,dy=e.clientY-this.last.y;this.last={x:e.clientX,y:e.clientY};
-          if(e.shiftKey||e.buttons===2){const k=this.camera3d.distance/520;this.camera3d.target.x-=dx*k*Math.cos(this.camera3d.yaw);this.camera3d.target.y-=dx*k*Math.sin(this.camera3d.yaw);this.camera3d.target.z+=dy*k;}
-          else{this.camera3d.yaw+=dx*.008;this.camera3d.pitch=Math.max(-1.45,Math.min(1.45,this.camera3d.pitch+dy*.008));}
+          if(e.shiftKey||e.buttons===2||this.dragMode==='pan')this.panScreen3D(dx,dy);
+          else{this.camera3d.yaw+=dx*.008;this.camera3d.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,this.camera3d.pitch+dy*.008));}
           this.requestRender();return;
         }
         if (this.inspectMode) { if (this.pointer) { this.inspectX = this.pointer.x; global.AppUI?.updateInspection(this.inspectX); this.requestRender(); } return; }
         if (!this.dragging) return;
         this.offsetX += e.clientX - this.last.x; this.offsetY += e.clientY - this.last.y; this.last = { x: e.clientX, y: e.clientY }; this.requestRender();
       });
-      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null; this.dragging = false; if (e.pointerType === 'touch' && !this.inspectMode) global.AppUI?.updateCoordinates(null); };
-      this.canvas.addEventListener('pointerup', stop); this.canvas.addEventListener('pointercancel', stop);
+      const stop = (e) => { this.activePointers.delete(e.pointerId); this.pinchDistance = null;this.pinchCenter=null; this.dragging = this.activePointers.size===1&&!this.inspectMode;if(this.dragging)this.last={...[...this.activePointers.values()][0]}; if (e.pointerType === 'touch' && !this.inspectMode) global.AppUI?.updateCoordinates(null); };
+      this.canvas.addEventListener('pointerup', stop); this.canvas.addEventListener('pointercancel', stop);this.canvas.addEventListener('lostpointercapture',stop);
+      this.canvas.addEventListener('contextmenu',e=>e.preventDefault());
       this.canvas.addEventListener('pointerleave', () => { if (!this.inspectMode) { this.pointer = null; global.AppUI?.updateCoordinates(null); } this.hidePointTooltip(); });
-      this.canvas.addEventListener('wheel', (e) => { e.preventDefault(); if(this.viewMode==='3d'){this.camera3d.distance=Math.max(2.5,Math.min(180,this.camera3d.distance*Math.exp(e.deltaY*.0014)));this.requestRender();return;} const r = this.canvas.getBoundingClientRect(); this.zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * .0015)); }, { passive: false });
+      this.canvas.addEventListener('wheel', (e) => { e.preventDefault();const delta=Math.max(-180,Math.min(180,e.deltaY)); if(this.viewMode==='3d'){this.zoomView(Math.exp(-delta*.0014));return;} const r = this.canvas.getBoundingClientRect(); this.zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-delta * .0015)); }, { passive: false });
       this.canvas.addEventListener('dblclick', () => this.fitToObjects());
       this.canvas.addEventListener('keydown', (e) => {
         const step = e.shiftKey ? 48 : 24;
+        if(e.key==='Home'){this.center();e.preventDefault();return;}
         if(this.viewMode==='3d'){
+          if((e.shiftKey||this.dragMode==='pan')&&e.key.startsWith('Arrow')){const d={ArrowLeft:[24,0],ArrowRight:[-24,0],ArrowUp:[0,24],ArrowDown:[0,-24]}[e.key];if(d){this.panScreen3D(...d);e.preventDefault();}return;}
           if(e.key==='ArrowLeft'){this.camera3d.yaw-=.10;e.preventDefault();}
           else if(e.key==='ArrowRight'){this.camera3d.yaw+=.10;e.preventDefault();}
-          else if(e.key==='ArrowUp'){this.camera3d.pitch=Math.max(-1.45,this.camera3d.pitch-.08);e.preventDefault();}
-          else if(e.key==='ArrowDown'){this.camera3d.pitch=Math.min(1.45,this.camera3d.pitch+.08);e.preventDefault();}
+          else if(e.key==='ArrowUp'){this.camera3d.pitch=Math.max(-Math.PI/2,this.camera3d.pitch-.08);e.preventDefault();}
+          else if(e.key==='ArrowDown'){this.camera3d.pitch=Math.min(Math.PI/2,this.camera3d.pitch+.08);e.preventDefault();}
           else if(e.key==='+'||e.key==='='){this.camera3d.distance=Math.max(2.5,this.camera3d.distance/1.14);e.preventDefault();}
           else if(e.key==='-'){this.camera3d.distance=Math.min(180,this.camera3d.distance*1.14);e.preventDefault();}
           else return;this.requestRender();return;
@@ -351,9 +378,9 @@
     drawAxes() {
       if (!this.showAxes) return; const { w, h } = this.size, c = this.ctx, theme = this.theme, ox = w/2 + this.offsetX, oy = h/2 + this.offsetY;
       c.save(); c.strokeStyle = theme.axis; c.fillStyle = theme.axis; c.lineWidth = 1.6; c.lineCap = 'round';
-      if (oy >= 0 && oy <= h) { c.beginPath(); c.moveTo(0,oy); c.lineTo(w-10,oy); c.stroke(); c.beginPath(); c.moveTo(w-10,oy-4); c.lineTo(w,oy); c.lineTo(w-10,oy+4); c.fill(); }
-      if (ox >= 0 && ox <= w) { c.beginPath(); c.moveTo(ox,h); c.lineTo(ox,10); c.stroke(); c.beginPath(); c.moveTo(ox-4,10); c.lineTo(ox,0); c.lineTo(ox+4,10); c.fill(); }
-      if (this.showLabels) { c.font = '600 13px system-ui'; if (oy >= 12 && oy <= h-12) c.fillText('x', w-22, oy-10); if (ox >= 12 && ox <= w-12) c.fillText('y', ox+8, 15); }
+      if (this.axisVisibility.x && oy >= 0 && oy <= h) { c.beginPath(); c.moveTo(0,oy); c.lineTo(w-10,oy); c.stroke(); c.beginPath(); c.moveTo(w-10,oy-4); c.lineTo(w,oy); c.lineTo(w-10,oy+4); c.fill(); }
+      if (this.axisVisibility.y && ox >= 0 && ox <= w) { c.beginPath(); c.moveTo(ox,h); c.lineTo(ox,10); c.stroke(); c.beginPath(); c.moveTo(ox-4,10); c.lineTo(ox,0); c.lineTo(ox+4,10); c.fill(); }
+      if (this.showLabels) { c.font = '600 13px system-ui'; if (this.axisVisibility.x && oy >= 12 && oy <= h-12) c.fillText('x', w-22, oy-10); if (this.axisVisibility.y && ox >= 12 && ox <= w-12) c.fillText('y', ox+8, 15); }
       c.restore();
     }
 
@@ -424,7 +451,7 @@
       boxes.push(chosen);
       this.pointLabelCount=(this.pointLabelCount||0)+1;
       c.globalAlpha=document.documentElement.dataset.theme==='light'?.96:.93;
-      c.fillStyle=document.documentElement.dataset.theme==='light'?'rgba(255,255,255,.96)':'rgba(6,16,28,.93)';
+      c.fillStyle=this.theme.bg;
       c.strokeStyle=color; c.lineWidth=1.15; c.setLineDash([]);
       this.roundRectPath(chosen.x,chosen.y,chosen.w,chosen.h,9); c.fill(); c.stroke();
       c.globalAlpha=1; c.fillStyle=color; c.textAlign='center'; c.textBaseline='middle';
@@ -586,9 +613,10 @@
       const rx=cy*x+sy*y, ry=-sy*x+cy*y;
       const rz=sp*ry+cp*z, rv=cp*ry-sp*z;
       const depth=c.distance-rv;
-      if(depth<=.08)return null;
+      if(depth<=.08&&c.projection!=='orthographic')return null;
       const focal=(Math.min(w,h)*.5)/Math.tan((c.fov*Math.PI/180)/2);
-      return{x:w/2+rx*focal/depth,y:h/2-rz*focal/depth,depth};
+      const denominator=c.projection==='orthographic'?c.distance:depth;
+      return{x:w/2+rx*focal/denominator,y:h/2-rz*focal/denominator,depth};
     }
     drawLine3DProjected(a,b,color,width=1,alpha=1,dash=[]) {
       const pa=this.project3D(a),pb=this.project3D(b);if(!pa||!pb)return;
@@ -597,13 +625,15 @@
     drawGrid3D() {
       if(!this.showGrid)return;
       const c=this.ctx,theme=this.theme,extent=Math.max(6,Math.min(30,Math.ceil(this.camera3d.distance*.75))),step=extent>18?2:1;
-      for(let i=-extent;i<=extent;i+=step){const major=i===0||i%(step*5)===0;const color=major?theme.gridMajor:theme.grid;this.drawLine3DProjected({x:-extent,y:i,z:0},{x:extent,y:i,z:0},color,major?1.15:1,major?.9:.72);this.drawLine3DProjected({x:i,y:-extent,z:0},{x:i,y:extent,z:0},color,major?1.15:1,major?.9:.72);}
+      const point=(u,v)=>this.gridPlane==='xz'?{x:u,y:0,z:v}:this.gridPlane==='yz'?{x:0,y:u,z:v}:{x:u,y:v,z:0};
+      for(let i=-extent;i<=extent;i+=step){const major=i===0||i%(step*5)===0;if(!major&&!this.showMinorGrid)continue;const color=major?theme.gridMajor:theme.grid;this.drawLine3DProjected(point(-extent,i),point(extent,i),color,major?1.15:1,major?.9:.72);this.drawLine3DProjected(point(i,-extent),point(i,extent),color,major?1.15:1,major?.9:.72);}
     }
     drawAxes3D() {
       if(!this.showAxes)return;
       const extent=Math.max(5,Math.min(24,Math.ceil(this.camera3d.distance*.62))),theme=this.theme,c=this.ctx;
-      const axes=[['x',{x:-extent,y:0,z:0},{x:extent,y:0,z:0},'#48dff7'],['y',{x:0,y:-extent,z:0},{x:0,y:extent,z:0},'#a47dff'],['z',{x:0,y:0,z:-extent},{x:0,y:0,z:extent},'#ff6fb8']];
-      axes.forEach(([label,a,b,color])=>{this.drawLine3DProjected(a,b,color,1.8,.95);if(this.showLabels){const p=this.project3D(b);if(p){c.save();c.fillStyle=color;c.font='700 12px system-ui';c.fillText(label,p.x+6,p.y-6);c.restore();}}});
+      const palette=getComputedStyle(document.documentElement),accent=name=>palette.getPropertyValue(name).trim()||theme.axis;
+      const axes=[['x',{x:-extent,y:0,z:0},{x:extent,y:0,z:0},accent('--cyan')],['y',{x:0,y:-extent,z:0},{x:0,y:extent,z:0},accent('--violet')],['z',{x:0,y:0,z:-extent},{x:0,y:0,z:extent},accent('--pink')]];
+      axes.forEach(([label,a,b,color])=>{if(!this.axisVisibility[label])return;this.drawLine3DProjected(a,b,color,1.8,.95);if(this.showLabels){const p=this.project3D(b);if(p){c.save();c.fillStyle=color;c.font='700 12px system-ui';c.fillText(label,p.x+6,p.y-6);c.restore();}}});
     }
     sampleCurve3D(obj,steps=520) {
       try{const fx=this.getCompiled(`${obj.id}:3dx`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:3dy`,obj.data.yExpr,{t:0}),fz=this.getCompiled(`${obj.id}:3dz`,obj.data.zExpr,{t:0}),pts=[];for(let i=0;i<=steps;i++){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/steps,x=fx({t}),y=fy({t}),z=fz({t});pts.push(Number.isFinite(x)&&Number.isFinite(y)&&Number.isFinite(z)&&Math.max(Math.abs(x),Math.abs(y),Math.abs(z))<1e8?{x,y,z,t}:null);}return pts;}catch{return[];}
@@ -707,7 +737,7 @@
       }
       const parts=[`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`,`<title>OrbisV</title>`,`<desc>Gráfico exportado pelo OrbisV</desc>`,`<rect width="100%" height="100%" fill="${theme.bg}"/>`];
       if(this.showGrid){const stepX=this.gridStep(this.scaleX)*this.scaleX,stepY=this.gridStep(this.scaleY)*this.scaleY,ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.gridMajor}" stroke-width="1">`);for(let x=((ox%stepX)+stepX)%stepX;x<w;x+=stepX)parts.push(`<line x1="${x.toFixed(2)}" y1="0" x2="${x.toFixed(2)}" y2="${h}"/>`);for(let y=((oy%stepY)+stepY)%stepY;y<h;y+=stepY)parts.push(`<line x1="0" y1="${y.toFixed(2)}" x2="${w}" y2="${y.toFixed(2)}"/>`);parts.push('</g>');}
-      if(this.showAxes){const ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.axis}" stroke-width="1.6"><line x1="0" y1="${oy}" x2="${w}" y2="${oy}"/><line x1="${ox}" y1="0" x2="${ox}" y2="${h}"/></g>`);}
+      if(this.showAxes){const ox=w/2+this.offsetX,oy=h/2+this.offsetY;parts.push(`<g stroke="${theme.axis}" stroke-width="1.6">${this.axisVisibility.x?`<line x1="0" y1="${oy}" x2="${w}" y2="${oy}"/>`:""}${this.axisVisibility.y?`<line x1="${ox}" y1="0" x2="${ox}" y2="${h}"/>`:""}</g>`);}
       for(const obj of this.objects.visible){const part=this.objectToSvg(obj);if(part)parts.push(part);}parts.push('</svg>');this.downloadText(parts.join(''),'image/svg+xml',filename);return {rasterized:false};
     }
     objectToSvg(obj){const p=(x,y)=>this.worldToScreen(x,y),color=this.objectColor(obj);if(obj.type==='point'){const q=p(obj.data.x,obj.data.y);return`<circle cx="${q.x}" cy="${q.y}" r="4" fill="${color}"/>`;}if(obj.type==='vector'){const a=p(obj.data.x1,obj.data.y1),b=p(obj.data.x2,obj.data.y2);return`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.5"/>`;}if(obj.type==='circle'){const q=p(obj.data.cx,obj.data.cy);return`<ellipse cx="${q.x}" cy="${q.y}" rx="${obj.data.r*this.scaleX}" ry="${obj.data.r*this.scaleY}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='ellipse'){const q=p(obj.data.cx,obj.data.cy);return`<ellipse cx="${q.x}" cy="${q.y}" rx="${obj.data.a*this.scaleX}" ry="${obj.data.b*this.scaleY}" fill="none" stroke="${color}" stroke-width="2.2"/>`;}if(obj.type==='line'){const b=this.currentBounds(),d=obj.data;if(Math.abs(d.b)>1e-12)return this.svgLine(b.xmin,(-d.a*b.xmin-d.c)/d.b,b.xmax,(-d.a*b.xmax-d.c)/d.b,color);if(Math.abs(d.a)>1e-12){const x=-d.c/d.a;return this.svgLine(x,b.ymin,x,b.ymax,color);}return'';}if(obj.type==='polygon'){const pts=(obj.data.vertices||[]).map(v=>p(v[0],v[1]));return pts.length?`<polygon points="${pts.map(q=>`${q.x},${q.y}`).join(' ')}" fill="${color}" fill-opacity=".12" stroke="${color}" stroke-width="2.2"/>`:'';}if(obj.type==='function'||obj.type==='parametric'){try{const pts=[];if(obj.type==='function'){const fn=this.getCompiled(obj.id,obj.data.expression,{x:0}),bounds=this.currentBounds();for(let i=0;i<=800;i+=1){const x=bounds.xmin+(bounds.xmax-bounds.xmin)*i/800,y=fn({x});if(Number.isFinite(y)&&Math.abs(y)<1e8)pts.push(p(x,y));else pts.push(null);}}else{const fx=this.getCompiled(`${obj.id}:x`,obj.data.xExpr,{t:0}),fy=this.getCompiled(`${obj.id}:y`,obj.data.yExpr,{t:0});for(let i=0;i<=800;i+=1){const t=obj.data.tMin+(obj.data.tMax-obj.data.tMin)*i/800,x=fx({t}),y=fy({t});pts.push(Number.isFinite(x)&&Number.isFinite(y)?p(x,y):null);}}let d='',pen=false;for(const q of pts){if(!q){pen=false;continue;}d+=`${pen?'L':'M'}${q.x.toFixed(2)},${q.y.toFixed(2)} `;pen=true;}return`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>`;}catch{return'';}}return'';}
